@@ -1,9 +1,7 @@
-MEX_EXT = $(shell mexext)
+#MEX_EXT = $(shell mexext)
 include common.mk
 
-TARGETS : kBotPacketMexAPI.$(MEX_EXT) kBotPacket2MexAPI.$(MEX_EXT) \
-					SerialDeviceMexAPI.$(MEX_EXT) GetUnixTime.$(MEX_EXT) usleep.$(MEX_EXT) \
-					ReceivePackets
+TARGETS :	ReceivePackets
 
 kBotPacketMexAPI.$(MEX_EXT) : kBotPacketMexAPI.cc kBotPacket.o
 	mex $^ -o $@ $(INCLUDES)

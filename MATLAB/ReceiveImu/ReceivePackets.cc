@@ -68,6 +68,16 @@ int main(int argc, char** argv) {
   if (argc > 1)
     strcpy(deviceName, argv[1]);
 
+  // Enable GPIO
+  ofstream gpio_export;
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 146;
+  gpio_export.close();
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 147;
+  gpio_export.close();
+ 
+
   int imufilecounter = 0;
   int gpsfilecounter = 0;
   int magfilecounter = 0;
@@ -100,6 +110,15 @@ int main(int argc, char** argv) {
   std::vector<uint8_t> pkt;
   while (true) {
     pkt = ReceivePacket();
+    // Get GPIO
+    gpio146.open("/sys/class/gpio/gpio146/value");
+    gpio147.open("/sys/class/gpio/gpio147/value");
+    getline(gpio146, line1);
+    getline(gpio147, line2);
+    gpio146.close();
+    gpio147.close();
+
+    // Generate Time Stamp
     std::ostringstream time;
     time.width(16);
     time.setf(ios::fixed, ios::floatfield);
@@ -116,7 +135,7 @@ int main(int argc, char** argv) {
         case 31:
           if (gpsfile.is_open()) {
             gpscounter ++;
-            gpsfile << TimeStamp;
+            gpsfile << TimeStamp << line1[0] << line2[0];
             for (int cnt = 5; cnt < pkt.size() - 8; cnt ++)
               gpsfile << pkt[cnt];
             gpsfile << endl;
@@ -125,7 +144,7 @@ int main(int argc, char** argv) {
         case 34:
           if (imufile.is_open()) {
             imucounter ++;
-            imufile << TimeStamp;
+            imufile << TimeStamp << line1[0] << line2[0];
             for (int cnt = 5; cnt < 29; cnt ++)
               imufile << pkt[cnt];
             imufile << endl;
@@ -134,7 +153,7 @@ int main(int argc, char** argv) {
         case 35:
           if (magfile.is_open()) {
             magcounter ++;
-            magfile << TimeStamp;
+            magfile << TimeStamp << line1[0] << line2[0];
             for (int cnt = 5; cnt < 24; cnt ++)
               magfile << pkt[cnt];
             magfile << endl;
