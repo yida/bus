@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <fstream>
 #include <sstream>
 #include <ctime>
@@ -16,6 +17,9 @@
 
 char deviceName[] = "/dev/ttyUSB0";
 int baud = 230400;
+
+ifstream gpio146, gpio147;
+std::string line1, line2;
 
 template <class T>
 inline std::string to_string(const T& t) {
