@@ -241,7 +241,7 @@ esac
 function fetch {
     if [ ! -e ${STAMPS}/$1.fetch ]; then
         log "Downloading $1 sources..."
-        wget -c --no-passive-ftp --no-check-certificate $2 && touch ${STAMPS}/$1.fetch
+        wget -c --passive-ftp --no-check-certificate $2 && touch ${STAMPS}/$1.fetch
     fi
 }
 
@@ -372,7 +372,7 @@ if [ ${LIBOPENCM3_EN} != 0 ]; then
 		exit 1
 		#fetch ${LIBOPENCM3} http://.../${LIBOPENCM3}.tar.bz2
 	else
-		clone libopencm3 ${LIBOPENCM3_GIT} git://libopencm3.git.sourceforge.net/gitroot/libopencm3/libopencm3
+		clone libopencm3 ${LIBOPENCM3_GIT} git://github.com/yida/libopencm3.git
 	fi
 fi
 
