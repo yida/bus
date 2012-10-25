@@ -10,3 +10,10 @@
 *.lai
 *.la
 *.a
+
+*.hex
+*.bin
+*.list
+*.d
+*.elf
+*.srec
