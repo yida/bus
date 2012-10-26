@@ -17,7 +17,7 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY = usart_irq
+BINARY = adc
 
 LDSCRIPT = ../stm32-h103.ld
 
