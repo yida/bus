@@ -17,12 +17,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <IOKit/serial/ioss.h>
+#ifdef __APPLE__
+#include <IOKit/serial/ioss.h> 
+#endif
 
 #include "mex.h"
 
-#define DEVICE_NAME "/dev/tty.usbserial"
-#define SPEED 57600
+#define DEVICE_NAME "/dev/ttyACM0"
+#define SPEED 38400
 
 /*
   fidFdopen takes a Unix file descriptor fd and
@@ -107,7 +109,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgTxt("Error getting tty attributes.");
   }
 
-  //  tio.c_cflag = CS8 | CLOCAL | CREAD | CRTSCTS;
+  /*  tio.c_cflag = CS8 | CLOCAL | CREAD | CRTSCTS; */
   tio.c_cflag = CS8 | CLOCAL | CREAD;
   tio.c_iflag = IGNPAR;
   tio.c_oflag = 0;
@@ -116,15 +118,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   tio.c_cc[VMIN] = 1;  /* Min number of characters */
   tio.c_cc[VTIME] = 10; /* TIME*0.1s */
 
+#ifdef __LINUX__
+  cfsetispeed(&tio, speed);
+  cfsetospeed(&tio, speed);
+
   if (tcsetattr(tty_fd,TCSANOW,&tio) == -1) {
     close(tty_fd);
     mexErrMsgTxt("Could not set tty attributes.");
   }
+#endif
 
+#ifdef __APPLE__
   if (ioctl(tty_fd, IOSSIOSPEED, &speed) == -1) {
     close(tty_fd);
     mexErrMsgTxt("Could not set speed.");
   }
+#endif
 
   /*
   if (fcntl(tty_fd, F_SETFL, O_NONBLOCK) == -1) {
