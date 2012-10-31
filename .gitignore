@@ -17,3 +17,6 @@
 *.d
 *.elf
 *.srec
+
+# MATLAB 
+*.mex*
