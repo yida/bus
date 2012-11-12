@@ -1,5 +1,5 @@
 clear all;
-fid = serialopen('/dev/tty.usbmodem1d1111', 38400);
+fid = serialopen('/dev/ttyACM0', 38400);
 i=0;
 Sample = zeros(500,7);
 while(1);
