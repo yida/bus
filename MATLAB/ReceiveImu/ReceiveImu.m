@@ -4,9 +4,13 @@ close all;
 
 global rawVals rawCntr
 
-
-dev  = '/dev/ttyUSB0';
+if ismac()
+  dev  = '/dev/tty.usbserial-A1017G1T';
+else
+  dev = '/dev/ttyUSB0'
+end
 baud = 1000000;
+%baud = 115200;
 SerialDeviceAPI('connect',dev,baud);
 
 while(1)
