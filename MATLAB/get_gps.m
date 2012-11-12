@@ -1,5 +1,10 @@
 clear all;
-fid = serialopen('/dev/ttyACM0', 38400);
+if ismac()
+  fid = serialopen('/dev/tty.usbmodem1d1141', 38400);
+else
+  fid = serialopen('/dev/ttyACM0', 38400);
+end
+
 i=0;
 Sample = zeros(500,7);
 while(1);
