@@ -22,9 +22,13 @@ fidGps = fopen(fileGps,'w');
 
 global rawVals rawCntr
 
-
-dev  = '/dev/ttyUSB0';
-gpsDev  = '/dev/ttyACM0';
+if ismac() == 1 
+  dev = '/dev/tty.usbserial-A1017G1T';
+  gpsDev = '/dev/tty.usbmodem1d1141';
+else
+  dev  = '/dev/ttyUSB0';
+  gpsDev  = '/dev/ttyACM0';
+end
 baud = 1000000;
 baudGPS = 38400;
 SerialDeviceAPI('connect',dev,baud);
@@ -49,7 +53,7 @@ while(1)
       if (type == 0)
       
       elseif (type == 1)
-        imuVals = double(typecast(packet(10:end-1),'single'));
+        imuVals = double(typecast(packet(10:end-1),'single'))
 %        R = rotz(imuVals(3))*roty(imuVals(2))*rotx(imuVals(1));
         fprintf(fidImu,'Now %f R %f P %f Y %f Gx %f Gy %f Gz %f Ax %f Ay %f Az %f\n',...
                 tStep, imuVals(1), imuVals(2), imuVals(3),...
@@ -61,6 +65,7 @@ while(1)
   end
   if ~isempty(gpsPacket) 
     if (strcmp(gpsPacket(1:6),'$GPGGA')==1)
+      gpsPacket
       fprintf(fidGps,'Now %f %s',tStep,gpsPacket);
       fileCntGps = fileCntGps + 1;
     end
