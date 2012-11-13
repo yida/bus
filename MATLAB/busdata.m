@@ -1,4 +1,4 @@
-function ReceiveImu()
+function busdata()
 clear all;
 close all;
 
@@ -20,7 +20,7 @@ fidImu = fopen(fileImu,'w');
 fidGps = fopen(fileGps,'w');
 
 
-global rawVals rawCntr
+
 
 if ismac() == 1 
   dev = '/dev/tty.usbserial-A1017G1T';
@@ -38,6 +38,12 @@ fileCntImu = 0;
 fileCntGps = 0;
 fileCntMax = 10000;
 
+fprintf(1,'Press key to manually label\n')
+fprintf(1,'d - leftTurnStart\n')
+fprintf(1,'f - leftTurnOver\n')
+fprintf(1,'e - rightTurnStart\n')
+fprintf(1,'r - rightTurnOver\n')
+
 while(1)
   %fprintf('.');
   packet = ReceivePacket();
@@ -53,19 +59,31 @@ while(1)
       if (type == 0)
       
       elseif (type == 1)
-        imuVals = double(typecast(packet(10:end-1),'single'))
+        c = getch();
+        status = 'forward';
+        switch c
+          case 'd'
+            status = 'leftTurnStart'
+          case 'f'
+            status = 'leftTurnOver'
+          case 'e'
+            status = 'rightTurnStart'
+          case 'r'
+            status = 'rightTurnOver'  
+        end
+        imuVals = double(typecast(packet(10:end-1),'single'));
 %        R = rotz(imuVals(3))*roty(imuVals(2))*rotx(imuVals(1));
-        fprintf(fidImu,'Now %f R %f P %f Y %f Gx %f Gy %f Gz %f Ax %f Ay %f Az %f\n',...
+        fprintf(fidImu,'Now %f R %f P %f Y %f Gx %f Gy %f Gz %f Ax %f Ay %f Az %f %s\n',...
                 tStep, imuVals(1), imuVals(2), imuVals(3),...
                 imuVals(4), imuVals(5), imuVals(6),...
-                imuVals(7), imuVals(8), imuVals(9));
+                imuVals(7), imuVals(8), imuVals(9), status);
         fileCntImu = fileCntImu + 1;
       end
     end
   end
   if ~isempty(gpsPacket) 
     if (strcmp(gpsPacket(1:6),'$GPGGA')==1)
-      gpsPacket
+%      gpsPacket
       fprintf(fidGps,'Now %f %s',tStep,gpsPacket);
       fileCntGps = fileCntGps + 1;
     end
