@@ -1,4 +1,4 @@
-function busdata()
+function logBusData()
 % This is a function to read IMU and GPS data and save into
 % files 'Imu-MM-DD-HH-MM.txt' and 'Gps-MM-DD-HH-MM.txt'.
 %
