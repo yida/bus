@@ -1,4 +1,17 @@
 function busdata()
+% This is a function to read IMU and GPS data and save into
+% files 'Imu-MM-DD-HH-MM.txt' and 'Gps-MM-DD-HH-MM.txt'.
+%
+% Author: Yida Zhang (yida@seas.upenn.edu)
+%
+% Manually label the bus turning :
+%   Press key to manually label\n')
+%     d - leftTurnStart\n')
+%     f - leftTurnOver\n')
+%     e - rightTurnStart\n')
+%     r - rightTurnOver\n')
+%
+
 clear all;
 close all;
 
