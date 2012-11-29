@@ -24,15 +24,19 @@ fileList = dir('*.txt');
 
 % check if filename match
 fileGPSFound = 0;
+fileGPSIdx = 0;
 fileIMUFound = 0;
+fileIMUIdx = 0;
 for cnt = 1 : size(fileList, 1)
   matchstart = regexp(fileList(cnt).name, fileGPS);
   if ~isempty(matchstart)
     fileGPSFound = fileGPSFound + 1;
+    fileGPSIdx = cnt;
   end
   matchstart = regexp(fileList(cnt).name, fileIMU);
   if ~isempty(matchstart)
     fileIMUFound = fileIMUFound + 1;
+    fileIMUIdx = cnt;
   end
 end
 
@@ -41,76 +45,50 @@ if (fileIMUFound < 1)
   fprintf('Imu file %s not found\n',fileIMU);
   return;
 else
-  fprintf('Imu file %s found\n',fileIMU);
+  fprintf('Imu file %s found at %d\n',fileIMU, fileIMUIdx);
 end
 if (fileGPSFound < 1)
   fprintf('Gps file %s not found\n',fileGPS);
   return;
 else
-  fprintf('Gps file %s found\n',fileGPS);
+  fprintf('Gps file %s found at %d\n',fileGPS, fileGPSIdx);
 end
 
-% Parse Data
-fprintf('Parsing Data Files...\n');
-fidGPS = fopen(fileGPS,'r');
-fidIMU = fopen(fileIMU,'r');
+files = {};
+nfiles = 0;
 
-GPSraw = textscan(fidGPS,...
-      'Now %f $GPGGA %f %f %c %f %c %u8 %u8 %f %f %c %f %c %f %s',...
-      'Delimiter',',');
-IMUraw = textscan(fidIMU,...
-      'Now %f R %f P %f Y %f Gx %f Gy %f Gz %f Ax %f Ay %f Az %f %s');
-
-fprintf('Parse Data Files Done! %d GPS Samples, %d IMU Samples\n',...
-        size(GPSraw{1},1), size(IMUraw{1},1));
-
-
-% Merge IMU and GPS with time sync
-DimIMU = size(IMUraw,2);
-DimGPS = size(GPSraw,2);
-SampleGPS = size(GPSraw{1},1);
-SampleIMU = size(IMUraw{1},1);
-
-% timeStamp, time, Lat, NS, Lon, EW, Alti, r, p ,y, Gx, Gy, Gz, Ax, Ay, Az, Label
-syncData = zeros(17, SampleIMU);
-
-cntGPS = 1;
-for cntIMU = 1 : SampleIMU
-  syncData(1, cntIMU) = IMUraw{1}(cntIMU);
-  syncData(2:7, cntIMU) = zeros(6, 1);
-  syncData(8:16, cntIMU) = [IMUraw{2}(cntIMU), IMUraw{3}(cntIMU),...
-                            IMUraw{4}(cntIMU), IMUraw{5}(cntIMU),...
-                            IMUraw{6}(cntIMU), IMUraw{7}(cntIMU),...
-                            IMUraw{8}(cntIMU), IMUraw{9}(cntIMU),...
-                            IMUraw{10}(cntIMU)];
-
-  if strcmp(char(IMUraw{DimIMU}(cntIMU)), 'forward')
-      syncData(17, cntIMU) = 0;
-  elseif strcmp(char(IMUraw{DimIMU}(cntIMU)), 'leftTurnStart')
-      syncData(17, cntIMU) = 1;
-  elseif strcmp(char(IMUraw{DimIMU}(cntIMU)), 'leftTurnOver')
-      syncData(17, cntIMU) = 2;
-  elseif strcmp(char(IMUraw{DimIMU}(cntIMU)), 'rightTurnStart')
-      syncData(17, cntIMU) = 3;
-  elseif strcmp(char(IMUraw{DimIMU}(cntIMU)), 'rightTurnOver')
-      syncData(17, cntIMU) = 4;
-  else
-      syncData(17, cntIMU) = 5;
+while (1)
+  fileGPSIdx = fileGPSIdx + 1;
+  fileIMUIdx = fileIMUIdx + 1;
+  % check filename length
+  if (size(fileList(fileGPSIdx).name, 2) ~= size(fileList(fileIMUIdx).name, 2))
+    fprintf('End of Data File List.\n');
+    break;
   end
-  if cntGPS > SampleGPS
-    continue;
-  end
-  if (IMUraw{1}(cntIMU) == GPSraw{1}(cntGPS)) 
-    % interpolate GPS to IMU data
-    syncData(2:7, cntIMU) = [GPSraw{2}(cntGPS), GPSraw{3}(cntGPS),...
-                             double(GPSraw{4}(cntGPS)), GPSraw{5}(cntGPS),... 
-                             double(GPSraw{6}(cntGPS)),GPSraw{10}(cntGPS)];
-    fprintf('sync %d at %f \n', cntGPS, GPSraw{1}(cntGPS));
-    cntGPS = cntGPS + 1;
+  % check filename data stamp
+  if (strcmp(fileList(fileGPSIdx).name(1,4:end), fileList(fileIMUIdx).name(1,4:end)) == 0)
+    fprintf('IMU and GPS data stamp not match!\n');
+    break;
+  end  
+  fprintf('Next Data file %s (%d) and %s (%d)\n', fileList(fileIMUIdx).name,...
+        fileList(fileIMUIdx).bytes, fileList(fileGPSIdx).name, fileList(fileGPSIdx).bytes);
+  cmd = input('Add these files? [Y/N/E]\n','s');
+  switch cmd 
+  case {'Y','y'}
+    disp('accept file');
+    nfiles = nfiles + 1;
+    files{nfiles} = {fileList(fileIMUIdx).name, fileList(fileGPSIdx).name};
+  case {'n','N'}
+    disp('ignore file');
+  case {'e','E'}
+    disp('end file selection');
+    break;
+  otherwise
+    fprintf('wrong key, must be Y/y (Accept), N/n (Ignore), E/e (end)\n');
+    fileGPSIdx = fileGPSIdx - 1;
+    fileIMUIdx = fileIMUIdx - 1;
   end
 end
 
-
-fclose(fidGPS);
-fclose(fidIMU);
-
+%syncData = readBusDataFile(fileIMU, fileGPS);
+syncData = readBusDataFile(files);
