@@ -1,4 +1,4 @@
-function h = rotplot(R)
+function h = rotplot(R, time)
 % This is a simple function to plot the orientation
 % of a 3x3 rotation matrix R in 3-D
 % You should modify it as you wish for the project.
@@ -7,6 +7,7 @@ lx = 3.0;
 ly = 1.5;
 lz = 1.0;
 
+titlestr = strcat('Time Stamp: ', sprintf('%10.5f', time));
 x = .5*[+lx -lx +lx -lx +lx -lx +lx -lx;
         +ly +ly -ly -ly +ly +ly -ly -ly;
         +lz +lz +lz +lz -lz -lz -lz -lz];
@@ -23,6 +24,9 @@ hold on;
 patch(xp(1,ifront), xp(2,ifront), xp(3,ifront), 'b');
 patch(xp(1,iback), xp(2,iback), xp(3,iback), 'r');
 hold off;
+grid on;
+
+title(titlestr);
 
 axis([-2 2 -2 2 -2 2]);
-drawnow
+drawnow;
