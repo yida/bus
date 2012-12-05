@@ -4,13 +4,9 @@ close all;
 
 global rawVals rawCntr
 
-if ismac()
-  dev  = '/dev/tty.usbserial-A1017G1T';
-else
-  dev = '/dev/ttyUSB0'
-end
-baud = 1000000;
-%baud = 115200;
+
+dev  = '/dev/ttyUSB0';
+baud = 230400;
 SerialDeviceAPI('connect',dev,baud);
 
 while(1)
@@ -20,7 +16,7 @@ while(1)
     id   = packet(3);
     type = packet(5);
     
-    %fprintf('got packet %d %d\n',id,type);
+    fprintf('got packet %d %d\n',id,type);
     
     if (id == 0) %LL
       if (type == 0)

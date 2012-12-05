@@ -109,8 +109,8 @@ int SerialDevice::ConnectSerial(const char * device, const int speed, int thread
   strncpy(this->device,device,MAX_DEVICE_NAME_LENGTH);
 
   // Open the device
-  if((this->fd = open(this->device, O_RDWR | O_NOCTTY | O_NONBLOCK)) < 0)
-//  if((this->fd = open(this->device, O_RDWR | O_NOCTTY)) < 0)
+  //if((this->fd = open(this->device, O_RDWR | O_NOCTTY | O_NONBLOCK)) < 0)
+  if((this->fd = open(this->device, O_RDWR | O_NOCTTY)) < 0)
   {
     SD_LOG_ERROR("SerialDevice::ConnectSerial: Error: Unable to open serial port");
     return -1;
