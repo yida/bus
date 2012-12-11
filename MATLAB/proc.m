@@ -1,7 +1,7 @@
 clear all;
 close all;
 
-loaded = 1;
+loaded = 3;
 dataload;
 
 % % view vicon rotation
@@ -65,7 +65,6 @@ croll(isnan(croll)) = 1;
 
 
 %%
-%{
 R = zeros(3,3,size(cyaw,2));
 R(1,1,:) = cyaw.*cpitch;
 R(1,2,:) = croll.*syaw+cyaw.*spitch.*sroll;
@@ -76,7 +75,6 @@ R(2,3,:) = cyaw.*sroll+croll.*syaw.*spitch;
 R(3,1,:) = spitch;
 R(3,2,:) = -cpitch.*sroll;
 R(3,3,:) = cpitch.*croll;
-%}
 
 %% synchronize time stamp
 minVal = 1;
@@ -118,34 +116,40 @@ for count = 1 : (size(masklarge, 2) - smallsize + 1)
   end
 end
 
-masksmall = zeros(1, largesize + 2 * smallsize - 2);
-masksmall(1, minid:minid + smallsize - 1) = ones(1, smallsize);
-mask = masksmall .* masklarge;
+if (minid - smallsize + 1) < 1 
+  smallbegin = smallsize - minid;
+  smallend = smallsize;
+  length = smallend - smallbegin;
+  largebegin = 1;
+  largeend = largebegin + length - 1;
+else
+  smallbegin = 1;
+  largebegin = minid - smallsize;
+  length = min(smallsize - smallbegin + 1, largesize - largebegin);
+  smallend = smallbegin + length - 1;
+  largeend = largesize + length - 1;
+end
 
+if (flag > 0) % imu small vicon large
+  imubegin = smallbegin;
+  imuend = smallend;
+  %length
+  viconbegin = largebegin;
+  viconend = largeend;
+else
+  imubegin = largebegin;
+  imuend = largeend;
+  viconbegin = smallbegin;
+  viconend = smallend;
+end
 
-%for cnt = 1 : abs(diff)
-%  DIFF = mean(abs(large(cnt:(cnt+size(small,2)-1)) - small));
-%  if DIFF < minVal
-%    minVal = DIFF;
-%    minid = cnt;
-%  end
-%end
-minVal
-minid
-
-%%
-%view raw acc rotation
-
-%nAcc = size(R,3);
-nVicon = size(rots,3);
-nImu = size(imuts, 2);
-%fig = figure(1);
-%for cnt = 1 : nImu
-%    cnt
-%    subplot(1,2,1);
-%    rotplotT(rots(:,:,cnt),viconts(cnt));
-%    subplot(1,2,2);
-%    rotplotT(R(:,:,cnt+minid-1),imuts(cnt+minid-1)); 
-%end
+fig = figure(1);
+for cnt = 0 : length - 1
+    abs(imuts(imubegin+cnt) - viconts(viconbegin+cnt))
+    subplot(1,2,1);
+    rotplotT(rots(:,:,viconbegin+cnt),viconts(viconbegin+cnt));
+    subplot(1,2,2);
+    rotplotT(R(:,:,imubegin+cnt),imuts(imubegin+cnt)); 
+end
 
 
