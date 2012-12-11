@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 //#include "ros/ros.h"
-#include "armadillo"
+#include <armadillo>
 #include "pose_utils.h"
 
 

@@ -6,10 +6,9 @@
 //#include "sensor_msgs/Imu.h"
 //#include "nav_msgs/Odometry.h"
 #include "quadrotor_ukf.h"
+#include "pose_utils.h"
 
 #include "mex.h"
-
-using namespace std;
 
 // ROS
 static vector<QuadrotorUKF> UKFHandles;
@@ -32,48 +31,52 @@ void mex_imu(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   u(4) = imu[4]; // msg->angular_velocity.y;
   u(5) = imu[5]; // msg->angular_velocity.z;
 
-  double timestamp = *mxGetPr(prhs[3]);
-  if (calCnt < calLimit)       // Calibration
+  double timestamp = *mxGetPr(prhs[2]);
+//  if (calCnt < calLimit)       // Calibration
+//  {
+//    calCnt++;
+//    ag += u.rows(0,2);
+//  }
+//  else if (calCnt == calLimit) // Save gravity vector
+//  {
+//    calCnt++;
+//    cout << "calibrated and set gravity" << endl;
+//    ag /= calLimit;
+//    double g = norm(ag,2);
+//    UKFHandles[nukf].SetGravity(g);
+    UKFHandles[nukf].SetGravity(9.80);
+
+//}
+//  else 
+
+  if (UKFHandles[nukf].ProcessUpdate(u, timestamp))  // Process Update
   {
-    calCnt++;
-    ag += u.rows(0,2);
-  }
-  else if (calCnt == calLimit) // Save gravity vector
-  {
-    calCnt++;
-    ag /= calLimit;
-    double g = norm(ag,2);
-    UKFHandles[nukf].SetGravity(g);
-  }
-  else if (UKFHandles[nukf].ProcessUpdate(u, timestamp))  // Process Update
-  {
-/* Odometry Output
-    nav_msgs::Odometry odomUKF;
-    odomUKF.header.stamp = quadrotorUKF.GetStateTime();
-    odomUKF.header.frame_id = frame_id;
-    colvec x = quadrotorUKF.GetState();
-    odomUKF.pose.pose.position.x = x(0);
-    odomUKF.pose.pose.position.y = x(1);
-    odomUKF.pose.pose.position.z = x(2);
+    // Odometry Output
+//    nav_msgs::Odometry odomUKF;
+//    odomUKF.header.stamp = quadrotorUKF.GetStateTime();
+//    odomUKF.header.frame_id = frame_id;
+    colvec x = UKFHandles[nukf].GetState();
+//    odomUKF.pose.pose.position.x = x(0);
+//    odomUKF.pose.pose.position.y = x(1);
+//    odomUKF.pose.pose.position.z = x(2);
     colvec q = R_to_quaternion(ypr_to_R(x.rows(6,8)));
-    odomUKF.pose.pose.orientation.w = q(0);
-    odomUKF.pose.pose.orientation.x = q(1);
-    odomUKF.pose.pose.orientation.y = q(2);
-    odomUKF.pose.pose.orientation.z = q(3);
-    odomUKF.twist.twist.linear.x = x(3);
-    odomUKF.twist.twist.linear.y = x(4);
-    odomUKF.twist.twist.linear.z = x(5);
-    odomUKF.twist.twist.angular.x = u(3);
-    odomUKF.twist.twist.angular.y = u(4);
-    odomUKF.twist.twist.angular.z = u(5);
-    mat P = quadrotorUKF.GetStateCovariance();
-    for (int j = 0; j < 6; j++)
-      for (int i = 0; i < 6; i++)
-        odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
-    for (int j = 0; j < 3; j++)
-      for (int i = 0; i < 3; i++)
-        odomUKF.twist.covariance[i+j*6] = P(i+3 , j+3);
-*/
+//    odomUKF.pose.pose.orientation.w = q(0);
+//    odomUKF.pose.pose.orientation.x = q(1);
+//    odomUKF.pose.pose.orientation.y = q(2);
+//    odomUKF.pose.pose.orientation.z = q(3);
+//    odomUKF.twist.twist.linear.x = x(3);
+//    odomUKF.twist.twist.linear.y = x(4);
+//    odomUKF.twist.twist.linear.z = x(5);
+//    odomUKF.twist.twist.angular.x = u(3);
+//    odomUKF.twist.twist.angular.y = u(4);
+//    odomUKF.twist.twist.angular.z = u(5);
+    mat P = UKFHandles[nukf].GetStateCovariance();
+//    for (int j = 0; j < 6; j++)
+//      for (int i = 0; i < 6; i++)
+//        odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
+//    for (int j = 0; j < 3; j++)
+//      for (int i = 0; i < 3; i++)
+//        odomUKF.twist.covariance[i+j*6] = P(i+3 , j+3);
 //    pubUKF.publish(odomUKF); 
   }
 }
@@ -81,7 +84,7 @@ void mex_imu(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //
 void mex_vicon(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
-//{
+{
 //  // Get orientation
 //  colvec q(4);
 //  q(0) = msg->pose.pose.orientation.w;
@@ -89,32 +92,48 @@ void mex_vicon(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //  q(2) = msg->pose.pose.orientation.y;
 //  q(3) = msg->pose.pose.orientation.z;
 //  colvec ypr = R_to_ypr(quaternion_to_R(q));
-    mat R = zeros<mat>(3,3); 
-    colvec ypr = R_to_ypr(R);
-//  // Assemble measurement
-    colvec z(6);
-    z(0) = 0; // msg->pose.pose.position.x;
-    z(1) = 0; // msg->pose.pose.position.y;
-    z(2) = 0; // msg->pose.pose.position.z;
-    z(3) = ypr(0);
-    z(4) = ypr(1);
-    z(5) = ypr(2);
-//  // Assemble measurement covariance
-//  mat RnSLAM = zeros<mat>(6,6);
+  int nukf = mxGetScalar(prhs[0]);
+
+  double *r = (double *) mxGetData(prhs[1]);
+  int mx = mxGetM(prhs[1]);
+  int nx = mxGetN(prhs[1]);
+  mat R = zeros<mat>(3,3); 
+  for (int i = 0; i < nx; i++)
+    for (int j = 0; j < mx; j++)
+      R(j, i) = r[i * 3 + j];
+  colvec ypr = R_to_ypr(R);
+  // Assemble measurement
+  colvec z(6);
+  z(0) = 0; // msg->pose.pose.position.x;
+  z(1) = 0; // msg->pose.pose.position.y;
+  z(2) = 0; // msg->pose.pose.position.z;
+  z(3) = ypr(0);
+  z(4) = ypr(1);
+  z(5) = ypr(2);
+  // Assemble measurement covariance
+  double stdVicon = 0.005;
+  mat RnVicon = eye<mat>(6,6);
+  RnVicon(0,0) = stdVicon * stdVicon;
+  RnVicon(1,1) = stdVicon * stdVicon;
+  RnVicon(2,2) = stdVicon * stdVicon;
+  RnVicon(3,3) = stdVicon * stdVicon;
+  RnVicon(4,4) = stdVicon * stdVicon;
+  RnVicon(5,5) = stdVicon * stdVicon;
+  double timestamp = *mxGetPr(prhs[2]);
 //  for (int j = 0; j < 3; j++)
 //    for (int i = 0; i < 3; i++)
 //      RnSLAM(i,j) = msg->pose.covariance[i+j*6];
 //  RnSLAM(3,3) = msg->pose.covariance[3+3*6];
 //  RnSLAM(4,4) = msg->pose.covariance[4+4*6];
 //  RnSLAM(5,5) = msg->pose.covariance[5+5*6];
-//  // Measurement update
+  // Measurement update
   if (UKFHandles[nukf].isInitialized())
   {
-    UKFHandles[nukf].MeasurementUpdateSLAM(z, RnSLAM, timestamp);
+    UKFHandles[nukf].MeasurementUpdateSLAM(z, RnVicon, timestamp);
   }
   else
   {
-    quadrotorUKF.SetInitPose(z, stamp);
+    UKFHandles[nukf].SetInitPose(z, timestamp);
   }
 }
 //
@@ -247,13 +266,9 @@ void mex_gps(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
 }
 
-void mex_vicon(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
-}
-
 void mexExit(void)
 {
-  printf("Exiting mexshm.\n");
+  printf("Exiting mexukf.\n");
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
