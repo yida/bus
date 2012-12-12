@@ -56,6 +56,7 @@ void mex_imu(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //    odomUKF.header.stamp = quadrotorUKF.GetStateTime();
 //    odomUKF.header.frame_id = frame_id;
     colvec x = UKFHandles[nukf].GetState();
+    cout << x.t() << endl;
 //    odomUKF.pose.pose.position.x = x(0);
 //    odomUKF.pose.pose.position.y = x(1);
 //    odomUKF.pose.pose.position.z = x(2);

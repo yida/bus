@@ -145,7 +145,7 @@ end
 
 fig = figure(1);
 for cnt = 0 : length - 1
-    abs(imuts(imubegin+cnt) - viconts(viconbegin+cnt))
+    abs(imuts(imubegin+cnt) - viconts(viconbegin+cnt));
     subplot(1,2,1);
     rotplotT(rots(:,:,viconbegin+cnt),viconts(viconbegin+cnt));
     subplot(1,2,2);

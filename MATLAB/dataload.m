@@ -22,13 +22,13 @@ viconFile = dir(strcat(dataPath,'viconRot*.mat'));
 
 %% Load Data
 % load imu
-imuFile(loaded).name
-load(strcat(dataPath,imuFile(loaded).name));
+imuFilename = strcat('imuRaw',num2str(loaded),'.mat');
+load(strcat(dataPath,imuFilename));
 imuts = ts;
 
 % load vicon
-viconFile(loaded).name
-load(strcat(dataPath,viconFile(loaded).name));
+viconFilename = strcat('viconRot',num2str(loaded),'.mat');
+load(strcat(dataPath,viconFilename));
 viconts = ts;
 
 %if camOn

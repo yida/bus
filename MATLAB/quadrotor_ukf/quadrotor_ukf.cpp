@@ -92,25 +92,25 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(colvec z, mat RnSLAM, double time)
   list<colvec>::iterator    ku; 
   list<double>::iterator kt;
   PropagateAprioriCovariance(time, kx, ku, kt);
-//  colvec x = *kx;
-//  // Get Measurement
-//  mat H = MeasurementModelSLAM();
-//  colvec za = H * x;
-//  // Compute Kalman Gain
-//  mat S = H * P * trans(H) + RnSLAM;
-//  mat K = P * trans(H) * inv(S);
-//  // Innovation
-//  colvec inno = z - za;
-//  // Handle angle jumps
-//  inno(3) = asin(sin(inno(3)));
-//  // Posteriori Mean
-//  x += K * inno;
-//  *kx = x;
-//  // Posteriori Covariance
-//  P = P - K * H * P;
-//  // Propagate Aposteriori State
-//  PropagateAposterioriState(kx, ku, kt);
-//
+  colvec x = *kx;
+  // Get Measurement
+  mat H = MeasurementModelSLAM();
+  colvec za = H * x;
+  // Compute Kalman Gain
+  mat S = H * P * trans(H) + RnSLAM;
+  mat K = P * trans(H) * inv(S);
+  // Innovation
+  colvec inno = z - za;
+  // Handle angle jumps
+  inno(3) = asin(sin(inno(3)));
+  // Posteriori Mean
+  x += K * inno;
+  *kx = x;
+  // Posteriori Covariance
+  P = P - K * H * P;
+  // Propagate Aposteriori State
+  PropagateAposterioriState(kx, ku, kt);
+
   return true;
 }
 
@@ -258,76 +258,75 @@ void QuadrotorUKF::PropagateAprioriCovariance(const double time,
   for (; k1 != xHist.end(); k1++, k2++, k3++, k4++)
   {
     double dt = fabs(*k3 - time);
-//    if (dt < mdt)
-//    {
-//      mdt = dt; 
-//      kx  = k1;
-//      ku  = k2;
-//      kt  = k3;
-//    }
-//    else
-//    {
-//      break;
-//    }
+    if (dt < mdt)
+    {
+      mdt = dt; 
+      kx  = k1;
+      ku  = k2;
+      kt  = k3;
+    }
+    else
+    {
+      break;
+    }
   }
-//  colvec    cx = *kx;
-//  double ct = *kt;
-//  colvec    px = xHist.back();
-//  double pt = xTimeHist.back();
-//  double dt = ct - pt;
-//  if (fabs(dt) < 0.001)
-//  {
-//    kx = xHist.begin();
-//    ku = uHist.begin();
-//    kt = xTimeHist.begin();
-//    return;
-//  }
-//  // Delete redundant states
-//  xHist.erase(k1, xHist.end());
-//  uHist.erase(k2, uHist.end());
-//  xTimeHist.erase(k3, xTimeHist.end());
-//  cout << xHist.size() << ' ' << uHist.size() << ' ' << xTimeHist.size() << endl;
+  colvec    cx = *kx;
+  double ct = *kt;
+  colvec    px = xHist.back();
+  double pt = xTimeHist.back();
+  double dt = ct - pt;
+  if (fabs(dt) < 0.001)
+  {
+    kx = xHist.begin();
+    ku = uHist.begin();
+    kt = xTimeHist.begin();
+    return;
+  }
+  // Delete redundant states
+  xHist.erase(k1, xHist.end());
+  uHist.erase(k2, uHist.end());
+  xTimeHist.erase(k3, xTimeHist.end());
 
-//  // rot, gravity
-//  mat pR = ypr_to_R(px.rows(6,8));
-//  colvec ag(3);
-//  ag(0) = 0;
-//  ag(1) = 0;
-//  ag(2) = g;
-//  // Linear Acceleration
-//  mat dv = cx.rows(3,5) - px.rows(3,5);
-//  colvec a = trans(pR) * (dv / dt + ag) + px.rows(9,11);
-//  // Angular Velocity
-//  mat dR = trans(pR) * ypr_to_R(cx.rows(6,8));
-//  colvec w = zeros<colvec>(3);
-//  w(0) = dR(2,1) / dt;
-//  w(1) = dR(0,2) / dt;
-//  w(2) = dR(1,0) / dt;
-//  // Assemble state and control
-//  colvec u = join_cols(a,w);
-//  // Generate sigma points
-//  GenerateSigmaPoints();
-//  // Mean
-//  for (int k = 0; k < 2*L+1; k++)
-//    Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
-//  // Handle jump between +pi and -pi !
-//  double minYaw = as_scalar(min(Xa.row(6), 1));
-//  double maxYaw = as_scalar(max(Xa.row(6), 1));
-//  if (fabs(minYaw - maxYaw) > PI)
-//  {
-//    for (int k = 0; k < 2*L+1; k++)
-//      if (Xa(6,k) < 0)
-//        Xa(6,k) += 2*PI;
-//  }
-//  // Now we can get the mean...
-//  colvec xa = sum( repmat(wm,stateCnt,1) % Xa, 1 );
-//  // Covariance
-//  P.zeros();
-//  for (int k = 0; k < 2*L+1; k++)
-//  {
-//    colvec d = Xa.col(k) - xa;
-//    P += as_scalar(wc(k)) * d * trans(d);
-//  }
+  // rot, gravity
+  mat pR = ypr_to_R(px.rows(6,8));
+  colvec ag(3);
+  ag(0) = 0;
+  ag(1) = 0;
+  ag(2) = g;
+  // Linear Acceleration
+  mat dv = cx.rows(3,5) - px.rows(3,5);
+  colvec a = trans(pR) * (dv / dt + ag) + px.rows(9,11);
+  // Angular Velocity
+  mat dR = trans(pR) * ypr_to_R(cx.rows(6,8));
+  colvec w = zeros<colvec>(3);
+  w(0) = dR(2,1) / dt;
+  w(1) = dR(0,2) / dt;
+  w(2) = dR(1,0) / dt;
+  // Assemble state and control
+  colvec u = join_cols(a,w);
+  // Generate sigma points
+  GenerateSigmaPoints();
+  // Mean
+  for (int k = 0; k < 2*L+1; k++)
+    Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
+  // Handle jump between +pi and -pi !
+  double minYaw = as_scalar(min(Xa.row(6), 1));
+  double maxYaw = as_scalar(max(Xa.row(6), 1));
+  if (fabs(minYaw - maxYaw) > PI)
+  {
+    for (int k = 0; k < 2*L+1; k++)
+      if (Xa(6,k) < 0)
+        Xa(6,k) += 2*PI;
+  }
+  // Now we can get the mean...
+  colvec xa = sum( repmat(wm,stateCnt,1) % Xa, 1 );
+  // Covariance
+  P.zeros();
+  for (int k = 0; k < 2*L+1; k++)
+  {
+    colvec d = Xa.col(k) - xa;
+    P += as_scalar(wc(k)) * d * trans(d);
+  }
   return;
 }
 
