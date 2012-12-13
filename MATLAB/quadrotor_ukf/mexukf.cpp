@@ -32,54 +32,60 @@ void mex_imu(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   u(5) = imu[5]; // msg->angular_velocity.z;
 
   double timestamp = *mxGetPr(prhs[2]);
-//  if (calCnt < calLimit)       // Calibration
-//  {
-//    calCnt++;
-//    ag += u.rows(0,2);
-//  }
-//  else if (calCnt == calLimit) // Save gravity vector
-//  {
-//    calCnt++;
-//    cout << "calibrated and set gravity" << endl;
-//    ag /= calLimit;
-//    double g = norm(ag,2);
-//    UKFHandles[nukf].SetGravity(g);
-    UKFHandles[nukf].SetGravity(9.80);
+  UKFHandles[nukf].SetGravity(9.80);
 
-//}
-//  else 
+  plhs[0] = mxCreateDoubleScalar(0);
+  plhs[1] = mxCreateDoubleMatrix(3, 1, mxREAL); // pose
+  double pose[3] = {0};
+  plhs[2] = mxCreateDoubleMatrix(3, 1, mxREAL); // orien
+  double orien[3] = {0};
+  plhs[3] = mxCreateDoubleMatrix(3, 1, mxREAL); // vel
+  double vel[3] = {0};
+  plhs[4] = mxCreateDoubleMatrix(3, 1, mxREAL); // omega
+  double omega[3] = {0};
+  plhs[5] = mxCreateDoubleMatrix(6,6, mxREAL);  // postCov
+  double poseCov[36] = {0};
+  plhs[6] = mxCreateDoubleMatrix(6,6, mxREAL);  // twistCov
+  double twistCov[36] = {0};
 
   if (UKFHandles[nukf].ProcessUpdate(u, timestamp))  // Process Update
   {
     // Odometry Output
-//    nav_msgs::Odometry odomUKF;
-//    odomUKF.header.stamp = quadrotorUKF.GetStateTime();
-//    odomUKF.header.frame_id = frame_id;
-    colvec x = UKFHandles[nukf].GetState();
-    cout << x.t() << endl;
-//    odomUKF.pose.pose.position.x = x(0);
-//    odomUKF.pose.pose.position.y = x(1);
-//    odomUKF.pose.pose.position.z = x(2);
-    colvec q = R_to_quaternion(ypr_to_R(x.rows(6,8)));
-//    odomUKF.pose.pose.orientation.w = q(0);
-//    odomUKF.pose.pose.orientation.x = q(1);
-//    odomUKF.pose.pose.orientation.y = q(2);
-//    odomUKF.pose.pose.orientation.z = q(3);
-//    odomUKF.twist.twist.linear.x = x(3);
-//    odomUKF.twist.twist.linear.y = x(4);
-//    odomUKF.twist.twist.linear.z = x(5);
-//    odomUKF.twist.twist.angular.x = u(3);
-//    odomUKF.twist.twist.angular.y = u(4);
-//    odomUKF.twist.twist.angular.z = u(5);
-    mat P = UKFHandles[nukf].GetStateCovariance();
-//    for (int j = 0; j < 6; j++)
-//      for (int i = 0; i < 6; i++)
-//        odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
-//    for (int j = 0; j < 3; j++)
-//      for (int i = 0; i < 3; i++)
-//        odomUKF.twist.covariance[i+j*6] = P(i+3 , j+3);
-//    pubUKF.publish(odomUKF); 
+      plhs[0] = mxCreateDoubleScalar(UKFHandles[nukf].GetStateTime());
+
+      colvec x = UKFHandles[nukf].GetState();
+      pose[0] = x(0);
+      pose[1] = x(1);
+      pose[2] = x(2);
+
+      orien[0] = x(6);
+      orien[1] = x(7);
+      orien[2] = x(8);
+
+      vel[0] = x(3);
+      vel[1] = x(4);
+      vel[2] = x(5);
+
+      omega[0] = u(3);
+      omega[1] = u(4);
+      omega[2] = u(5);
+
+
+      mat P = UKFHandles[nukf].GetStateCovariance();
+      for (int j = 0; j < 6; j++)
+        for (int i = 0; i < 6; i++)
+          poseCov[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
+
+      for (int j = 0; j < 3; j++)
+        for (int i = 0; i < 3; i++)
+          twistCov[i+j*6] = P(i+3 , j+3);
   }
+  memcpy(mxGetPr(plhs[1]), &pose[0], 3 * sizeof(double));
+  memcpy(mxGetPr(plhs[2]), &orien[0], 3 * sizeof(double));
+  memcpy(mxGetPr(plhs[3]), &vel[0], 3 * sizeof(double));
+  memcpy(mxGetPr(plhs[4]), &omega[0], 3 * sizeof(double));
+  memcpy(mxGetPr(plhs[5]), &poseCov[0], 36 * sizeof(double));
+  memcpy(mxGetPr(plhs[6]), &twistCov[0], 36 * sizeof(double));
 }
 
 //
