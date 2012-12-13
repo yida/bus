@@ -3,12 +3,12 @@ clear all;
 close all;
 
 addpath ../../api
-dev  = '/dev/ttyUSB1';
+dev  = '/dev/ttyUSB0';
 baud = 230400;
 SerialDeviceMexAPI('connect',dev,baud);
 
 while(1)
-  fprintf('.');
+% fprintf('.');
   packet = ReceivePacket();
   if ~isempty(packet)
     id   = packet(3);
@@ -22,7 +22,7 @@ while(1)
     switch (type)
       case 31 %gps
         gpsStr = char(packet(6:end-8));
-        fprintf('got gps string : %s\n',gpsStr);
+%       fprintf('got gps string : %s\n',gpsStr);
       case 34 %imu
         imu.tuc  = typecast(packet(6:9),'uint32');
         imu.id   = double(packet(10));
@@ -30,14 +30,14 @@ while(1)
         imu.rpy  = double(typecast(packet(12:17),'int16')) / 5000; %scaling
         imu.wrpy = double(typecast(packet(18:23),'int16')) / 500;  %scaling
         imu.acc  = double(typecast(packet(24:29),'int16')) / 5000;
-        imu
+%       imu
       case 35 %press + mag
         pmag.id    = double(packet(6));
         pmag.tuc   = typecast(packet(7:10),'uint32');
         pmag.press = double(typecast(packet(11:12),'int16')) + 100000; %pascals
         pmag.temp  = double(typecast(packet(15:16),'int16')) / 100; %deg celcius
         pmag.mag   = double(typecast(packet(19:24),'int16'));
-        pmag
+%       pmag
     end
   end
   

@@ -41,44 +41,36 @@ int SerialDevice_connect(const char deviceName[], int baud) {
 
 }
 
-int SerialDevice_read(int len, int timeout) {
+int SerialDevice_read(int len, int timeout, vector<uint8_t>& Buffer) {
 	charBuf.resize(len); //make sure there is enough space for data
+  Buffer.resize(len);
 
-	int numRead=pDev->ReadChars((char*)&(charBuf[0]),len,timeout);
+//  std::cout << charBuf.size() << std::endl;
+  int	numRead=pDev->ReadChars((char*)&(charBuf[0]),len,timeout);
 
 	if (numRead >= 0){
-		//std::cout << "serialDeviceAPI: Read "<<numRead<<" chars"<< std::endl;
-		int ndim = 2;
-    int dims[] = {1,numRead };
-		plhs[0] = mxCreateNumericArray(ndim,dims,mxUINT8_CLASS,mxREAL);
+//		std::cout << "serialDeviceAPI: Read "<<numRead<<" chars"<< std::endl;
     if (numRead > 0)
-      memcpy(mxGetData(plhs[0]),&(charBuf[0]),numRead);
+      memcpy(&(Buffer[0]), &(charBuf[0]), numRead);
+    return 1;
 	}
 	else{
 		std::cout << "serialDeviceAPI: ERROR: could not read chars"<< std::endl;
-		plhs[0] = mxCreateDoubleMatrix(0,0,mxREAL);
+    Buffer.resize(0); 
+	  return 0;
 	}
-	return;
 }
 
-int SerialDevice_write(int len, int timeout) {
+int SerialDevice_write(uint8_t *data, int len) {
   if (!pDev)
-    mexErrMsgTxt("serialDeviceAPI: not connected to device");
-
-  if (nrhs != 2)
-    mexErrMsgTxt("serialDeviceAPI: need two argumets");
-
-  uint8_t * data = (uint8_t *)mxGetData(prhs[1]);
-  int len=mxGetNumberOfElements(prhs[1]);
+    cerr << "serialDeviceAPI: not connected to device" << endl;
 
   if (pDev->WriteChars((char*)data,len) == len){
-    //std::cout << "serialDeviceAPI: Wrote "<<len<<" chars"<< std::endl;
-    plhs[0] = mxCreateDoubleScalar(1);
+    std::cout << "serialDeviceAPI: Wrote "<<len<<" chars"<< std::endl;
+    return 1;
   }
   else {
     std::cout << "serialDeviceAPI: ERROR: Could not write "<<len<<" chars"<< std::endl;
-    plhs[0] = mxCreateDoubleScalar(0);
+    return 0;
   }
-  return;
-
 }

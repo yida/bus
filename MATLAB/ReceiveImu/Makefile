@@ -14,9 +14,11 @@ kBotPacket2MexAPI.$(MEX_EXT) : kBotPacket2MexAPI.cc kBotPacket2.o crc32.o
 SerialDeviceMexAPI.$(MEX_EXT) : SerialDeviceMexAPI.cc SerialDevice.o
 	mex -O SerialDeviceMexAPI.cc SerialDevice.o  $(INCLUDES)
 
-ReceivePackets: ReceivePackets.o SerialDevice.o SerialDeviceCAPI.o
+ReceivePackets: ReceivePackets.o SerialDevice.o SerialDeviceCAPI.o \
+								kBotPacket2CAPI.o kBotPacket2.o crc32.o
 	g++ $(INCLUDES) $(LIB_DIRS) $(CPP_FLAGS) -o $@ $^ $(LIBS) -lpthread
 
 clean:
-	rm -rf *~ *.o *.$(MEX_EXT)
+	rm -rf *~ *.o *.$(MEX_EXT) ReceivePackets
+
 

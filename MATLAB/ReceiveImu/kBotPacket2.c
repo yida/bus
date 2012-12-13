@@ -1,6 +1,7 @@
 #include "kBotPacket2.h"
 #include "crc.h"
 #include <string.h>
+#include <stdio.h>
 
 //initialize the packet
 void kBotPacket2Init(kBotPacket2 * packet)
@@ -55,7 +56,7 @@ int16_t   kBotPacket2ProcessChar(uint8_t c, kBotPacket2 * packet)
     default:
       packet->lenReceived++;
       *(packet->bp)++ = c;
-      
+     
       if (packet->lenReceived < packet->lenExpected)
         break;  //have not received enough yet
     
