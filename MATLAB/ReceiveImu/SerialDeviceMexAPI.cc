@@ -30,7 +30,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	//parse the commands
 	if (strcasecmp(command, "connect") == 0) {
 		if (pDev != NULL) {
-			std::cout << "serialDeviceAPI: Port is already open" << std::endl;
+//			std::cout << "serialDeviceAPI: Port is already open" << std::endl;
 			plhs[0] = mxCreateDoubleScalar(0);
 			return;
 		}
@@ -72,7 +72,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		int numRead=pDev->ReadChars((char*)&(charBuf[0]),len,timeout);
 
 		if (numRead >= 0){
-			std::cout << "serialDeviceAPI: Read "<<numRead<<" chars"<< std::endl;
+//			std::cout << "serialDeviceAPI: Read "<<numRead<<" chars"<< std::endl;
 			int ndim = 2;
       int dims[] = {1,numRead };
 			plhs[0] = mxCreateNumericArray(ndim,dims,mxUINT8_CLASS,mxREAL);
