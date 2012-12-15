@@ -11,7 +11,7 @@ function plot_lidar(lidarTheta, lidarCenter)
   lidar = [lidarMaxRange * cos(lidarAngles); lidarMaxRange * sin(lidarAngles)];
   lidar = bsxfun(@plus, lidar, lidarCenter');
 
-  idx = 1:3:numBeams;
+  idx = 1:5:numBeams;
 
   plot(lidar(1,idx), lidar(2,idx), 'w*');
 
