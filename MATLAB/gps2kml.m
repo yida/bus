@@ -32,6 +32,6 @@ PointNode.appendChild(CoordinatesNode);
 
 docNode.appendChild(docNode.createComment('this is a comment'));
 
-xmlFileName = ['gpsdata','.xml'];
+xmlFileName = [kmlpath, 'gpsdata','.xml'];
 xmlwrite(xmlFileName,docNode);
 %type(xmlFileName);

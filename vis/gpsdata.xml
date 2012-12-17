@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+   <Document>
+      <name>Data Set 1</name>
+      <description>GPS Data visualization for Data set 1</description>
+      <Placemark>
+         <Point>
+            <coordicates>39.952760,-75.191017,0.000000</coordicates>
+         </Point>
+      </Placemark>
+   </Document>
+</kml><!--this is a comment-->

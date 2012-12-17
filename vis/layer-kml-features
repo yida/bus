@@ -14,8 +14,8 @@
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script>
       function initialize() {
-        var myLatlng = new google.maps.LatLng(40.65, -73.95);
-        //var myLatlng = new google.maps.LatLng(39.952, -75.1908);
+//        var myLatlng = new google.maps.LatLng(40.65, -73.95);
+        var myLatlng = new google.maps.LatLng(39.952, -75.1908);
         var mapOptions = {
           zoom: 12,
           center: myLatlng,
@@ -26,7 +26,7 @@
             mapOptions);
 
         var nyLayer = new google.maps.KmlLayer(
-              'https://raw.github.com/yida/bus/master/vis/newyork.kml', {
+              'https://raw.github.com/yida/bus/master/vis/gpsdata.kml', {
 //            'http://www.searcharoo.net/SearchKml/newyork.kml', {
 //              'http://zhangyd.org/newyork.kml', {
               suppressInfoWindows: true,
