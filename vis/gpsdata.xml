@@ -6,7 +6,7 @@
       <Placemark>
          <Point>
             <altitudeMode>relativeToGround</altitudeMode>
-            <coordicates>39.952760,-75.191017,0.000000</coordicates>
+            <coordinates>-75.191017,39.952760,0.000000</coordinates>
          </Point>
       </Placemark>
    </Document>

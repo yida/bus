@@ -27,12 +27,12 @@ altitudeModeNode.appendChild(docNode.createTextNode(...
         sprintf('relativeToGround')));
 PointNode.appendChild(altitudeModeNode);
 
-CoordinatesNode = docNode.createElement('coordicates');
+CoordinatesNode = docNode.createElement('coordinates');
 datacounter = 345;
 [lat, lnt] = nmea2degree(LatLnt{datacounter}{3}, LatLnt{datacounter}{4},...
                           LatLnt{datacounter}{5}, LatLnt{datacounter}{6});
 CoordinatesNode.appendChild(docNode.createTextNode(...
-        sprintf('%f,%f,%f', lat, lnt, 0)));
+        sprintf('%f,%f,%f', lnt, lat, 0)));
 PointNode.appendChild(CoordinatesNode);
 
 docNode.appendChild(docNode.createComment('this is a comment'));

@@ -21,4 +21,10 @@
 # MATLAB 
 *.txt
 *.mexglx
+*.mat
 
+# vim temp file
+*.swp
+
+# Binary
+ReceivePackets
