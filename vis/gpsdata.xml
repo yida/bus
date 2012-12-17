@@ -5,6 +5,7 @@
       <description>GPS Data visualization for Data set 1</description>
       <Placemark>
          <Point>
+            <altitudeMode>relativeToGround</altitudeMode>
             <coordicates>39.952760,-75.191017,0.000000</coordicates>
          </Point>
       </Placemark>

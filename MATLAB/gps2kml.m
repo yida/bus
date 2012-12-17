@@ -22,6 +22,11 @@ DocumentElement.appendChild(PlacemarkNode);
 PointNode = docNode.createElement('Point');
 PlacemarkNode.appendChild(PointNode);
 
+altitudeModeNode = docNode.createElement('altitudeMode');
+altitudeModeNode.appendChild(docNode.createTextNode(...
+        sprintf('relativeToGround')));
+PointNode.appendChild(altitudeModeNode);
+
 CoordinatesNode = docNode.createElement('coordicates');
 datacounter = 345;
 [lat, lnt] = nmea2degree(LatLnt{datacounter}{3}, LatLnt{datacounter}{4},...
