@@ -22,6 +22,12 @@ DocumentElement.appendChild(PlacemarkNode);
 PointNode = docNode.createElement('Point');
 PlacemarkNode.appendChild(PointNode);
 
+
+extrudeModeNode = docNode.createElement('extrude');
+extrudeModeNode.appendChild(docNode.createTextNode(...
+        sprintf('1')));
+PointNode.appendChild(extrudeModeNode);
+
 altitudeModeNode = docNode.createElement('altitudeMode');
 altitudeModeNode.appendChild(docNode.createTextNode(...
         sprintf('relativeToGround')));
