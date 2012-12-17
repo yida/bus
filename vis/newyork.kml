@@ -19,7 +19,6 @@
                 <br />
                 Rank: (1)
             ]]></description>
-            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg</href></Icon></IconStyle></Style>
             <Point>      
                 <extrude>1</extrude>
 		        <altitudeMode>relativeToGround</altitudeMode>
