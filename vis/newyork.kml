@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+   <Document>
+		<name>Searcharoo Results for: newyork</name>
+		<description>The query took less than 1 millisecond and produced 19 geocoded results.</description>
+		
+        <Placemark>   
+            <name><![CDATA[View of Brooklyn Bridge ]]></name>
+            <description><![CDATA[
+                 View of Brooklyn Bridge Brooklyn Bridge from Manhattan Bridge <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 109659
+                <br />
+                Crawled Date: 3/6/2009 3:31:57 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9926088333333,40.7105401666667,0</coordinates>    
+            </Point>
+        </Placemark>
+     
+   </Document>
+</kml>

@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style type="text/css">
-      html, body, #map_canvas {
-        margin: 0;
-        padding: 0;
-        height: 100%;
+      html, body, #map_canvas { margin: 0; padding: 0; height: 100%;
       }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=en"></script>
@@ -16,9 +13,9 @@
       var map;
       function initialize() {
         var mapOptions = {
-          zoom: 10,
-          center: new google.maps.LatLng(-34.397, 150.644),
-          mapTypeId: google.maps.MapTypeId.HYBRID
+          zoom: 16,
+          center: new google.maps.LatLng(39.952, -75.1908),
+          mapTypeId: google.maps.MapTypeId.ROADMAP
         };
         var map = new google.maps.Map(document.getElementById('map_canvas'),
             mapOptions);
@@ -27,6 +24,6 @@
     </script>
   </head>
   <body onload="initialize()">
-    <div id="map_canvas" style="width:100%, height:100%"></div>
+    <div id="map_canvas" style="width:100%, height:100%, float:left"></div>
   </body>
 </html>

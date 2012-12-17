@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+   <Document>
+		<name>Searcharoo Results for: newyork</name>
+		<description>The query took less than 1 millisecond and produced 19 geocoded results.</description>
+		
+        <Placemark>   
+            <name><![CDATA[View of Brooklyn Bridge ]]></name>
+            <description><![CDATA[
+                 View of Brooklyn Bridge Brooklyn Bridge from Manhattan Bridge <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 109659
+                <br />
+                Crawled Date: 3/6/2009 3:31:57 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20lowereastside).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9926088333333,40.7105401666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Park Avenue ]]></name>
+            <description><![CDATA[
+                 Park Avenue Park Avenue, New York newyork manhattan 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/parkavenue.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/parkavenue.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 188923
+                <br />
+                Crawled Date: 3/6/2009 3:32:25 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/parkavenue.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.975389,40.7555796666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Lower East Side ]]></name>
+            <description><![CDATA[
+                 Lower East Side View from Manhattan Bridge walkway, New York <b>newyork </b>
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/lowereastside2.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/lowereastside2.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 147190
+                <br />
+                Crawled Date: 3/6/2009 3:32:21 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/lowereastside2.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9925443333333,40.7102921666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Lower East Side ]]></name>
+            <description><![CDATA[
+                 Lower East Side View from Manhattan Bridge walkway (New York) <b>newyork </b>
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/lowereastside.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/lowereastside.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 215410
+                <br />
+                Crawled Date: 3/6/2009 3:32:20 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/lowereastside.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9934563333333,40.7119756666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Lower Manhattan from the bridge ]]></name>
+            <description><![CDATA[
+                 Lower Manhattan from the bridge View of Brooklyn Bridge from Manhattan Bridge <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(from%20manbridge).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(from%20manbridge).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 108207
+                <br />
+                Crawled Date: 3/6/2009 3:31:57 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(from%20manbridge).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9896583333333,40.705205,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Empire State Building ]]></name>
+            <description><![CDATA[
+                 SONY DSC-W50 Empire State Building New York's most famous skyscraper <b>newyork </b>manhattan 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/empirestate%20(in%20fog).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/empirestate%20(in%20fog).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan, empirestate
+                <br />
+                Size: 398220
+                <br />
+                Crawled Date: 3/6/2009 3:32:11 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/empirestate%20(in%20fog).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9877915,40.7488745,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Pumpkins at Union Square Market ]]></name>
+            <description><![CDATA[
+                 Pumpkins at Union Square Market Pumpkins for Halloween in Union Square, New York <b>newyork </b>
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/unionsquaremarket.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/unionsquaremarket.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 352268
+                <br />
+                Crawled Date: 3/6/2009 3:32:37 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/unionsquaremarket.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9895081666667,40.7365838333333,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Pedestrian walkway ]]></name>
+            <description><![CDATA[
+                 Pedestrian walkway Brooklyn Bridge newyork brooklyn brooklynbridge manhattan 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 147711
+                <br />
+                Crawled Date: 3/6/2009 3:31:59 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.996337,40.7057458333333,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Brooklyn Bridge ]]></name>
+            <description><![CDATA[
+                 Brooklyn Bridge Brooklyn Bridge pedestrian walkway (New York) <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/downtown%20and%20bridge.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/downtown%20and%20bridge.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 119618
+                <br />
+                Crawled Date: 3/6/2009 3:32:08 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/downtown%20and%20bridge.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9972436666667,40.70649,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Brooklyn Bridge ]]></name>
+            <description><![CDATA[
+                 Brooklyn Bridge Brooklyn Bridge cable stays (New York) <b>newyork </b>brooklyn 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/washington%20bridge.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/washington%20bridge.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, manhattan
+                <br />
+                Size: 135193
+                <br />
+                Crawled Date: 3/6/2009 3:32:38 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/washington%20bridge.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.998295,40.7073765,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[New York Graffiti ]]></name>
+            <description><![CDATA[
+                 New York Graffiti from Manhattan Bridge walkway <b>newyork </b>
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(color).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(color).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 223013
+                <br />
+                Crawled Date: 3/6/2009 3:32:18 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(color).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9934671666667,40.7119796666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Planetarium ]]></name>
+            <description><![CDATA[
+                 Planetarium Near Central Park, New York newyork manhattan 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/planetarium.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/planetarium.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 165091
+                <br />
+                Crawled Date: 3/6/2009 3:32:28 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/planetarium.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9732646666667,40.7816178333333,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Columbus Circle ]]></name>
+            <description><![CDATA[
+                 Columbus Circle view from the mall, near Central Park (New York) <b>newyork </b>
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/columbuscircle.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/columbuscircle.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan
+                <br />
+                Size: 345277
+                <br />
+                Crawled Date: 3/6/2009 3:32:04 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/columbuscircle.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9828455,40.768533,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Baseball diamond by the river ]]></name>
+            <description><![CDATA[
+                 Baseball diamond by the river from the Manhattan Bridge walkway, New York City <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20baseball).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20baseball).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 164735
+                <br />
+                Crawled Date: 3/6/2009 3:31:56 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(and%20baseball).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.993113,40.7114266666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Central Park Zoo ]]></name>
+            <description><![CDATA[
+                 Central Park Zoo Seal pond at Central Park Zoo <b>newyork </b>manhattan zoo 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/centralparkzoo.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/centralparkzoo.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, manhattan, zoo, seal
+                <br />
+                Size: 163950
+                <br />
+                Crawled Date: 3/6/2009 3:32:00 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/centralparkzoo.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9718055,40.768021,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Cable ties ]]></name>
+            <description><![CDATA[
+                 Cable ties on Brooklyn Bridge <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(perspective).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(perspective).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, , manhattan
+                <br />
+                Size: 121975
+                <br />
+                Crawled Date: 3/6/2009 3:31:58 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/brooklynbridge%20(perspective).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9955001666667,40.7050708333333,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Looking north from the Brooklyn Bridge ]]></name>
+            <description><![CDATA[
+                 Looking north from the Brooklyn Bridge Brooklyn Bridge, towards Manhattan Bridge (New York) <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/washington%20bridge2.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/washington%20bridge2.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 125826
+                <br />
+                Crawled Date: 3/6/2009 3:32:39 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/washington%20bridge2.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9965355,40.7059126666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Manhattan Skyline ]]></name>
+            <description><![CDATA[
+                 Manhattan Skyline from Manhattan Bridge, New York <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(from%20bridge).jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(from%20bridge).jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 129912
+                <br />
+                Crawled Date: 3/6/2009 3:32:18 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/lowereastside%20(from%20bridge).jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9915788333333,40.7084988333333,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+        <Placemark>   
+            <name><![CDATA[Downtown New York ]]></name>
+            <description><![CDATA[
+                 Downtown New York from Brooklyn Bridge <b>newyork </b>brooklyn brooklynbridge 
+                <br />
+                <a href="http://searcharoo.net/searcharoov6/testfiles/downtown%20from%20bridge.jpg"><img src="http://searcharoo.net/searcharoov6/testfiles/downtown%20from%20bridge.jpg" width="120" /></a>
+                <br />
+                Tags: newyork, brooklyn, brooklynbridge, manhattan
+                <br />
+                Size: 101659
+                <br />
+                Crawled Date: 3/6/2009 3:32:09 AM
+                <br />
+                Rank: (1)
+            ]]></description>
+            <Style><IconStyle><Icon><href>http://searcharoo.net/searcharoov6/testfiles/downtown%20from%20bridge.jpg</href></Icon></IconStyle></Style>
+            <Point>      
+                <extrude>1</extrude>
+		        <altitudeMode>relativeToGround</altitudeMode>
+                <coordinates>-73.9968681666667,40.7061891666667,0</coordinates>    
+            </Point>
+        </Placemark>
+	    
+   </Document>
+</kml>
