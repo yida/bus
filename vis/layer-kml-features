@@ -26,8 +26,9 @@
             mapOptions);
 
         var nyLayer = new google.maps.KmlLayer(
+              'https://raw.github.com/yida/bus/master/vis/newyork.kml', {
 //            'http://www.searcharoo.net/SearchKml/newyork.kml', {
-              'http://zhangyd.org/newyork.kml', {
+//              'http://zhangyd.org/newyork.kml', {
               suppressInfoWindows: true,
               map: map
             });
