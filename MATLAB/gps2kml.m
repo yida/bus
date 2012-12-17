@@ -18,7 +18,7 @@ DocumentElement.appendChild(DocDesNode);
 
 
 
-for datacounter = 10000 : 10 : 10200
+for datacounter = 10 : 10 : size(LatLnt, 2)
   PlacemarkNode = docNode.createElement('Placemark');
   
     PMNameNode = docNode.createElement('name');
