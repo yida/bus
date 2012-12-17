@@ -4,6 +4,8 @@
       <name>Data Set 1</name>
       <description>GPS Data visualization for Data set 1</description>
       <Placemark>
+         <name>name for point</name>
+         <description>description for point</description>
          <Point>
             <extrude>1</extrude>
             <altitudeMode>relativeToGround</altitudeMode>
