@@ -52,6 +52,6 @@ PlacemarkNode.appendChild(PointNode);
 
 docNode.appendChild(docNode.createComment('this is a comment'));
 
-xmlFileName = [kmlpath, 'gpsdata','.xml'];
+xmlFileName = [kmlpath, 'gpsdata','.kml'];
 xmlwrite(xmlFileName,docNode);
 %type(xmlFileName);
