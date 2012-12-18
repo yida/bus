@@ -20,7 +20,7 @@ for busTheta = 0 : pi/100 : pi/2
   % circle 1
   nseg = 60;
   theta = 0 : (2 * pi / nseg) : (2 * pi);
-  cx = 0.5; cy = 2.1; r = 0.02;
+  cx = 0.5; cy = 2.1; r = 0.04;
   pline_x = r * cos(theta) + cx;
   pline_y = r * sin(theta) + cy;
   plot(pline_x, pline_y, 'k');
@@ -31,7 +31,7 @@ for busTheta = 0 : pi/100 : pi/2
   axis([-1.5, 1, 0, 4]);
   
   plot_lidar(busTheta, Ver(1,:));
-  plot_lidar(busTheta - 3/2*pi, Ver(2,:));
+%  plot_lidar(busTheta - 3/2*pi, Ver(2,:));
   hold off;
   
   axis equal;

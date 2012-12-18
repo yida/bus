@@ -23,19 +23,22 @@ function plot_lidar(lidarTheta, lidarCenter)
   lidarRange = min(lidarRange, lidarRange1);
 
   % Circle 1
-%  sqrtroot = 4.*((lidarCenter(1)-0.5).*cos(lidarAngles) + (lidarCenter(2)-2.1).*sin(lidarAngles)).^2 -...
-%  4.*((lidarCenter(1)-0.5).^2+(lidarCenter(2)-2.1).^2 + 0.02^2);
-%  B = cos(lidarAngles) + sin(lidarAngles);
-%  Bsign = B ./ abs(B);
-%  nonsectRayIdx = find(sqrtroot < 0);
-%  sectRayIdx = find(sqrtroot >= 0);
-%  sqrtroot(nonsectRayIdx) = 0;
-%  sqrtroot(sectRayIdx) = sqrt(sqrtroot(sectRayIdx));
-%  sqrtroot
-%  lidarRange2 = -B -Bsign .* sqrtroot / 2; 
-%  lidarRange2(lidarRange2 > MaxRange) = MaxRange;
-%  lidarRange2(lidarRange2 < 0) = MaxRange;
+  cx = 0.5; cy = 2.1; r = 0.04;
+  A = cos(lidarAngles).^2 + sin(lidarAngles).^2;
+  C = (lidarCenter(1) - cx).^2 + (lidarCenter(2) - cy).^2 - r^2;
+  sqrtroot = 4.*((lidarCenter(1)-cx).*cos(lidarAngles) + (lidarCenter(2)-cy).*sin(lidarAngles)).^2 -...
+  4.*((lidarCenter(1)-cx).^2+(lidarCenter(2)-cy).^2 - r^2);
+  B = 2.* ((lidarCenter(1)-cx).*cos(lidarAngles) + (lidarCenter(2)-cy).*sin(lidarAngles));
+  Bsign = B ./ abs(B);
+  nonsectRayIdx = find(sqrtroot < 0);
+  sectRayIdx = find(sqrtroot >= 0);
+  sqrtroot(nonsectRayIdx) = 100000;
+  sqrtroot(sectRayIdx) = sqrt(sqrtroot(sectRayIdx));
+  lidarRange2 = (-B -Bsign .* sqrtroot) / 2; 
+  lidarRange2(lidarRange2 > MaxRange) = MaxRange;
+  lidarRange2(lidarRange2 < 0) = MaxRange;
 
+  lidarRange = min(lidarRange, lidarRange2);
   
 
   lidar = [lidarMaxRange .* cos(lidarAngles); lidarMaxRange .* sin(lidarAngles)];
