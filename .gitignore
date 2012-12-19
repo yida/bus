@@ -19,8 +19,8 @@
 *.srec
 
 # MATLAB 
+*.mex*
 *.txt
-*.mexglx
 *.mat
 
 # vim temp file
