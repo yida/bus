@@ -1,5 +1,5 @@
 MEX_EXT = $(shell mexext)
-include ReceiveIMU/common.mk
+include ReceiveImu/common.mk
 
 TARGETS :	getch.$(MEX_EXT) serialopen.$(MEX_EXT)
 
