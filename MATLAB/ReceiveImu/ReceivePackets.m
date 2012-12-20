@@ -37,7 +37,8 @@ while(1)
         pmag.press = double(typecast(packet(11:12),'int16')) + 100000; %pascals
         pmag.temp  = double(typecast(packet(15:16),'int16')) / 100; %deg celcius
         pmag.mag   = double(typecast(packet(19:24),'int16'));
-%       pmag
+       pmag;
+       atan2(pmag.mag(2), pmag.mag(1))
     end
   end
   
