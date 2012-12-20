@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include "Timer.hh"
 #include <signal.h>
-
+#include <unistd.h>
 #include <sstream>
 
 #define SD_VERBOSE
