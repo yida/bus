@@ -6,7 +6,7 @@ else
   OSX=1;
 endif
 
-#MEXEXT = $(shell mexext)
+MEXEXT = $(shell mexext)
 INCLUDES += -I.
 CPP_FLAGS = -O2 -fPIC -Wall
 
