@@ -7,7 +7,7 @@ compassVer = [0, compassLength/2; compassWidth/2, 0;...
 compassCenter = [0,0];
 
 mag = zeros(3, magSize);
-showCompass = false;
+showCompass = true;
 for count = 1 : 100 : magSize
   magData{count}.mag';
   mag(:, count) = magData{count}.mag';

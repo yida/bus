@@ -62,7 +62,6 @@ fileIMUFound;
 fileGPSFound;
 fileMAGFound;
 
-imuData;
 imuData = cell(0);
 imuDataCounter = 0;
 %parsing imu files
@@ -79,7 +78,14 @@ for cnt = 0 : fileIMUFound - 2
 
     tline = A(1 + 43 * numlines : 43 + 43 * numlines);
     timeStamp = char(tline(1:16)');
-    imu.label = char(tline(17:18)')
+    imu.label = char(tline(17:18)');
+      [imu.label(1), imu.label(2)];
+      if imu.label(1) == 1
+        disp(imu.label(1));
+      end
+      if imu.label(2) == 1
+        disp(imu.label(2));
+      end
     imuline = tline(14:end);
     
     imu.tstamp = str2num(timeStamp);
@@ -89,65 +95,64 @@ for cnt = 0 : fileIMUFound - 2
     imu.rpy  = double(typecast(imuline(12:17),'int16')) / 5000; %scaling
     imu.wrpy = double(typecast(imuline(18:23),'int16')) / 500;  %scaling
     imu.acc  = double(typecast(imuline(24:29),'int16')) / 5000;
-    imu
 
     imuDataCounter = imuDataCounter + 1;
     imuData{imuDataCounter} = imu;
   end
 end
 
-gpsData;
-gpsData = cell(0);
-gpsDatacounter = 0;
-%parsing gps files
-for cnt = 0 : fileGPSFound - 2
-%for cnt = 0
-  filegps = strcat(filePath, '/', fileGPS, num2str(cnt));
-  fidgps = fopen(filegps, 'r');
-  
-  gpsline = fgets(fidgps);
-  while ischar(gpsline)
-    gps.tstamp = str2num(gpsline(1:16));
-    gps.label = char(gpsline(17:18));
-    gps.line = gpsline(19:end);
-    disp(gps.line);
-    gpsDatacounter = gpsDatacounter + 1;
-    gpsData{gpsDatacounter} = gps;
-    gpsline = fgets(fidgps);
-  end
-  fclose(fidgps);
-end
-
-magData;
-magData = cell(0);
-magDataCounter = 0;
-%parsing mag files
-for cnt = 0 : fileMAGFound - 2
-%for cnt = 0
-  filemag = strcat(filePath, '/', fileMAG, num2str(cnt));
-  fidmag = fopen(filemag, 'r');
-  [A, count] = fread(fidmag, inf, 'uint8=>uint8');
-  fclose(fidmag);
-
-  for numlines = 0 : floor(count / 38) - 1
-  % imu string length 38 = 16 timeStamp + 2 label + 19 data + \n
-%  for numlines = 2
-
-    tline = A(1 + 38 * numlines : 38 + 38 * numlines);
-    timeStamp = char(tline(1:16)');
-    pmag.label = char(tline(17:18)');
-    pmagline = tline(14:end);
-    
-    pmag.tstamp = str2num(timeStamp);
-    pmag.id    = double(pmagline(6));
-    pmag.tuc   = typecast(pmagline(7:10),'uint32');
-    pmag.press = double(typecast(pmagline(11:12),'int16')) + 100000; %pascals
-    pmag.temp  = double(typecast(pmagline(15:16),'int16')) / 100; %deg celcius
-    pmag.mag   = double(typecast(pmagline(19:24),'int16'));
-    magDataCounter = magDataCounter + 1;
-    pmag
-    magData{magDataCounter} = pmag;
-  end
-
-end
-
+%gpsData;
+%gpsData = cell(0);
+%gpsDatacounter = 0;
+%%parsing gps files
+%for cnt = 0 : fileGPSFound - 2
+%%for cnt = 0
+%  filegps = strcat(filePath, '/', fileGPS, num2str(cnt));
+%  fidgps = fopen(filegps, 'r');
+%  
+%  gpsline = fgets(fidgps);
+%  while ischar(gpsline)
+%    gps.tstamp = str2num(gpsline(1:16));
+%    gps.label = char(gpsline(17:18));
+%    gps.line = gpsline(19:end);
+%    disp(gps.line);
+%    gpsDatacounter = gpsDatacounter + 1;
+%    gpsData{gpsDatacounter} = gps;
+%    gpsline = fgets(fidgps);
+%  end
+%  fclose(fidgps);
+%end
+%
+%magData;
+%magData = cell(0);
+%magDataCounter = 0;
+%%parsing mag files
+%for cnt = 0 : fileMAGFound - 2
+%%for cnt = 0
+%  filemag = strcat(filePath, '/', fileMAG, num2str(cnt));
+%  fidmag = fopen(filemag, 'r');
+%  [A, count] = fread(fidmag, inf, 'uint8=>uint8');
+%  fclose(fidmag);
+%
+%  for numlines = 0 : floor(count / 38) - 1
+%  % imu string length 38 = 16 timeStamp + 2 label + 19 data + \n
+%%  for numlines = 2
+%
+%    tline = A(1 + 38 * numlines : 38 + 38 * numlines);
+%    timeStamp = char(tline(1:16)');
+%    pmag.label = char(tline(17:18)');
+%    pmagline = tline(14:end);
+%    
+%    pmag.tstamp = str2num(timeStamp);
+%    pmag.id    = double(pmagline(6));
+%    pmag.tuc   = typecast(pmagline(7:10),'uint32');
+%    pmag.press = double(typecast(pmagline(11:12),'int16')) + 100000; %pascals
+%    pmag.temp  = double(typecast(pmagline(15:16),'int16')) / 100; %deg celcius
+%    pmag.mag   = double(typecast(pmagline(19:24),'int16'));
+%    magDataCounter = magDataCounter + 1;
+%    pmag
+%    magData{magDataCounter} = pmag;
+%  end
+%
+%end
+%

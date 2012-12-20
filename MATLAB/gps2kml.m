@@ -18,7 +18,7 @@ DocumentElement.appendChild(DocDesNode);
 
 
 
-for datacounter = 10 : 10 : size(LatLnt, 2)
+for datacounter = 10 : 50 : size(LatLnt, 2)
   PlacemarkNode = docNode.createElement('Placemark');
   
     PMNameNode = docNode.createElement('name');
@@ -55,7 +55,6 @@ for datacounter = 10 : 10 : size(LatLnt, 2)
 end
 
 docNode.appendChild(docNode.createComment('this is a comment'));
-
 xmlFileName = [kmlpath, 'gpsdata','.kml'];
 xmlwrite(xmlFileName,docNode);
 %type(xmlFileName);
