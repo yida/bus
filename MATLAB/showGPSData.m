@@ -25,11 +25,13 @@ for count = 1 : dataSize
        % Meters (Antenna height unit) %c
        % 
       data = sscanf(GPS.line, '$GPGGA,%f,%f,%c,%f,%c,%d,%d,%f,%f,%c,%f,%c,,,%s');
-      fprintf('Lat: %f %c, Lon: %f %c at %f\n',...
-                                data(2), data(3), data(4), data(5), data(1));
-      LatLntCounter = LatLntCounter + 1;
-      LatLnt{LatLntCounter} = {data(1), GPS.tstamp, data(2), char(data(3)), data(4), char(data(5)), 0};
-%      pause(0.5);
+      if size(data, 1) > 2
+        fprintf('Lat: %f %c, Lon: %f %c at %f\n',...
+                                  data(2), data(3), data(4), data(5), data(1));
+        LatLntCounter = LatLntCounter + 1;
+        LatLnt{LatLntCounter} = {data(1), GPS.tstamp, data(2), char(data(3)), data(4), char(data(5)), 0};
+  %      pause(0.5);
+      end
     case '$GPGLL'
       fprintf('GPGLL - Geographic Position, Latitude / Longitude and time\n');
       fprintf('%s\n', GPS.line);
@@ -40,10 +42,12 @@ for count = 1 : dataSize
       % East / West %c
       % UTC of position %f
       data = sscanf(GPS.line, '$GPGLL,%f,%c,%f,%c,%f,%c,%s');
-      fprintf('Lat: %f %c, Lon: %f %c at %f\n',...
-                                data(1), data(2), data(3), data(4), data(5));
-      LatLntCounter = LatLntCounter + 1;
-      LatLnt{LatLntCounter} = {data(5), GPS.tstamp, data(1), char(data(2)), data(3), char(data(4)), 0};%      pause(0.5);
+      if size(data, 1) > 2
+        fprintf('Lat: %f %c, Lon: %f %c at %f\n',...
+                                  data(1), data(2), data(3), data(4), data(5));
+        LatLntCounter = LatLntCounter + 1;
+        LatLnt{LatLntCounter} = {data(5), GPS.tstamp, data(1), char(data(2)), data(3), char(data(4)), 0};%      pause(0.5);
+      end
     case '$GPGSA'
 %      disp('GPGSA');
     case '$GPGSV'
@@ -60,10 +64,12 @@ for count = 1 : dataSize
       % Speed in knots %f
       % Date stamp %f
       data = sscanf(GPS.line, '$GPRMC,%f,%c,%f,%c,%f,%c,%f,%f,%s');
-      fprintf('Lat: %f %c, Lon: %f %c at %f with %f knots\n',...
-                                data(3), data(4), data(5), data(6), data(1), data(7));
-      LatLntCounter = LatLntCounter + 1;
-      LatLnt{LatLntCounter} = {data(1), GPS.tstamp, data(3), char(data(4)), data(5), char(data(6)), 0};%     pause(0.5);
+      if size(data, 1) > 2
+        fprintf('Lat: %f %c, Lon: %f %c at %f with %f knots\n',...
+                                  data(3), data(4), data(5), data(6), data(1), data(7));
+        LatLntCounter = LatLntCounter + 1;
+        LatLnt{LatLntCounter} = {data(1), GPS.tstamp, data(3), char(data(4)), data(5), char(data(6)), 0};%     pause(0.5);
+      end
     case '$GPVTG'
       fprintf('GPVTG - Track Made Good and Ground Speed\n');
       fprintf('%s\n', GPS.line);
@@ -77,9 +83,11 @@ for count = 1 : dataSize
       % Ground speed in km/hour %f
       % K %c
       data = textscan(GPS.line, '$GPVTG %f %c %f %c %f %c %f %c %s', 'Delimiter', ',');
-      fprintf('Ground speed %f %c or %f %c\n',...
-                                data{5}, data{6}, data{7}, data{8});
-%     pause(0.5);
+      if size(data, 1) > 2
+        fprintf('Ground speed %f %c or %f %c\n',...
+                                  data{5}, data{6}, data{7}, data{8});
+  %     pause(0.5);
+      end
     otherwise
       disp(GPS.line(1:6));
   end
