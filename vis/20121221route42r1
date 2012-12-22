@@ -25,7 +25,7 @@
             mapOptions);
 
         var nyLayer = new google.maps.KmlLayer(
-              'https://raw.github.com/yida/bus/master/vis/gpsdata.kml', {
+              'https://raw.github.com/yida/bus/master/vis/gpsdata20121221route42r1.kml', {
               suppressInfoWindows: true,
               map: map
             });
