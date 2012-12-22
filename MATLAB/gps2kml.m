@@ -18,7 +18,7 @@ DocumentElement.appendChild(DocDesNode);
 
 
 
-for datacounter = 10 : 50 : size(LatLnt, 2)
+for datacounter = 1 : 50 : size(LatLnt, 2)
   PlacemarkNode = docNode.createElement('Placemark');
   
     PMNameNode = docNode.createElement('name');
@@ -54,7 +54,8 @@ for datacounter = 10 : 50 : size(LatLnt, 2)
   DocumentElement.appendChild(PlacemarkNode);
 end
 
+dateStamp = '20121221route42r1';
 docNode.appendChild(docNode.createComment('this is a comment'));
-xmlFileName = [kmlpath, 'gpsdata','.kml'];
+xmlFileName = [kmlpath, 'gpsdata', dateStamp,'.kml'];
 xmlwrite(xmlFileName,docNode);
 %type(xmlFileName);
