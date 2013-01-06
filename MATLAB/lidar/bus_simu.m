@@ -15,11 +15,10 @@ busCenter = [0, 1.5];
 
 
 for busTheta = 0 : pi/100 : pi/2 
-%busTheta = 0;
 
-  [axisRange, Ver] = plot_bus(busCenter, busTheta);
+%  [axisRange, Ver] = plot_bus(busCenter, busTheta);
   hold on;
-
+%{
   % line 3
   plot([0, -1.5], [3, 2]);
   % line 1
@@ -35,7 +34,6 @@ for busTheta = 0 : pi/100 : pi/2
   axisGain = 3.3;
     
 %  axis(axisRange.*[1/axisGain, axisGain, 1/axisGain, axisGain]);
-  axis([-1.5, 1, 0, 4]);
   
   object = OBJECT;
   lidar1 = lidar(busTheta, Ver(1,:));
@@ -43,6 +41,12 @@ for busTheta = 0 : pi/100 : pi/2
   plot_lidar(lidar1);
 %  lidar2 = lidar(busTheta - 3/2*pi, Ver(2,:));
 %  plot_lidar(lidar2);
+
+%}
+
+  plot_intersection();
+  axis([-25, 25, -25, 25]);
+
   hold off;
   
   axis equal;
