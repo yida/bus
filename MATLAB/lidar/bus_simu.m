@@ -10,6 +10,7 @@ busCenter = [0, 1.5];
   OBJECT{3} = struct('name','line', 'a', 2/3, 'b', 3, 'c', 1);
   OBJECT{4} = struct('name', 'circle', 'cx', 0.5, 'cy', 2.1, 'r', 0.06);
   OBJECT{5} = struct('name', 'rectangle', 'cx', 0.5, 'cy', 2.6, 'theta', pi/3,'w', 0.4, 'h', 0.8);
+  OBJECT{6} = struct('name', 'rectangle', 'cx', -1.2, 'cy', 1.5, 'theta', pi/3,'w', 0.4, 'h', 0.8);
 
 
 
@@ -29,6 +30,7 @@ for busTheta = 0 : pi/100 : pi/2
   plot_circle(OBJECT{4});
   % rectangle
   plot_rectangle(OBJECT{5});
+  plot_rectangle(OBJECT{6});
    
   axisGain = 3.3;
     
