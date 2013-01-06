@@ -33,11 +33,10 @@ for busTheta = 0 : pi/100 : pi/2
   axis([-1.5, 1, 0, 4]);
   
   lidar1 = lidar(busTheta, Ver(1,:));
-%  plot_lidar(busTheta, Ver(1,:));
+  lidar1 = intersectCal(lidar1);
   plot_lidar(lidar1);
 %  lidar2 = lidar(busTheta - 3/2*pi, Ver(2,:));
 %  plot_lidar(lidar2);
-% plot_lidar(busTheta - 3/2*pi, Ver(2,:));
   hold off;
   
   axis equal;
