@@ -10,17 +10,37 @@ function plot_lidar(lidarTheta, lidarCenter)
   lidarAngles = beamRange/numBeams : beamRange/numBeams : beamRange;
   lidarAngles = lidarAngles + lidarTheta;
 
-  % line 1
-  lidarRange = (2.8 - lidarCenter(2))./sin(lidarAngles);
-  lidarRange(lidarRange > MaxRange) = MaxRange;
-  lidarRange(lidarRange < 0) = MaxRange;
+  lidarRange = lidarMaxRange;
 
-  % line 2
-  lidarRange1 = (-1 - lidarCenter(1))./cos(lidarAngles);
+  % lines : cy = ax + b
+  % line 1 horizontal y = 2.8 ;
+  a = 0; b = 2.8; c = 1;
+  lidarRange1 = (a * lidarCenter(1) + b - c * lidarCenter(2))./...
+                (c .* sin(lidarAngles) - a .* cos(lidarAngles));
   lidarRange1(lidarRange1 > MaxRange) = MaxRange;
   lidarRange1(lidarRange1 < 0) = MaxRange;
 
   lidarRange = min(lidarRange, lidarRange1);
+
+  % line 2 vertical x = -1
+  c = 0; a = 1; b = 1;
+  lidarRange1 = (a * lidarCenter(1) + b - c * lidarCenter(2))./...
+                (c .* sin(lidarAngles) - a .* cos(lidarAngles));
+  lidarRange1(lidarRange1 > MaxRange) = MaxRange;
+  lidarRange1(lidarRange1 < 0) = MaxRange;
+
+  lidarRange = min(lidarRange, lidarRange1);
+
+
+  % line 3 arbitary
+  c = 1; a = 2 / 3; b = 3;
+  lidarRange1 = (a * lidarCenter(1) + b - c * lidarCenter(2))./...
+                (c .* sin(lidarAngles) - a .* cos(lidarAngles));
+  lidarRange1(lidarRange1 > MaxRange) = MaxRange;
+  lidarRange1(lidarRange1 < 0) = MaxRange;
+
+  lidarRange = min(lidarRange, lidarRange1);
+
 
   % Circle 1
   cx = 0.5; cy = 2.1; r = 0.04;
@@ -41,19 +61,19 @@ function plot_lidar(lidarTheta, lidarCenter)
   lidarRange = min(lidarRange, lidarRange2);
   
 
-  lidar = [lidarMaxRange .* cos(lidarAngles); lidarMaxRange .* sin(lidarAngles)];
-  lidar1 = [lidarRange .* cos(lidarAngles); lidarRange .* sin(lidarAngles)];
+% lidar = [lidarMaxRange .* cos(lidarAngles); lidarMaxRange .* sin(lidarAngles)];
+  lidar = [lidarRange .* cos(lidarAngles); lidarRange .* sin(lidarAngles)];
+% lidar = bsxfun(@plus, lidar, lidarCenter');
   lidar = bsxfun(@plus, lidar, lidarCenter');
-  lidar1 = bsxfun(@plus, lidar1, lidarCenter');
 
   idx = 1:5:numBeams;
 
 %  plot(lidar(1,idx), lidar(2,idx), 'w*');
-  plot(lidar1(1,idx), lidar1(2,idx), 'w*');
+%  plot(lidar1(1,idx), lidar1(2,idx), 'w*');
 
   for cnt = idx
 %    plot([lidarCenter(1,1), lidar(1,cnt)], [lidarCenter(1,2), lidar(2,cnt)], 'r');
-    plot([lidarCenter(1,1), lidar1(1,cnt)], [lidarCenter(1,2), lidar1(2,cnt)], 'r');
+    plot([lidarCenter(1,1), lidar(1,cnt)], [lidarCenter(1,2), lidar(2,cnt)], 'r');
   end
   
   

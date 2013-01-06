@@ -13,6 +13,8 @@ for busTheta = 0 : pi/100 : pi/2
   [axisRange, Ver] = plot_bus(busCenter, busTheta);
   hold on;
 
+  % line 3
+  plot([0, -1.5], [3, 2]);
   % line 1
   plot([-3, 3], [2.8, 2.8]);
   % line 2
