@@ -3,8 +3,14 @@ close all;
 
 %busCenter = [0.5, 1.9];
 busCenter = [0, 1.5];
-busTheta = pi/2;
-busTheta = pi/12*5;
+
+  OBJECT = {};
+  OBJECT{1} = struct('name','line', 'a', 0, 'b', 2.8, 'c', 1);
+  OBJECT{2} = struct('name','line', 'a', 1, 'b', 1, 'c', 0);
+  OBJECT{3} = struct('name','line', 'a', 2/3, 'b', 3, 'c', 1);
+  OBJECT{4} = struct('name', 'circle', 'cx', 0.5, 'cy', 2.1, 'r', 0.06);
+  OBJECT{5} = struct('name', 'rectangle', 'cx', 0.5, 'cy', 2.6, 'theta', pi/3,'w', 0.4, 'h', 0.8);
+
 
 
 for busTheta = 0 : pi/100 : pi/2 
@@ -20,20 +26,18 @@ for busTheta = 0 : pi/100 : pi/2
   % line 2
   plot([-1, -1], [0, 4]);
   % circle 1
-  nseg = 60;
-  theta = 0 : (2 * pi / nseg) : (2 * pi);
-  cx = 0.5; cy = 2.1; r = 0.04;
-  pline_x = r * cos(theta) + cx;
-  pline_y = r * sin(theta) + cy;
-  plot(pline_x, pline_y, 'k');
-    
+  plot_circle(OBJECT{4});
+  % rectangle
+  plot_rectangle(OBJECT{5});
+   
   axisGain = 3.3;
     
 %  axis(axisRange.*[1/axisGain, axisGain, 1/axisGain, axisGain]);
   axis([-1.5, 1, 0, 4]);
   
+  object = OBJECT;
   lidar1 = lidar(busTheta, Ver(1,:));
-  lidar1 = intersectCal(lidar1);
+  lidar1 = intersectCal(lidar1, object);
   plot_lidar(lidar1);
 %  lidar2 = lidar(busTheta - 3/2*pi, Ver(2,:));
 %  plot_lidar(lidar2);
