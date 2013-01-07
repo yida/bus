@@ -1,5 +1,6 @@
 function [axisRange, Ver] = plot_bus(busCenter, busTheta)
 
+
 busWidth = 0.3;
 busLength = 1;
 busVer = [busWidth/2, busLength/2; -busWidth/2, busLength/2;...
