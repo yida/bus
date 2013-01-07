@@ -1,7 +1,4 @@
-function simple_gui2
-% SIMPLE_GUI2 Select a data set from the pop-up menu, then
-% click one of the plot-type push buttons. Clicking the button
-% plots the selected data in the axes.
+function simulation_gui
 
   close all;
  
@@ -14,24 +11,32 @@ function simple_gui2
  
    %  Construct the components.
    hsurf = uicontrol('Style','pushbutton','String','Surf',...
-          'Position',[315,220,70,25],...
+          'Position',[415,220,70,25],...
           'Callback',{@surfbutton_Callback});
    hmesh = uicontrol('Style','pushbutton','String','Mesh',...
-          'Position',[315,180,70,25],...
+          'Position',[415,180,70,25],...
           'Callback',{@meshbutton_Callback});
    hcontour = uicontrol('Style','pushbutton',...
           'String','Countour',...
-          'Position',[315,135,70,25],...
+          'Position',[415,135,70,25],...
           'Callback',{@contourbutton_Callback}); 
    htext = uicontrol('Style','text','String','Select Data',...
-          'Position',[325,90,60,15]);
+          'Position',[425,90,60,15]);
    hpopup = uicontrol('Style','popupmenu',...
           'String',{'Peaks','Membrane','Sinc'},...
-          'Position',[300,50,100,25],...
+          'Position',[400,50,100,25],...
           'Callback',{@popup_menu_Callback});
-   ha = axes('Units','Pixels','Position',[50,60,200,185]); 
+   ha = axes('Units','Pixels','Position',[50,60,300,225]); 
+
    align([hsurf,hmesh,hcontour,htext,hpopup],'Center','None');
-   
+
+   % Assign the GUI a name to appear in the window title.
+   set(f,'Name','Bus-Pedestrian Collision Simulation GUI')
+   % Move the GUI to the center of the screen.
+%   movegui(f,'center')
+   % Make the GUI visible.
+   set(f,'Visible','on');
+    
    % Create the data to plot.
    peaks_data = peaks(35);
    membrane_data = membrane;
@@ -46,14 +51,11 @@ function simple_gui2
    'Units','normalized');
    %Create a plot in the axes.
    current_data = peaks_data;
-   surf(current_data);
-   % Assign the GUI a name to appear in the window title.
-   set(f,'Name','Simple GUI')
-   % Move the GUI to the center of the screen.
-%   movegui(f,'center')
-   % Make the GUI visible.
-   set(f,'Visible','on');
- 
+
+%   surf(ha, current_data);
+   plot_intersection(ha);
+   axis equal;
+
    %  Callbacks for simple_gui. These callbacks automatically
    %  have access to component handles and initialized data 
    %  because they are nested at a lower level.

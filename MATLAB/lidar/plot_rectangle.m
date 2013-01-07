@@ -1,4 +1,8 @@
-function Ver = plot_rectangle(REC)
+function Ver = plot_rectangle(REC, handle)
+
+  if nargin < 2
+    handle = gca;
+  end
    
   recVer = [REC.w/2, REC.h/2; -REC.w/2, REC.h/2;...
             -REC.w/2, -REC.h/2; REC.w/2, -REC.h/2];
@@ -13,7 +17,7 @@ function Ver = plot_rectangle(REC)
   if isfield(REC,'color') == 1;
     color = REC.color;
   else color = 'k'; end
-  plot([Ver(:,1);Ver(1,1)], [Ver(:,2);Ver(1,2)], '-');
+  plot(handle, [Ver(:,1);Ver(1,1)], [Ver(:,2);Ver(1,2)], '-');
   patch([Ver(:,1);Ver(1,1)], [Ver(:,2);Ver(1,2)], color);
   
   

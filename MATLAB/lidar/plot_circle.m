@@ -1,5 +1,9 @@
-function plot_circle(circle)
+function plot_circle(circle, handle)
 
+  if nargin < 2
+    handle = gca;
+  end
+                 
   if isfield(circle, 'arcStart') == 1
     arcS = circle.arcStart;
   else arcS = 0; end
@@ -17,5 +21,5 @@ function plot_circle(circle)
   cx = circle.cx; cy = circle.cy; r = circle.r;
   pline_x = r * cos(theta) + cx;
   pline_y = r * sin(theta) + cy;
-  plot(pline_x, pline_y, color);
+  plot(handle, pline_x, pline_y, color);
  

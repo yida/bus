@@ -11,7 +11,12 @@ bus1 = bus(-3.5, -15, 0);
   OBJECT{1} = struct('name', 'rectangle', 'cx', 4, 'cy', 7, 'theta', 0,'w', 1.766, 'h', 4.703);
   OBJECT{2} = struct('name', 'circle', 'cx', -10, 'cy', 8, 'r', 0.25);
   OBJECT{3} = struct('name', 'circle', 'cx', -11, 'cy', -7, 'r', 0.25);
+  OBJECT{4} = struct('name', 'circle', 'cx', -11, 'cy', 7, 'r', 0.25);
+  OBJECT{5} = struct('name', 'circle', 'cx', -12, 'cy', 8, 'r', 0.25);
 
+f1 = figure('menubar','none','Visible','off',...
+            'Position', [30,240, 1200,450]);
+fontsize = 20;
 
 timeStamp = 10;
 dt = 1 / timeStamp;
@@ -21,6 +26,8 @@ maxStamp = 100;
 for t = 1 : time * timeStamp
 
   bus1 = busUpdate(bus1, dt);
+
+  subplot(2,2,[1,3]);
 
   bus1.ver = plot_rectangle(bus1);
   hold on;
@@ -34,6 +41,8 @@ for t = 1 : time * timeStamp
 %  % circle 1
   plot_circle(OBJECT{2});
   plot_circle(OBJECT{3});
+  plot_circle(OBJECT{4});
+  plot_circle(OBJECT{5});
 %  % rectangle
 %  plot_rectangle(OBJECT{5});
   plot_rectangle(OBJECT{1});
@@ -47,17 +56,15 @@ for t = 1 : time * timeStamp
   lidar1 = intersectCal(lidar1, object);
   plot_lidar(lidar1);
 
-%  lidar2 = lidar(bus1.theta - 3/2*pi, bus1.ver(2,:));
-%  lidar2 = intersectCal(lidar2, object);
-%  plot_lidar(lidar2);
-
-
+  lidar2 = lidar(bus1.theta - 3/2*pi, bus1.ver(2,:));
+  lidar2 = intersectCal(lidar2, object);
+  plot_lidar(lidar2);
 
   plot_intersection();
 
   C = clock();
-  ss = sprintf('%2d:%2d:%f', C(4), C(5), C(6));
-  title(ss);
+  ss = sprintf('Simulation %2d:%2d:%f', C(4), C(5), C(6));
+  title(ss, 'FontSize', fontsize);
 
   axis([-25, 25, -25, 25]);
 
@@ -65,6 +72,22 @@ for t = 1 : time * timeStamp
   
   axis equal;
   grid on;
+
+  subplot(2,2,2);
+  plot(1:1081, lidar1.range, '*');
+  title('Left Lidar', 'FontSize', fontsize);
+  axis([1, 1081, 0, 30]);
+  grid on;
+
+  subplot(2,2,4);
+  plot(1:1081, lidar2.range, '*');
+  title('Right Lidar', 'FontSize', fontsize);
+  axis([1, 1081, 0, 30]);
+  grid on;
+
+
+% movegui(f1,'center');
+  set(f1, 'Visible', 'on');
   
   pause(0.1);
 end
