@@ -7,7 +7,7 @@ L = 6.05;
 
 x = 0;
 y = 0;
-theta = 0;
+theta = pi / 2;
 
 hold on;
 for i = 1 : 10 * timeStamp 

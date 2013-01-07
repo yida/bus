@@ -6,12 +6,15 @@ bus.name = 'rectangle';
 bus.cx = 3.5;
 bus.cy = -4;
 bus.theta = 0;
-bus.w = 2.26;
-bus.h = 6.78;
+bus.w = 2.6;
+bus.h = 12.4;
+bus.fw = 2.7;
+bus.rw = 3.65;
+bus.L = 12.4 - bus.fw - bus.rw;
 bus.color = 'b';
-
-%busCenter = [0.5, 1.9];
-busCenter = [3.5, -4];
+bus.kx = bus.cx - (bus.h/2 - bus.rw) * sin(bus.theta);
+bus.ky = bus.cy - (bus.h/2 - bus.rw) * cos(bus.theta);
+bus.ktheta = pi / 2 - bus.theta;
 
   OBJECT = {};
 %  OBJECT{1} = struct('name','line', 'a', 0, 'b', 2.8, 'c', 1);
@@ -36,9 +39,13 @@ maxStamp = 100;
 for t = 1 : time * timeStamp
 %  bus.theta = timeStamp / 100 * pi;
 %for busTheta = 0 : pi/100 : pi/2 
-  bus.theta = bus.theta + u_s / L * tan(u_phi) * dt;
-  bus.cy = bus.cy + u_s * cos(bus.theta) * dt;
-  bus.cx = bus.cx + u_s * sin(bus.theta) * dt;
+  bus.ktheta = bus.ktheta + u_s / L * tan(u_phi) * dt;
+  bus.kx = bus.kx + u_s * cos(bus.ktheta) * dt;
+  bus.ky = bus.ky + u_s * sin(bus.ktheta) * dt;
+
+  bus.theta = bus.ktheta - pi/2;
+  bus.cx = bus.kx + (bus.h/2 - bus.rw) * cos(bus.ktheta);
+  bus.cy = bus.ky + (bus.h/2 - bus.rw) * sin(bus.ktheta);
 
 %  [axisRange, Ver] = plot_bus(busCenter, busTheta);
   bus.ver = plot_rectangle(bus);
