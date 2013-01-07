@@ -4,7 +4,7 @@ close all;
 bus = {};
 bus.name = 'rectangle';
 bus.cx = 3.5;
-bus.cy = -4;
+bus.cy = -15;
 bus.theta = 0;
 bus.w = 2.6;
 bus.h = 12.4;
@@ -25,27 +25,32 @@ bus.ktheta = pi / 2 - bus.theta;
 %  OBJECT{6} = struct('name', 'rectangle', 'cx', -1.2, 'cy', 1.5, 'theta', pi/3,'w', 0.4, 'h', 0.8);
 
 
-startP = [bus.cx, bus.cy];
-endP = [bus.cx, bus.cy + 20];
-
 timeStamp = 10;
 dt = 1 / timeStamp;
 u_s = 2.235; % m/s -> 5mph
 u_phi = 0.424;% rad/s, with min turning radius 13.4
-L = 6.05;
+u_phi = 0;
 
-time = 10;
+time = 20;
 maxStamp = 100;
 for t = 1 : time * timeStamp
 %  bus.theta = timeStamp / 100 * pi;
 %for busTheta = 0 : pi/100 : pi/2 
-  bus.ktheta = bus.ktheta + u_s / L * tan(u_phi) * dt;
+  bus.ktheta = bus.ktheta + u_s / bus.L * tan(u_phi) * dt;
   bus.kx = bus.kx + u_s * cos(bus.ktheta) * dt;
   bus.ky = bus.ky + u_s * sin(bus.ktheta) * dt;
 
   bus.theta = bus.ktheta - pi/2;
   bus.cx = bus.kx + (bus.h/2 - bus.rw) * cos(bus.ktheta);
   bus.cy = bus.ky + (bus.h/2 - bus.rw) * sin(bus.ktheta);
+
+  if (bus.cy > -8)
+    u_phi = 0.424;
+  end
+
+  if abs(bus.theta - pi /2 ) < 0.01
+    u_phi = 0;
+  end
 
 %  [axisRange, Ver] = plot_bus(busCenter, busTheta);
   bus.ver = plot_rectangle(bus);
@@ -84,7 +89,7 @@ for t = 1 : time * timeStamp
   axis equal;
   grid on;
   
-  pause(0.2);
+  pause(0.1);
 end
 
 drawnow;
