@@ -27,7 +27,7 @@ for t = 1 : time * timeStamp
 
   bus1 = busUpdate(bus1, dt);
 
-  subplot(2,2,[1,3]);
+  subplot(2,5,[1,2,6,7]);
 
   bus1.ver = plot_rectangle(bus1);
   hold on;
@@ -73,18 +73,29 @@ for t = 1 : time * timeStamp
   axis equal;
   grid on;
 
-  subplot(2,2,2);
-  plot(1:1081, lidar1.range, '*');
+  subplot(2,5,[3,4]);
+  plot(1:1081, lidar1.range, '.');
   title('Left Lidar', 'FontSize', fontsize);
   axis([1, 1081, 0, 30]);
   grid on;
 
-  subplot(2,2,4);
+  subplot(2,5,5);
+  sectionInfo = lidarDetection(lidar1);
+  plot(sectionInfo(:,1), sectionInfo(:,2),'r*');
+  axis([-25 25 -25 25]);
+  grid on;
+
+  subplot(2,5,[8,9]);
   plot(1:1081, lidar2.range, '*');
   title('Right Lidar', 'FontSize', fontsize);
   axis([1, 1081, 0, 30]);
   grid on;
 
+  subplot(2,5,10);
+  sectionInfo = lidarDetection(lidar2);
+  plot(sectionInfo(:,1), sectionInfo(:,2),'r*');
+  axis([-25 25 -25 25]);
+  grid on;
 
 % movegui(f1,'center');
   set(f1, 'Visible', 'on');
