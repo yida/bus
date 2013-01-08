@@ -13,6 +13,9 @@
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=en"></script>
     <script>
+      var kmlfilename = 'gpsdata20121219zipcar.kml';
+      var kmlpath = 'https://raw.github.com/yida/bus/master/vis/';
+      var kmlfile = kmlpath + kmlfilename;
       function initialize() {
         var myLatlng = new google.maps.LatLng(39.952, -75.1908);
         var mapOptions = {
@@ -25,7 +28,7 @@
             mapOptions);
 
         var nyLayer = new google.maps.KmlLayer(
-              'https://raw.github.com/yida/bus/master/vis/gpsdata20121219zipcar.kml', {
+              kmlfile, {
               suppressInfoWindows: true,
               map: map
             });
@@ -40,14 +43,28 @@
           sidediv.innerHTML = text;
         }
       }
+      function getElements() {
+        var kmlfiles = document.getElementsByName("kmlfile");
+        var value;
+        for (var i = 0; i < kmlfiles.length; i++) {
+          if (kmlfiles[i].checked) {
+            value = kmlfiles[i].value;
+          }
+        }
+        console.log(value);
+        kmlfile = kmlpath + value;
+        initialize();
+      }
     </script>
   </head>
   <body onload="initialize()">
     <div id="map_canvas" style="width:79%; height:100%; float:left"></div>
-    <div id="content_window" style="width:19%; height:100%; float:left">
-      <input type="radio" name="aa" value="gpsdata20121221route42r1.kml" >20121221route42r1</input><br/>
-      <input type="radio" name="aa" value="gpsdata20121221route42r2.kml" >20121221route42r2</input><br/>
-      <input type="radio" name="aa" value="Toggle Visibility" >cccc</input>
+    <div id="toolbar" style="width:19%; height:20%; float:left">
+      <input type="radio" name="kmlfile" value="gpsdata20121221route42r1.kml" >20121221route42r1</input><br/>
+      <input type="radio" name="kmlfile" value="gpsdata20121221route42r2.kml" >20121221route42r2</input><br/>
+      <input type="radio" name="kmlfile" value="gpsdata20121219zipcar.kml" checked = "checked">20121219zipcar</input><br/>
+      <input type="button" onclick="getElements()" value="Load KML">
     </div>
+    <div id="content_window" style="width:19%; height:80%; float:left"></div>
   </body>
 </html>
