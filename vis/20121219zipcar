@@ -25,7 +25,7 @@
             mapOptions);
 
         var nyLayer = new google.maps.KmlLayer(
-              'https://raw.github.com/yida/bus/master/vis/gpsdata.kml', {
+              'https://raw.github.com/yida/bus/master/vis/gpsdata20121219zipcar.kml', {
               suppressInfoWindows: true,
               map: map
             });
@@ -45,9 +45,9 @@
   <body onload="initialize()">
     <div id="map_canvas" style="width:79%; height:100%; float:left"></div>
     <div id="content_window" style="width:19%; height:100%; float:left">
-      <input type="checkbox" value="Toggle Visibility" >bbbb</input><br/>
-      <input type="checkbox" value="Toggle Visibility" >aaaa</input><br/>
-      <input type="checkbox" value="Toggle Visibility" >cccc</input>
+      <input type="radio" name="aa" value="gpsdata20121221route42r1.kml" >20121221route42r1</input><br/>
+      <input type="radio" name="aa" value="gpsdata20121221route42r2.kml" >20121221route42r2</input><br/>
+      <input type="radio" name="aa" value="Toggle Visibility" >cccc</input>
     </div>
   </body>
 </html>
