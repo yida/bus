@@ -16,7 +16,7 @@ function sectionInfo = lidarDetection(LIDAR)
   end
   section(sectCounter,2) = LIDAR.numBeams;
   section = section(1:sectCounter,:);
-  sectionInfo = zeros(sectCounter,2);
+  sectionInfo = zeros(sectCounter,4);
   sectionInfoCounter = 0;
   for i = 1 : sectCounter
     sectx = LIDAR.range(section(i,1):section(i,2))...
@@ -29,7 +29,9 @@ function sectionInfo = lidarDetection(LIDAR)
       sectionInfoCounter = sectionInfoCounter + 1;
       sectionInfo(sectionInfoCounter,1) = mean(sectx);
       sectionInfo(sectionInfoCounter,2) = mean(secty);
+      midIdx = floor((section(i,1)+section(i,2))/2);
+      sectionInfo(sectionInfoCounter,3) = midIdx;
+      sectionInfo(sectionInfoCounter,4) = LIDAR.range(midIdx);
     end
   end
-
 

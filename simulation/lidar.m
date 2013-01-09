@@ -5,6 +5,7 @@ function LIDAR = lidar(PanAngle, Center)
   LIDAR.range = LIDAR.maxRange * ones(1, LIDAR.numBeams); 
   LIDAR.rangeMax = LIDAR.maxRange * ones(1, LIDAR.numBeams); 
   LIDAR.theta = PanAngle + LIDAR.beamRange;
+  LIDAR.pan = PanAngle;
   LIDAR.center = Center;
   LIDAR.beamAngles = LIDAR.beamRange / LIDAR.numBeams :...
                     LIDAR.beamRange / LIDAR.numBeams : LIDAR.beamRange;
