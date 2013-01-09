@@ -57,6 +57,7 @@ void mex_imu(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       pose[0] = x(0);
       pose[1] = x(1);
       pose[2] = x(2);
+      cout << pose << endl;
 
       orien[0] = x(6);
       orien[1] = x(7);

@@ -29,8 +29,8 @@ fileGPS = strcat('gps', fileSuffix);
 fileIMU = strcat('imu', fileSuffix);
 fileMAG = strcat('mag', fileSuffix);
 
-imuflag = false;
-gpsflag = true;
+imuflag = true;
+gpsflag = false;
 magflag = false;
 
 %% check if filename match
@@ -61,9 +61,9 @@ for cnt = 1 : size(magfileList, 1)
     fileMAGIdx = cnt;
   end
 end
-fileIMUFound;
-fileGPSFound;
-fileMAGFound;
+fileIMUFound
+fileGPSFound
+fileMAGFound
 
 
 if imuflag
@@ -94,7 +94,7 @@ if imuflag
       imuline = tline(14:end);
       
       imu.tstamp = str2num(timeStamp);
-      imu.tuc  = typecast(imuline(6:9),'uint32')
+      imu.tuc  = typecast(imuline(6:9),'uint32');
       imu.id   = double(imuline(10));
       imu.cntr = double(imuline(11));
       imu.rpy  = double(typecast(imuline(12:17),'int16')) / 5000; %scaling
@@ -103,6 +103,7 @@ if imuflag
   
       imuDataCounter = imuDataCounter + 1;
       imuData{imuDataCounter} = imu;
+      fprintf('%d\n', imuDataCounter);
     end
   end
 end
