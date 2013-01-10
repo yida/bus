@@ -14,7 +14,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&language=en"></script>
     <script>
       var kmlfilename = 'gpsdata20121219zipcar.kml';
-      var kmlpath = 'https://raw.github.com/yida/bus/master/vis/';
+      var kmlpath = 'https://raw.github.com/yida/bus/master/visualization/';
       var kmlfile = kmlpath + kmlfilename;
       function initialize() {
         var myLatlng = new google.maps.LatLng(39.952, -75.1908);

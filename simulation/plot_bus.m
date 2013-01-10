@@ -16,5 +16,5 @@ Ver = bsxfun(@plus, Ver, busCenter);
 plot([Ver(:,1);Ver(1,1)], [Ver(:,2);Ver(1,2)], '-');
 patch([Ver(:,1);Ver(1,1)], [Ver(:,2);Ver(1,2)], 'b');
 
-axisRange = [min(Ver(:,1)), max(Ver(:,1)), min(Ver(:,2)), max(Ver(:,2))];
+%axisRange = [min(Ver(:,1)), max(Ver(:,1)), min(Ver(:,2)), max(Ver(:,2))];
 
