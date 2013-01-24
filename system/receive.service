@@ -1,0 +1,11 @@
+[Unit]
+Description=Log DATA
+After=usb-gadget-serial-init.service
+
+[Service]
+ExecStartPre=sleep 3
+ExecStart=/home/root/ReceiveImu/ReceivePackets /dev/ttyUSB0
+WorkingDirectory=/home/root
+
+[Install]
+WantedBy=multi-user.target
