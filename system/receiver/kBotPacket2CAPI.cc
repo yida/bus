@@ -32,7 +32,7 @@ int kBotPacket2_processBuffer(int nPacket, vector<uint8_t>& buf,
   if (nPacket >= packetCntr)
     cerr << "invalid packet counter" << endl;
 
-  int size = buf.size();
+  unsigned int size = buf.size();
 
   PACKET_TYPE * packet = &(packets[nPacket]);
 //int ndims    = 2;
@@ -54,7 +54,7 @@ int kBotPacket2_processBuffer(int nPacket, vector<uint8_t>& buf,
       return 1;
     }
   }
-  
+ 
   buf.resize(0);
   buffer.resize(0);
 

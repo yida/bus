@@ -40,7 +40,7 @@
 #include <unistd.h>
 #include <sstream>
 
-#define SD_VERBOSE
+//#define SD_VERBOSE
 #ifdef SD_VERBOSE 
   #define SD_LOG_INFO( msg )    { std::ostringstream msgStream; msgStream <<"["<<__FUNCTION__<<" : "<<__LINE__<<"] : "<< msg \
     << std::endl << std::flush; std::cout<<msgStream.str(); }
