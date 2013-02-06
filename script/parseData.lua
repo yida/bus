@@ -1,9 +1,14 @@
 -- parse data file and save as xml
 
 require 'parseIMU'
+require 'parseGPS'
+require 'parseMAG'
+require 'parseLAB'
+require 'serialization'
 
-dataPath = '../data/1/'
+dataPath = '../data/8/'
 dataStamp = '01010000'
+--dataStamp = '01010122'
 
 function loadData(path, stamp, datatype)
   local data = {}
@@ -17,24 +22,39 @@ function loadData(path, stamp, datatype)
   return data
 end
 
-function parseGPS()
-  local data = loadData(dataPath, dataStamp, 'gps')
-  print(data.FileNum)
+function saveData(dataset)
+  filecnt = 0;
+  filetime = os.date('%m.%d.%Y.%H.%M');
+  filename = string.format("%s-%d", filetime, filecnt);
+  
+  file = io.open(filename, "w");
+  
+  print(#dataset)
+  for i = 1, #dataset do
+    print('line #'..i)
+    savedata = serialization.serialize(dataset[i])
+    file:write(savedata)
+    file:write('\n')
+  --  print(savedata)
+  end
+  file:close()
+  print(filename)
 end
 
-function parseMAG()
-  local data = loadData(dataPath, dataStamp, 'mag')
-  print(data.FileNum)
-end
 
-function parseLAB()
-  local data = loadData(dataPath, dataStamp, 'lab')
-  print(data.FileNum)
-end
+--imuset = parseIMU()
+--saveData(imuset)
+
+gpsset = parseGPS()
+saveData(gpsset)
+print(#gpsset)
+
+--magset = parseMAG()
+--saveData(magset)
+--print(#magset)
+--
+--labelset = parseLAB()
+--saveData(labelset)
+--print(#labelset)
 
 
-
-parseIMU()
---parseGPS()
---parseMAG()
---parseLAB()

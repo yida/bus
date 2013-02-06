@@ -1,0 +1,75 @@
+local ffi = require 'ffi'
+local bit = require 'bit'
+
+function readMagLine(str, len)
+  local mag = {}
+  mag.timstamp = tonumber(string.sub(str, 1, 16))
+  magstrs = string.sub(str, len - 18, len - 1)
+  assert(#magstrs == 18)
+  magstr = ffi.new("uint8_t[?]", #magstrs, magstrs)
+  mag.id = tonumber(ffi.new("double", magstr[0]))
+  mag.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(magstr[4], 24),
+                    bit.lshift(magstr[3], 16), bit.lshift(magstr[2], 8), magstr[1])))
+  mag.press = bit.bor(bit.lshift(magstr[6], 8), magstr[5]) + 100000
+  mag.temp = bit.bor(bit.lshift(magstr[10], 8), magstr[9]) / 100
+  mag.x = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[14], 8), magstr[13])))
+  mag.y = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[16], 8), magstr[15])))
+  mag.z = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[18], 8), magstr[17])))
+  return mag;
+end
+
+function checkData(mag)
+  -- check time stamp, not readable or not reasonable
+  -- unix time between 01012000, 00:00:00 to 01012000, 23:00:00
+  if mag.timstamp == nil then return false end
+  if mag.timstamp < 946684800 or mag.timstamp > 946767600 then return false end
+  return true
+end
+
+
+function iterateMAG(data, xmlroot)
+  local magset = {}
+  local magcounter = 0
+--  for i = 0, 0 do -- data.FileNum - 1 do
+  for i = 0, data.FileNum - 1 do
+    local fileName = data.Path..data.Type..data.Stamp..i
+    print(fileName)
+    local file = assert(io.open(fileName, 'r+'))
+    local line = file:read("*all");
+    local lfpos = string.find(line, '\n', 1)
+    local lastlfpos = 0;
+    while lfpos ~= nil do
+      local substr = string.sub(line, lastlfpos + 1, lfpos)
+      --print(substr)
+      --print(string.byte(substr, 1, lfpos - lastlfpos)) 
+      local len = lfpos - lastlfpos - 1 
+      local lencheck = checkLen(35, len)
+      if lencheck then
+        mag = readMagLine(substr, len)
+        local datacheck = checkData(mag)
+        if datacheck then
+          local tdata = os.date('*t', mag.timestamp)
+--          print(mag.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
+          magcounter = magcounter + 1
+          magset[magcounter] = mag
+        else
+--          print('datecheck fail')
+        end
+      else
+--        print('lencheck fail '..len)
+      end
+      lastlfpos = lfpos
+      lfpos = string.find(line, '\n', lfpos + 1)
+    end
+    file:close();
+  end
+  return magset
+end
+
+function parseMAG()
+  local data = loadData(dataPath, dataStamp, 'mag')
+  magset = iterateMAG(data)
+
+  return magset
+end
+
