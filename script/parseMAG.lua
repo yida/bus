@@ -3,6 +3,7 @@ local bit = require 'bit'
 
 function readMagLine(str, len)
   local mag = {}
+  mag.type = 'mag'
   mag.timstamp = tonumber(string.sub(str, 1, 16))
   magstrs = string.sub(str, len - 18, len - 1)
   assert(#magstrs == 18)
@@ -67,7 +68,7 @@ function iterateMAG(data, xmlroot)
 end
 
 function parseMAG()
-  local data = loadData(dataPath, dataStamp, 'mag')
+  local data = loadRawData(dataPath, dataStamp, 'mag')
   magset = iterateMAG(data)
 
   return magset

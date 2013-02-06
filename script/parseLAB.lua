@@ -4,6 +4,7 @@ local util = require 'util'
 function readLabelLine(str, len)
   local label = {}
   label.timstamp = tonumber(string.sub(str, 1, 16))
+  label.type = 'label'
   
   local value = string.sub(str, 18, 21)
   if value ~= "0000" then
@@ -55,7 +56,7 @@ function iterateLAB(data)
 end
 
 function parseLAB()
-  local data = loadData(dataPath, dataStamp, 'lab')
+  local data = loadRawData(dataPath, dataStamp, 'lab')
   labelset = iterateLAB(data)
 
   return labelset

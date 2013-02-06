@@ -3,6 +3,7 @@ local bit = require 'bit'
 
 function readImuLine(str, len)
   local imu = {}
+  imu.type = 'imu'
   imu.timstamp = tonumber(string.sub(str, 1, 16))
 
   imustrs = string.sub(str, len - 24, len - 1)
@@ -84,7 +85,7 @@ function iterateIMU(data, xmlroot)
 end
 
 function parseIMU()
-  local data = loadData(dataPath, dataStamp, 'imu')
+  local data = loadRawData(dataPath, dataStamp, 'imu')
   imuset = iterateIMU(data)
 
   return imuset

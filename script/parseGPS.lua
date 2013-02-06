@@ -27,6 +27,7 @@ end
 
 function readGPSLine(str, len)
   local gps = {}
+  gps.type = 'gps'
   gps.timstamp = tonumber(string.sub(str, 1, 16))
   local line = string.sub(str, 17)
 --  print(line)
@@ -129,7 +130,7 @@ function iterateGPS(data, xmlroot)
 end
 
 function parseGPS()
-  local data = loadData(dataPath, dataStamp, 'gps')
+  local data = loadRawData(dataPath, dataStamp, 'gps')
   gpsset = iterateGPS(data)
 
   return gpsset
