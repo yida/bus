@@ -1,3 +1,6 @@
+require 'include'
+local util = require 'util'
+
 function readLabelLine(str, len)
   local label = {}
   label.timstamp = tonumber(string.sub(str, 1, 16))
@@ -9,12 +12,6 @@ function readLabelLine(str, len)
   end
 
   return label;
-end
-
-function tablesize(table)
-  local count = 0
-  for _ in pairs(table) do count = count + 1 end
-  return count 
 end
 
 function iterateLAB(data)
@@ -37,7 +34,7 @@ function iterateLAB(data)
       if lencheck then
         label = readLabelLine(substr, len)
         local datacheck = checkData(label)
-        if datacheck and tablesize(label) > 1 then
+        if datacheck and util.tablesize(label) > 1 then
           local tdata = os.date('*t', label.timestamp)
 --          print(label.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
           labelcounter = labelcounter + 1

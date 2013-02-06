@@ -1,14 +1,17 @@
 -- parse data file and save as xml
 
+require 'include'
+local serialization = require 'serialization'
+local util = require 'util'
+
 require 'parseIMU'
 require 'parseGPS'
 require 'parseMAG'
 require 'parseLAB'
-require 'serialization'
 
-dataPath = '../data/9/'
+dataPath = '../data/7/'
 dataStamp = '01010000'
-dataStamp = '01010122'
+--dataStamp = '01010122'
 
 function loadData(path, stamp, datatype)
   local data = {}
@@ -44,10 +47,11 @@ end
 
 imuset = parseIMU()
 saveData(imuset, 'imu')
+--print(#imuset)
 
 gpsset = parseGPS()
 saveData(gpsset, 'gps')
-print(#gpsset)
+--print(#gpsset)
 
 magset = parseMAG()
 saveData(magset, 'mag')

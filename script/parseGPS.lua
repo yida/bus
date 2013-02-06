@@ -1,3 +1,7 @@
+
+require 'include'
+local util = require 'util'
+
 function split(str)
   local value = {}
   local valuecounter = 0
@@ -19,12 +23,6 @@ function split(str)
 --    print(k, v)
 --  end
   return value
-end
-
-function tablesize(table)
-  local count = 0
-  for _ in pairs(table) do count = count + 1 end
-  return count 
 end
 
 function readGPSLine(str, len)
@@ -110,9 +108,9 @@ function iterateGPS(data, xmlroot)
       local len = lfpos - lastlfpos - 1 
 --      print(substr)
       gps = readGPSLine(substr, len)
---      print(tablesize(gps))
+--      print(util.tablesize(gps))
       local datacheck = checkData(gps)
-      if datacheck and tablesize(gps) > 1 then
+      if datacheck and util.tablesize(gps) > 1 then
 --      local tdata = os.date('*t', gps.timestamp)
 --      print(gps.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         gpscounter = gpscounter + 1
