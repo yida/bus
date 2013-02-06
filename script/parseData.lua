@@ -6,9 +6,9 @@ require 'parseMAG'
 require 'parseLAB'
 require 'serialization'
 
-dataPath = '../data/8/'
+dataPath = '../data/9/'
 dataStamp = '01010000'
---dataStamp = '01010122'
+dataStamp = '01010122'
 
 function loadData(path, stamp, datatype)
   local data = {}
@@ -22,10 +22,10 @@ function loadData(path, stamp, datatype)
   return data
 end
 
-function saveData(dataset)
+function saveData(dataset, dtype)
   filecnt = 0;
-  filetime = os.date('%m.%d.%Y.%H.%M');
-  filename = string.format("%s-%d", filetime, filecnt);
+  filetime = os.date('%m.%d.%Y.%H.%M.%S');
+  filename = string.format(dtype.."-%s-%d", filetime, filecnt);
   
   file = io.open(filename, "w");
   
@@ -42,19 +42,19 @@ function saveData(dataset)
 end
 
 
---imuset = parseIMU()
---saveData(imuset)
+imuset = parseIMU()
+saveData(imuset, 'imu')
 
 gpsset = parseGPS()
-saveData(gpsset)
+saveData(gpsset, 'gps')
 print(#gpsset)
 
---magset = parseMAG()
---saveData(magset)
+magset = parseMAG()
+saveData(magset, 'mag')
 --print(#magset)
 --
---labelset = parseLAB()
---saveData(labelset)
+labelset = parseLAB()
+saveData(labelset, 'label')
 --print(#labelset)
 
 
