@@ -1,15 +1,9 @@
 #!/bin/bash
 
-killall -q lua luajit luajit2 screen
-
-SCREEN_FLAGS="-dm -L -S"
-
-LUA_COM=/usr/bin/lua
+LUA_COM=/usr/local/bin/luajit
 
 echo "Start record imu"
-screen -dm -L -S imu $LUA_COM superIMU_recorder.lua
-echo "Start record LIDAR"
-screen $SCREEN_FLAGS lidar $LUA_COM superLID_recorder.lua
+$LUA_COM /home/root/script/super_recoder.lua
 
 
 

@@ -43,11 +43,13 @@ static int lua_Serial_connect(lua_State *L) {
 	pDev = new SerialDevice();
 
 	//connect to the device and set IO mode (see SerialDevice.hh for modes)
-	if (pDev->Connect(deviceName.c_str(),baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
+	while (pDev->Connect(deviceName.c_str(),baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
+//	if (pDev->Connect(deviceName.c_str(),baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
   {
+    usleep(3000000);
 		delete pDev;
-		pDev=NULL;
-		luaL_error(L, "Could not open device");
+		pDev=new SerialDevice();
+//		luaL_error(L, "Could not open device");
 	}
 	
 	std::cout << "serialDeviceAPI: Connected to device: "<<deviceName << std::endl;
