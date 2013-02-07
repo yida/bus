@@ -9,7 +9,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1894175,39.955401666667,0</coordinates>
+        <coordinates>-75.1894175,39.955401666667,0.00000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -18,7 +18,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1894175,39.955401666667,0</coordinates>
+        <coordinates>-75.1894175,39.955401666667,0.00000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -27,7 +27,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1894175,39.955401666667,0</coordinates>
+        <coordinates>-75.1894175,39.955401666667,0.00000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -36,7 +36,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1871135,39.955381833333,0</coordinates>
+        <coordinates>-75.1871135,39.955381833333,0.00000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -45,7 +45,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1871135,39.955381833333,0</coordinates>
+        <coordinates>-75.1871135,39.955381833333,0.0000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -54,7 +54,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1871135,39.955381833333,0</coordinates>
+        <coordinates>-75.1871135,39.955381833333,0.00000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
@@ -63,7 +63,7 @@
       <name>point</name>
       <description>point des</description>
       <Point>
-        <coordinates>-75.1871135,39.955381833333,0</coordinates>
+        <coordinates>-75.1871135,39.955381833333,0.000000</coordinates>
         <altitudeMode>relativeToGround</altitudeMode>
         <extrude>1</extrude>
       </Point>
