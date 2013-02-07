@@ -65,4 +65,4 @@ kml.xmlns="http://www.opengis.net/kml/2.2"
 kml[1] = document
 
 root = xml.new(kml)
-xml.save(root, 'root.xml')
+xml.save(root, 'root.kml')
