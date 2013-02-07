@@ -111,7 +111,7 @@ function iterateGPS(data, xmlroot)
       gps = readGPSLine(substr, len)
 --      print(util.tablesize(gps))
       local datacheck = checkData(gps)
-      if datacheck and util.tablesize(gps) > 1 then
+      if datacheck and util.tablesize(gps) > 2 then
 --      local tdata = os.date('*t', gps.timestamp)
 --      print(gps.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         gpscounter = gpscounter + 1

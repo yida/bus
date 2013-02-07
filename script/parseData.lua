@@ -26,7 +26,7 @@ saveData(gpsset, 'gps')
 magset = parseMAG()
 saveData(magset, 'mag')
 --print(#magset)
---
+
 labelset = parseLAB()
 saveData(labelset, 'label')
 --print(#labelset)

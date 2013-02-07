@@ -35,7 +35,7 @@ function iterateLAB(data)
       if lencheck then
         label = readLabelLine(substr, len)
         local datacheck = checkData(label)
-        if datacheck and util.tablesize(label) > 1 then
+        if datacheck and util.tablesize(label) > 2 then
           local tdata = os.date('*t', label.timestamp)
 --          print(label.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
           labelcounter = labelcounter + 1

@@ -44,7 +44,7 @@ function syncData(data, set1, set2)
   return data
 end
 
-local datasetpath = '../data/dataset9/'
+local datasetpath = '../data/dataset8/'
 
 --imu = loadData(datasetpath, 'imu')
 --mag = loadData(datasetpath, 'mag')
@@ -54,11 +54,44 @@ label = loadData(datasetpath, 'label')
 data = syncData(_, gps, label)
 
 print(#gps, #label, #data)
-saveData(data, 'syncdlabelgps')
+--saveData(data, 'syncdlabelgps')
 
+LabelwGPS = {}
+LabelwGPScounter = 0
 -- search closest GPS stamp for every label
 for cnt = 1, #data do
+  if data[cnt].type == 'label' then
+--    print(cnt) 
+    local leftclosegps = cnt
+    local rightclosegps = cnt
+
+    for i = cnt - 1, 1, -1 do
+      if data[i].type == 'gps' and data[i].latitude ~= nil then
+        leftclosegps = i break
+      end
+    end
+    for i = cnt + 1, #data, 1 do
+      if data[i].type == 'gps' and data[i].latitude ~= nil then
+        rightclosegps = i break
+      end
+    end
+    local leftTimeDiff = data[cnt].timstamp - data[leftclosegps].timstamp
+    local rightTimeDiff = data[rightclosegps].timstamp - data[cnt].timstamp
+    if leftTimeDiff < rightTimeDiff then 
+      LabelwGPScounter = LabelwGPScounter + 1
+      LabelwGPS[LabelwGPScounter] = data[leftclosegps]
+      LabelwGPS[LabelwGPScounter].value = data[cnt].value
+      print(data[leftclosegps].latitude) 
+    else 
+      LabelwGPScounter = LabelwGPScounter + 1
+      LabelwGPS[LabelwGPScounter] = data[rightclosegps]
+      LabelwGPS[LabelwGPScounter].value = data[cnt].value      
+      print(data[rightclosegps].latitude) 
+    end
+  end  
 end
+
+saveData(LabelwGPS, 'labelgps')
 
 --while true do
 --end
