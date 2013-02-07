@@ -25,8 +25,10 @@ end
 function nmea2degree(lat, latD, lnt, lntD)
   
   local nmea2deg = function(value, dir)
-    local degree = math.floor(value/100 + 0.5)
+    print(value, dir)
+    local degree = math.floor(value/100)
     local minute = value - degree * 100
+    print(degree, minute)
     deg = degree + minute / 60
     if dir == 'S' or dir == 'W' then deg = -deg end
     return deg
@@ -38,13 +40,14 @@ end
 
 --for cnt = 1, 1 do -- #labelgps do
 documentlist = {}
-documentlist[1] = objectGen('name', {''})
-documentlist[2] = objectGen('description', {''})
-for cnt = 1, #labelgps do
+documentlist[1] = objectGen('name', {'dataset'})
+documentlist[2] = objectGen('description', {'data set'})
+documentlistcount = 3
+for cnt = 1, #labelgps, 20 do
 
   Lat, Lnt = nmea2degree(labelgps[cnt].latitude, labelgps[cnt].northsouth,
                           labelgps[cnt].longtitude, labelgps[cnt].eastwest)
-  print(Lat, Lnt)
+  print(labelgps[cnt].latitude, Lat, Lnt)
 
   coordinate = objectGen('coordinates', {Lnt..','..Lat..','..0})
   altitudeMode = objectGen('altitudeMode', {'relativeToGround'})
@@ -52,11 +55,12 @@ for cnt = 1, #labelgps do
 
   point = objectGen('Point', {coordinate, altitudeMode, extrude})
 
-  pmname = objectGen('name', {""})
-  pmdes = objectGen('description', {""})
+  pmname = objectGen('name', {"point"})
+  pmdes = objectGen('description', {"point des"})
   placemark = objectGen('Placemark', {pmname, pmdes, point})
 
-  documentlist[cnt + 2] = placemark
+  documentlist[documentlistcount] = placemark
+  documentlistcount = documentlistcount + 1 
 end
 
 document = objectGen('Document', documentlist)
