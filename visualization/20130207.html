@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Google Maps JavaScript API v3 Example: KmlLayer KML Features</title>
+<!--
+    <link href="/maps/documentation/javascript/examples/default.css" rel="stylesheet">
+!-->
+    <style type="text/css">
+      html, body, #map_canvas { margin: 0; padding: 0; height: 100%;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script>
+      function initialize() {
+        var myLatlng = new google.maps.LatLng(39.952, -75.1908);
+        var mapOptions = {
+          zoom: 12,
+          center: myLatlng,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        var map = new google.maps.Map(document.getElementById('map_canvas'),
+            mapOptions);
+
+        var nyLayer = new google.maps.KmlLayer(
+              'https://raw.github.com/yida/bus/master/script/root.kml', {
+              suppressInfoWindows: true,
+              map: map
+            });
+
+        google.maps.event.addListener(nyLayer, 'click', function(kmlEvent) {
+          var text = kmlEvent.featureData.description;
+          showInContentWindow(text);
+        });
+
+        function showInContentWindow(text) {
+          var sidediv = document.getElementById('content_window');
+          sidediv.innerHTML = text;
+        }
+      }
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:79%; height:100%; float:left"></div>
+    <div id="content_window" style="width:19%; height:100%; float:left"></div>
+  </body>
+</html>
