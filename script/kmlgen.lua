@@ -52,7 +52,9 @@ for cnt = 1, #labelgps do
 
   point = objectGen('Point', {coordinate, altitudeMode, extrude})
 
-  placemark = objectGen('Placemark', {point})
+  pmname = objectGen('name', {""})
+  pmdes = objectGen('description', {""})
+  placemark = objectGen('Placemark', {pmname, pmdes, point})
 
   documentlist[cnt + 2] = placemark
 end
