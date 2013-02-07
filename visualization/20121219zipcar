@@ -63,7 +63,7 @@
       <input type="radio" name="kmlfile" value="gpsdata20121221route42r1.kml" >20121221route42r1</input><br/>
       <input type="radio" name="kmlfile" value="gpsdata20121221route42r2.kml" >20121221route42r2</input><br/>
       <input type="radio" name="kmlfile" value="gpsdata20121219zipcar.kml" checked = "checked">20121219zipcar</input><br/>
-      <input type="radio" name="kmlfile" value="20130207.kml" >20130207</input><br/>
+      <input type="radio" name="kmlfile" value="20130207v1.kml" >20130207</input><br/>
       <input type="button" onclick="getElements()" value="Load KML">
     </div>
     <div id="content_window" style="width:19%; height:80%; float:left"></div>

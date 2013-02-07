@@ -25,10 +25,10 @@ end
 function nmea2degree(lat, latD, lnt, lntD)
   
   local nmea2deg = function(value, dir)
-    print(value, dir)
+--    print(value, dir)
     local degree = math.floor(value/100)
     local minute = value - degree * 100
-    print(degree, minute)
+--    print(degree, minute)
     deg = degree + minute / 60
     if dir == 'S' or dir == 'W' then deg = -deg end
     return deg
@@ -43,24 +43,30 @@ documentlist = {}
 documentlist[1] = objectGen('name', {'dataset'})
 documentlist[2] = objectGen('description', {'data set'})
 documentlistcount = 3
-for cnt = 1, #labelgps, 20 do
 
-  Lat, Lnt = nmea2degree(labelgps[cnt].latitude, labelgps[cnt].northsouth,
-                          labelgps[cnt].longtitude, labelgps[cnt].eastwest)
-  print(labelgps[cnt].latitude, Lat, Lnt)
+lastlabel = {}
+for cnt = 2, #labelgps  do
+  
+  if labelgps[cnt].value ~= lastlabel.value and labelgps[cnt].longtitude ~= lastlabel.longtitude then
+    lastlabel = labelgps[cnt]
 
-  coordinate = objectGen('coordinates', {Lnt..','..Lat..','..0})
-  altitudeMode = objectGen('altitudeMode', {'relativeToGround'})
-  extrude = objectGen('extrude', {1})
-
-  point = objectGen('Point', {coordinate, altitudeMode, extrude})
-
-  pmname = objectGen('name', {"point"})
-  pmdes = objectGen('description', {"point des"})
-  placemark = objectGen('Placemark', {pmname, pmdes, point})
-
-  documentlist[documentlistcount] = placemark
-  documentlistcount = documentlistcount + 1 
+    Lat, Lnt = nmea2degree(labelgps[cnt].latitude, labelgps[cnt].northsouth,
+                            labelgps[cnt].longtitude, labelgps[cnt].eastwest)
+    print(labelgps[cnt].latitude, labelgps[cnt].value)
+  
+    coordinate = objectGen('coordinates', {Lnt..','..Lat..','..0})
+    altitudeMode = objectGen('altitudeMode', {'relativeToGround'})
+    extrude = objectGen('extrude', {1})
+  
+    point = objectGen('Point', {coordinate, altitudeMode, extrude})
+  
+    pmname = objectGen('name', {"point"})
+    pmdes = objectGen('description', {"point des"})
+    placemark = objectGen('Placemark', {pmname, pmdes, point})
+  
+    documentlist[documentlistcount] = placemark
+    documentlistcount = documentlistcount + 1 
+  end
 end
 
 document = objectGen('Document', documentlist)
