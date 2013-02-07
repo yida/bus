@@ -46,7 +46,7 @@ for cnt = 1, #labelgps do
                           labelgps[cnt].longtitude, labelgps[cnt].eastwest)
   print(Lat, Lnt)
 
-  coordinate = objectGen('coordinate', {Lnt..','..Lat..','..0})
+  coordinate = objectGen('coordinates', {Lnt..','..Lat..','..0})
   altitudeMode = objectGen('altitudeMode', {'relativeToGround'})
   extrude = objectGen('extrude', {1})
 
