@@ -22,15 +22,31 @@ function objectGen(name, value, tag)
   return object
 end
 
+function nmea2degree(lat, latD, lnt, lntD)
+  
+  local nmea2deg = function(value, dir)
+    local degree = math.floor(value/100 + 0.5)
+    local minute = value - degree * 100
+    deg = degree + minute / 60
+    if dir == 'S' or dir == 'W' then deg = -deg end
+    return deg
+  end
+  Lat = nmea2deg(lat, latD)
+  Lnt = nmea2deg(lnt, lntD)
+  return Lat, Lnt
+end
+
 --for cnt = 1, 1 do -- #labelgps do
 documentlist = {}
 documentlist[1] = objectGen('name', {''})
 documentlist[2] = objectGen('description', {''})
 for cnt = 1, #labelgps do
 
+  Lat, Lnt = nmea2degree(labelgps[cnt].latitude, labelgps[cnt].northsouth,
+                          labelgps[cnt].longtitude, labelgps[cnt].eastwest)
+  print(Lat, Lnt)
 
-
-  coordinate = objectGen('coordinate', {labelgps[cnt].longtitude..','..labelgps[cnt].latitude..','..0})
+  coordinate = objectGen('coordinate', {Lnt..','..Lat..','..0})
   altitudeMode = objectGen('altitudeMode', {'relativeToGround'})
   extrude = objectGen('extrude', {1})
 
