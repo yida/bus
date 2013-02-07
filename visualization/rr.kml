@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>dd</name>
+    <description>fafa</description>
+    <Placemark>
+      <name>point</name>
+      <description>pint</description>
+      <Point>
+        <coordinates>-75.1894175,39.288735,0</coordinates>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <extrude>1</extrude>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>fafa</name>
+      <description>faf</description>
+      <Point>
+        <coordinates>-75.1894175,39.288735,0</coordinates>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <extrude>1</extrude>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>dd</name>
+      <description>dd</description>
+      <Point>
+        <coordinates>-75.1894175,39.288735,0</coordinates>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <extrude>1</extrude>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
