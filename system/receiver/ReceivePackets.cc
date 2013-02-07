@@ -9,6 +9,7 @@
 #include <sstream>
 #include <ctime>
 #include <dirent.h>
+#include <unistd.h>
 
 #include "SerialDevice.hh"
 #include "SerialDeviceCAPI.h"
@@ -55,7 +56,10 @@ std::vector<uint8_t> ReceivePacket() {
     return packet;
   }
 
-  SerialDevice_read(1000, 2000, buf2);
+  if (!SerialDevice_read(1000, 2000, buf2)) {
+    packet.resize(0);
+    return packet;
+  }
   kBotPacket2_processBuffer(packetID, buf2, packet); 
   return packet;
 }
@@ -85,14 +89,35 @@ int main(int argc, char** argv) {
   if (argc > 1)
     strcpy(deviceName, argv[1]);
 
+  SerialDevice_connect(deviceName, baud);
+  std::vector<uint8_t> pkt;
+  pkt = ReceivePacket();
+  while (!pkt.size()) {
+    cout << "Can not read char" << endl;
+//    SerialDevice_exit();
+//    SerialDevice_connect(deviceName, baud);
+    pkt = ReceivePacket();
+  }
+//	atexit(SerialDevice_exit);
+  cout << "Found connection and wait for loading" << endl;
+  usleep(5000000);
+//  return 0;
+
+
   // Enable GPIO
-//  ofstream gpio_export;
-//  gpio_export.open("/sys/class/gpio/export");
-//  gpio_export << 146;
-//  gpio_export.close();
-//  gpio_export.open("/sys/class/gpio/export");
-//  gpio_export << 147;
-//  gpio_export.close();
+  ofstream gpio_export;
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 146;
+  gpio_export.close();
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 147;
+  gpio_export.close();
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 175;
+  gpio_export.close();
+  gpio_export.open("/sys/class/gpio/export");
+  gpio_export << 114; 
+  gpio_export.close();
   int dircount = 1;
   string homepath("/home/root/");
   string dir = homepath + to_string(dircount);
@@ -109,9 +134,11 @@ int main(int argc, char** argv) {
   int imufilecounter = 0;
   int gpsfilecounter = 0;
   int magfilecounter = 0;
+  int labfilecounter = 0;
   int imucounter = 0;
   int gpscounter = 0;
   int magcounter = 0;
+  int labcounter = 0;
 
   time_t rawtime;
   struct tm * timeinfo;
@@ -128,6 +155,10 @@ int main(int argc, char** argv) {
   std::string magfilebase("mag");
   magfilebase = dir + "/" + magfilebase;
   std::string magfilename = magfilebase + filedate + to_string(magfilecounter++);
+  std::string labfilebase("lab");
+  labfilebase = dir + "/" + labfilebase;
+  std::string labfilename = labfilebase + filedate + to_string(labfilecounter++);
+
 
   ofstream imufile(imufilename.c_str());
   cout << "new imufile " << imufilename << endl;
@@ -135,12 +166,11 @@ int main(int argc, char** argv) {
   cout << "new gpsfile " << gpsfilename << endl;
   ofstream magfile(magfilename.c_str());
   cout << "new magfile " << magfilename << endl;
-
-  SerialDevice_connect(deviceName, baud);
-
-  std::vector<uint8_t> pkt;
+  ofstream labfile(labfilename.c_str());
+  cout << "new labfile " << labfilename << endl;
   while (true) {
     pkt = ReceivePacket();
+    if (!pkt.size()) { continue; cout << "jump" << endl; }
     // Get GPIO
     gpio146.open("/sys/class/gpio/gpio146/value");
     gpio147.open("/sys/class/gpio/gpio147/value");
@@ -169,11 +199,15 @@ int main(int argc, char** argv) {
 //      int len = pkt.size();
 
       if (pkt[2]) continue;
+        labfile << TimeStamp << " " << lefton[0] << leftoff[0] 
+                << righton[0] << rightoff[0] << endl;
+        labcounter++;
+
       switch (type) {
         case 31:
           if (gpsfile.is_open()) {
             gpscounter ++;
-            gpsfile << TimeStamp << lefton[0] << leftoff[0] << righton[0] << rightoff[0];
+            gpsfile << TimeStamp;
             for (unsigned int cnt = 5; cnt < pkt.size() - 8; cnt ++)
               gpsfile << pkt[cnt];
             gpsfile << endl;
@@ -182,7 +216,7 @@ int main(int argc, char** argv) {
         case 34:
           if (imufile.is_open()) {
             imucounter ++;
-            imufile << TimeStamp << lefton[0] << leftoff[0] << righton[0] << rightoff[0];
+            imufile << TimeStamp;
             for (int cnt = 5; cnt < 29; cnt ++)
               imufile << pkt[cnt];
             imufile << endl;
@@ -191,7 +225,7 @@ int main(int argc, char** argv) {
         case 35:
           if (magfile.is_open()) {
             magcounter ++;
-            magfile << TimeStamp << lefton[0] << leftoff[0] << righton[0] << rightoff[0];
+            magfile << TimeStamp;
             for (int cnt = 5; cnt < 24; cnt ++)
               magfile << pkt[cnt];
             magfile << endl;
@@ -222,6 +256,13 @@ int main(int argc, char** argv) {
         magfilename = magfilebase + filedate + to_string(magfilecounter++);
         cout << "new magfile " << magfilename << endl;
         magfile.open(magfilename.c_str());
+      }
+      if (labcounter > maxlines) {
+        labcounter = 0;
+        labfile.close();
+        labfilename = labfilebase + filedate + to_string(labfilecounter++);
+        cout << "new labfile " << labfilename << endl;
+        labfile.open(labfilename.c_str());
       }
     }
   }

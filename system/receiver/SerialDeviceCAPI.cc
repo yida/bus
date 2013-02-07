@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <unistd.h>
 
 using namespace std;
 
@@ -26,15 +27,18 @@ int SerialDevice_connect(const char deviceName[], int baud) {
 	pDev = new SerialDevice();
 
 	//connect to the device and set IO mode (see SerialDevice.hh for modes)
-	if (pDev->Connect(deviceName,baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
+//	if (pDev->Connect(deviceName,baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
+	while (pDev->Connect(deviceName,baud) || pDev->Set_IO_BLOCK_W_TIMEOUT())
   {
+//    cout << "Waiting" << endl;
+    usleep(3000000);
 		delete pDev;
-		pDev=NULL;
-		cout << "Could not open device" << endl;
+		pDev=new SerialDevice();
+		cout << "Could not open device and Waiting" << endl;
 	}
 	
 	//set the atExit function
-	atexit(SerialDevice_exit);
+//	atexit(SerialDevice_exit);
 
 	std::cout << "serialDeviceAPI: Connected to device: "<<deviceName << std::endl;
 	return 0;

@@ -41,15 +41,15 @@
 #include <sstream>
 
 //#define SD_VERBOSE
-#ifdef SD_VERBOSE 
-  #define SD_LOG_INFO( msg )    { std::ostringstream msgStream; msgStream <<"["<<__FUNCTION__<<" : "<<__LINE__<<"] : "<< msg \
-    << std::endl << std::flush; std::cout<<msgStream.str(); }
-  #define SD_LOG_ERROR( msg )    { std::ostringstream msgStream; msgStream <<"["<<__FUNCTION__<<" : "<<__LINE__<<"] : "<< msg \
-    << std::endl << std::flush; std::cout<<msgStream.str(); }
-#else
+//#ifdef SD_VERBOSE 
+//  #define SD_LOG_INFO( msg )    { std::ostringstream msgStream; msgStream <<"["<<__FUNCTION__<<" : "<<__LINE__<<"] : "<< msg \
+//    << std::endl << std::flush; std::cout<<msgStream.str(); }
+//  #define SD_LOG_ERROR( msg )    { std::ostringstream msgStream; msgStream <<"["<<__FUNCTION__<<" : "<<__LINE__<<"] : "<< msg \
+//    << std::endl << std::flush; std::cout<<msgStream.str(); }
+//#else
   #define SD_LOG_INFO( msg )
   #define SD_LOG_ERROR( msg )
-#endif
+//#endif
 
 //constructor
 SerialDevice::SerialDevice()
