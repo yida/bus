@@ -16,19 +16,20 @@ end
 
 function saveData(dataset, dtype)
   local filecnt = 0
-  local filetime = os.date('data/%m.%d.%Y.%H.%M.%S')
+  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
   local file = io.open(filename, "w")
   
   print(#dataset)
   for i = 1, #dataset do
-    print('line #'..i)
+    io.write('\rline #'..i)
     savedata = serialization.serialize(dataset[i])
     file:write(savedata)
     file:write('\n')
   --  print(savedata)
   end
+  io.write('\n')
   file:close()
   print(filename)
 end
@@ -39,7 +40,7 @@ function getFileName(path, dtype)
   return filename
 end
 
-function loadData(path, dtype)
+function loadData(path, dtype, maxlines)
   local filename = getFileName(path, dtype)
   local file = assert(io.open(filename, 'r+'))
   local line = file:read();
@@ -48,14 +49,29 @@ function loadData(path, dtype)
   while line ~= nil do
 --    print(line)
     datacounter = datacounter + 1
-    print(dtype, datacounter)
+    io.write('\r', dtype, datacounter)
     dataPoint = serialization.deserialize(line)
     data[datacounter] = dataPoint
 --    util.ptable(dataPoint)
     line = file:read();
+    if maxlines and datacounter >= maxlines then break end
   end
+  io.write('\n')
   print(filename)
   return data
 end
 
 
+function pruneTUC(set) -- select the first tuc imu
+  local lastTuc = 0
+  local Pruned = {}
+  local Prunedcount = 0
+  for i = 1, #set do
+    if set[i].tuc ~= lastTuc then
+      lastTuc = set[i].tuc
+      Prunedcount = Prunedcount + 1
+      Pruned[Prunedcount] = set[i]
+    end
+  end
+  return Pruned
+end
