@@ -1,8 +1,14 @@
+#!/usr/local/bin/luajit -
+
+local home = '/home/root'
+
+package.path = home..'/script/?.lua;'..package.path
+package.cpath = home..'/script/?.so;'..package.cpath
+
 require 'include'
 
 local ffi = require 'ffi'
 local serialization = require('serialization');
-local util = require 'util'
 local Serial = require('Serial');
 local kBPacket = require('kBPacket');
 
@@ -26,6 +32,14 @@ end
 function usleep(s)
   ffi.C.poll(nil, 0, s * 1000)
 end
+
+function gpioOpen(port)
+  gpioExport = io.open('/sys/class/gpio/export', 'w')
+  gpioExport:write(port)
+  gpioExport:close()
+end
+
+
 
 baud = 230400;
 dev = '/dev/ttyUSB0';
@@ -119,17 +133,62 @@ end
 -- Create files
 filecnt = 0;
 filetime = utime();
-filename = string.format("log-%s-%d", filetime, filecnt);
+filepath = home
+filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
 
 file = io.open(filename, "w");
 linecount = 0;
 maxlinecount = 500;
 
+-- open button
+gpioOpen(147)
+gpioOpen(146)
+gpioOpen(175)
+gpioOpen(114)
+
+
 while (1) do
+
+  local timestamp = utime()
+  gpio147 = io.open('/sys/class/gpio/gpio147/value', 'r')
+  b1 = gpio147:read('*number')
+  gpio147:close()
+
+  gpio146 = io.open('/sys/class/gpio/gpio146/value', 'r')
+  b2 = gpio146:read('*number')
+  gpio146:close()
+
+  gpio175 = io.open('/sys/class/gpio/gpio175/value', 'r+')
+  b3 = gpio175:read('*number')
+  gpio175:close()
+
+  gpio114 = io.open('/sys/class/gpio/gpio114/value', 'r+')
+  b4 = gpio114:read('*number')
+  gpio114:close()
+
+  butstr = b1..b2..b3..b4
+  if butstr ~= '0000' then
+    local data = {}
+    data.type = 'label'
+    data.timestamp = timestamp
+    data.value = butstr
+    savedata = serialization.serialize(data)
+    file:write(savedata)
+    file:write('\n')
+    print(linecount, savedata)
+    linecount = linecount + 1
+  end
+  if linecount >= maxlinecount then
+    linecount = 0;
+    file:close();
+    filecnt = filecnt + 1;
+    filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
+    file = io.open(filename, "w");
+  end
+
   packet, size = ReceivePacket();
   if (type(packet) == 'userdata') then
     local rawdata = ffi.cast('uint8_t*', packet)
-    local timestamp = utime()
     local data = nil
     if rawdata[2] == 0 then
       if rawdata[4] == 31 then
@@ -156,9 +215,10 @@ while (1) do
     linecount = 0;
     file:close();
     filecnt = filecnt + 1;
-    filename = string.format("log-%s-%d", filetime, filecnt);
+    filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
     file = io.open(filename, "w");
   end
+
 end
 
 file:close();

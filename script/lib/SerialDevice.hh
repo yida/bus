@@ -52,6 +52,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <vector>
+#include <unistd.h>
 
 #include "Timer.hh"
 
