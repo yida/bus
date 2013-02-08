@@ -15,12 +15,12 @@ dataStamp = '01010000'
 --dataStamp = '01010122'
 
 
-imuset = parseIMU()
-saveData(imuset, 'imu')
+--imuset = parseIMU()
+--saveData(imuset, 'imu')
 --print(#imuset)
 
-gpsset = parseGPS()
-saveData(gpsset, 'gps')
+--gpsset = parseGPS()
+--saveData(gpsset, 'gps')
 --print(#gpsset)
 
 magset = parseMAG()
@@ -29,6 +29,6 @@ saveData(magset, 'mag')
 
 labelset = parseLAB()
 saveData(labelset, 'label')
---print(#labelset)
+----print(#labelset)
 
 

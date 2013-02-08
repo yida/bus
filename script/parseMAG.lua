@@ -5,17 +5,17 @@ function readMagLine(str, len)
   local mag = {}
   mag.type = 'mag'
   mag.timstamp = tonumber(string.sub(str, 1, 16))
-  magstrs = string.sub(str, len - 18, len - 1)
-  assert(#magstrs == 18)
+  magstrs = string.sub(str, 17, #str)
+  ls = #magstrs - 1
   magstr = ffi.new("uint8_t[?]", #magstrs, magstrs)
   mag.id = tonumber(ffi.new("double", magstr[0]))
-  mag.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(magstr[4], 24),
-                    bit.lshift(magstr[3], 16), bit.lshift(magstr[2], 8), magstr[1])))
-  mag.press = bit.bor(bit.lshift(magstr[6], 8), magstr[5]) + 100000
-  mag.temp = bit.bor(bit.lshift(magstr[10], 8), magstr[9]) / 100
-  mag.x = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[14], 8), magstr[13])))
-  mag.y = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[16], 8), magstr[15])))
-  mag.z = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[18], 8), magstr[17])))
+  mag.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(magstr[ls - 15], 24),
+                    bit.lshift(magstr[ls - 16], 16), bit.lshift(magstr[ls - 17], 8), magstr[ls - 18])))
+  mag.press = tonumber(ffi.new('int16_t', bit.bor(bit.lshift(magstr[ls - 13], 8), magstr[ls - 14]))) + 100000
+  mag.temp = tonumber(ffi.new('int16_t', bit.bor(bit.lshift(magstr[ls - 9], 8), magstr[ls - 10]))) / 100
+  mag.x = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[ls - 5], 8), magstr[ls - 6])))
+  mag.y = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[ls - 3], 8), magstr[ls - 4])))
+  mag.z = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[ls - 1], 8), magstr[ls - 2])))
   return mag;
 end
 
@@ -50,6 +50,7 @@ function iterateMAG(data, xmlroot)
         local datacheck = checkData(mag)
         if datacheck then
           local tdata = os.date('*t', mag.timestamp)
+          print(mag.timstamp, mag.tuc, mag.press, mag.temp, mag.x, mag.y, mag.z)
 --          print(mag.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
           magcounter = magcounter + 1
           magset[magcounter] = mag

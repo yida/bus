@@ -16,7 +16,7 @@ end
 
 function saveData(dataset, dtype)
   local filecnt = 0
-  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filetime = os.date('data/%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
   local file = io.open(filename, "w")

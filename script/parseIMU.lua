@@ -5,26 +5,31 @@ function readImuLine(str, len)
   local imu = {}
   imu.type = 'imu'
   imu.timstamp = tonumber(string.sub(str, 1, 16))
+  substr = str:sub(17, #str)
+--  print(substr:byte(1, #str), #str)
+  imustrs = substr
+  ls = #substr - 2
 
-  imustrs = string.sub(str, len - 24, len - 1)
-  assert(#imustrs == 24)
+--  imustrs = string.sub(str, len - 24, len - 1)
+--  assert(#imustrs == 24)
   imustr = ffi.new("uint8_t[?]", #imustrs, imustrs)
-  imu.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(imustr[3], 24),
-                                      bit.lshift(imustr[2], 16), bit.lshift(imustr[1], 8), imustr[0])))
-  imu.id = tonumber(ffi.new("double", imustr[4]))
-  imu.cntr = tonumber(ffi.new("double", imustr[5]))
+--  print(imustr[ls])
+  imu.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(imustr[ls - 20], 24),
+                                      bit.lshift(imustr[ls - 21], 16), bit.lshift(imustr[ls - 22], 8), imustr[ls - 23])))
+  imu.id = tonumber(ffi.new("double", imustr[ls - 19]))
+  imu.cntr = tonumber(ffi.new("double", imustr[ls - 18]))
   rpyGain = 5000
-  imu.r = bit.bor(bit.lshift(imustr[7], 8), imustr[6]) / rpyGain
-  imu.p = bit.bor(bit.lshift(imustr[9], 8), imustr[8]) / rpyGain
-  imu.y = bit.bor(bit.lshift(imustr[11], 8), imustr[10]) / rpyGain
+  imu.r =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 16], 8), imustr[ls - 17]))) / rpyGain
+  imu.p =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 14], 8), imustr[ls - 15]))) / rpyGain
+  imu.y =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 12], 8), imustr[ls - 13]))) / rpyGain
   wrpyGain = 500
-  imu.wr = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[13], 8), imustr[12]))) / wrpyGain
-  imu.wp = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[15], 8), imustr[14]))) / wrpyGain
-  imu.wy = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[17], 8), imustr[16]))) / wrpyGain
+  imu.wr = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 10], 8), imustr[ls - 11]))) / wrpyGain
+  imu.wp = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 8], 8), imustr[ls - 9]))) / wrpyGain
+  imu.wy = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 6], 8), imustr[ls - 7]))) / wrpyGain
   accGain = 5000
-  imu.ax = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[19], 8), imustr[18]))) / accGain
-  imu.ay = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[21], 8), imustr[20]))) / accGain
-  imu.az = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[23], 8), imustr[22]))) / accGain
+  imu.ax = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 4], 8), imustr[ls - 5]))) / accGain
+  imu.ay = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 2], 8), imustr[ls - 3]))) / accGain
+  imu.az = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls], 8), imustr[ls - 1]))) / accGain
   return imu;
 end
 
@@ -67,6 +72,7 @@ function iterateIMU(data, xmlroot)
         local datacheck = checkData(imu)
         if datacheck then
           local tdata = os.date('*t', imu.timestamp)
+          print(imu.timstamp, imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
 --          print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
           imucounter = imucounter + 1
           imuset[imucounter] = imu
