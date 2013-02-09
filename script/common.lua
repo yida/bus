@@ -2,6 +2,14 @@
 require 'include'
 local serialization = require 'serialization'
 
+function checkLen(value, len)
+  if len == value then
+    return true
+  else
+    return false
+  end
+end
+
 function loadRawData(path, stamp, datatype)
   local data = {}
   data.Path = path

@@ -29,9 +29,13 @@ function readGPSLine(str, len)
   local gps = {}
   gps.type = 'gps'
   gps.timstamp = tonumber(string.sub(str, 1, 16))
-  local line = string.sub(str, 17)
+  local startpt = 17
+  if str[17] ~= '$' then  
+    startpt = 19
+  end
+  local line = string.sub(str, startpt)
 --  print(line)
-  local stype = string.sub(str, 17, 22)
+  local stype = string.sub(str, startpt, startpt+5)
   if stype == '$GPGGA' then
 --    print('GPGGA'..line)
     value = split(line)
@@ -109,8 +113,11 @@ function iterateGPS(data, xmlroot)
       local len = lfpos - lastlfpos - 1 
 --      print(substr)
       gps = readGPSLine(substr, len)
+--      util.ptable(gps)
 --      print(util.tablesize(gps))
       local datacheck = checkData(gps)
+ --     datacheck = true
+ --     print(util.tablesize(gps))
       if datacheck and util.tablesize(gps) > 2 then
 --      local tdata = os.date('*t', gps.timestamp)
 --      print(gps.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)

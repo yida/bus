@@ -41,14 +41,6 @@ function checkData(imu)
   return true
 end
 
-function checkLen(value, len)
-  if len == value then
-    return true
-  else
-    return false
-  end
-end
-
 function iterateIMU(data, xmlroot)
   local imuset = {}
   local imucounter = 0
@@ -65,7 +57,7 @@ function iterateIMU(data, xmlroot)
       --print(substr)
       --print(string.byte(substr, 1, lfpos - lastlfpos)) 
       local len = lfpos - lastlfpos - 1 
-      local lencheck = checkLen(44, len) or checkLen(40, len)
+      local lencheck = checkLen(44, len) or checkLen(40, len) or checkLen(42, len)
 --      print(len, lencheck)
       if lencheck then
         imu = readImuLine(substr, len)
@@ -77,10 +69,10 @@ function iterateIMU(data, xmlroot)
           imucounter = imucounter + 1
           imuset[imucounter] = imu
         else
---        print('datecheck fail')
+        print('datecheck fail')
         end
       else
---      print('lencheck fail '..len)
+      print('lencheck fail '..len)
       end
       lastlfpos = lfpos
       lfpos = string.find(line, '\n', lfpos + 1)

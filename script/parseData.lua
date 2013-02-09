@@ -10,25 +10,26 @@ require 'parseMAG'
 require 'parseLAB'
 require 'common'
 
-dataPath = '../data/8/'
+dataPath = '../data/rawdata/20121221route42/'
 dataStamp = '01010000'
 --dataStamp = '01010122'
+dataStamp = '12311916'
 
 
---imuset = parseIMU()
---saveData(imuset, 'imu')
+imuset = parseIMU()
+saveData(imuset, 'imu')
 --print(#imuset)
 
---gpsset = parseGPS()
---saveData(gpsset, 'gps')
+gpsset = parseGPS()
+saveData(gpsset, 'gps')
 --print(#gpsset)
 
 magset = parseMAG()
 saveData(magset, 'mag')
---print(#magset)
-
+----print(#magset)
+--
 labelset = parseLAB()
 saveData(labelset, 'label')
-----print(#labelset)
+------print(#labelset)
 
 

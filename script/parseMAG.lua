@@ -44,7 +44,7 @@ function iterateMAG(data, xmlroot)
       --print(substr)
       --print(string.byte(substr, 1, lfpos - lastlfpos)) 
       local len = lfpos - lastlfpos - 1 
-      local lencheck = checkLen(35, len)
+      local lencheck = checkLen(35, len) or checkLen(37, len)
       if lencheck then
         mag = readMagLine(substr, len)
         local datacheck = checkData(mag)
