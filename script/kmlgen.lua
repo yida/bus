@@ -6,6 +6,7 @@ require('LuaXml')
 
 require 'include'
 require 'common'
+require 'gpscommon'
 local util = require 'util'
 
 local datasetpath = './'
@@ -20,22 +21,6 @@ function objectGen(name, value, tag)
     object[k] = v
   end
   return object
-end
-
-function nmea2degree(lat, latD, lnt, lntD)
-  
-  local nmea2deg = function(value, dir)
---    print(value, dir)
-    local degree = math.floor(value/100)
-    local minute = value - degree * 100
---    print(degree, minute)
-    deg = degree + minute / 60
-    if dir == 'S' or dir == 'W' then deg = -deg end
-    return deg
-  end
-  Lat = nmea2deg(lat, latD)
-  Lnt = nmea2deg(lnt, lntD)
-  return Lat, Lnt
 end
 
 --for cnt = 1, 1 do -- #labelgps do
