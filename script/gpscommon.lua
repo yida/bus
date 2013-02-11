@@ -1,3 +1,4 @@
+require 'include'
 
 function nmea2degree(lat, latD, lnt, lntD)
   -- NMEA Latitude DDDMM.MMM to DDD.DDD
@@ -15,3 +16,17 @@ function nmea2degree(lat, latD, lnt, lntD)
   Lnt = nmea2deg(lnt, lntD)
   return Lat, Lnt
 end
+
+function findDateFromGPS(gps)
+  local date = ""
+  for i = 1, #gps do
+    if gps[i].datastamp ~= nil and gps[i].datastamp ~= "" then
+      date = gps[i].datastamp..gps[i].utctime
+  --    print('\r'..gps[i].datastamp, gps[i].utctime)
+      break;
+    end
+  end
+  return date
+end
+
+
