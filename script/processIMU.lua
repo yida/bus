@@ -10,25 +10,49 @@ local imuset = loadData(datasetpath, 'imuPruned')
 
 --saveData(imuPruned, 'imuPruned')
 
+function QuaterionMul(q1, q2)  --t = q1 x q2
+  t = torch.DoubleTensor(4)
+  t[{1}] = q2[{1}]*q1[{1}]-q2[{2}]*q1[{2}]-q2[{3}]*q1[{3}]-q2[{4}]*q1[{4}]
+  t[{2}] = q2[{1}]*q1[{2}]+q2[{2}]*q1[{1}]-q2[{3}]*q1[{4}]+q2[{4}]*q1[{3}]
+  t[{3}] = q2[{1}]*q1[{3}]+q2[{2}]*q1[{4}]+q2[{3}]*q1[{1}]-q2[{4}]*q1[{2}]
+  t[{4}] = q2[{1}]*q1[{4}]-q2[{2}]*q1[{3}]+q2[{3}]*q1[{2}]+q2[{4}]*q1[{1}]
+  return t
+end
+
 state = {}
 state = torch.DoubleTensor(6) -- x, y, z, vx, vy, vz
-print(state)
+--print(state)
 
+local q = torch.DoubleTensor(4):fill(0)
+q[{1}] = 1
+local dq = torch.DoubleTensor(4):fill(0)
 local lasetstep = imuset[1].timstamp
-local gravity = 9.81
-for i = 2, #imuset - 10000 do
---for i = 2, 3 do
+for i = 2, #imuset - 1 do
+  local angularVelocity = torch.DoubleTensor({{imuset[i].wr, imuset[i].wp, imuset[i].wy}})
   local dt = imuset[i].timstamp - lasetstep
-  local ax = imuset[i].ax * gravity
-  local ay = imuset[i].ay * gravity
-  local az = (imuset[i].az + 1) * gravity
   lasetstep = imuset[i].timstamp
-  print(dt, ax, ay, az)
-  state[1] = state[1] + state[4] * dt + 0.5 * ax * dt * dt
-  state[2] = state[2] + state[5] * dt + 0.5 * ay * dt * dt
-  state[3] = state[3] + state[6] * dt + 0.5 * az * dt * dt
-  state[4] = state[4] + ax * dt
-  state[5] = state[5] + ay * dt
-  state[6] = state[6] + az * dt
-  print(state)
+  if angularVelocity:norm() ~= 0 and dt ~= 0 then 
+    dAngle = angularVelocity:norm() * dt
+    dAxis = angularVelocity:div(angularVelocity:norm()) 
+    dq[{1}] = math.cos(dAngle / 2)
+    dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
+    q = QuaterionMul(q, dq)
+    print(q:norm())
+  end
 end
+
+--local gravity = 9.81
+--for i = 2, #imuset - 10000 do
+----for i = 2, 3 do
+--  local ax = imuset[i].ax * gravity
+--  local ay = imuset[i].ay * gravity
+--  local az = (imuset[i].az + 1) * gravity
+--  print(dt, ax, ay, az)
+--  state[1] = state[1] + state[4] * dt + 0.5 * ax * dt * dt
+--  state[2] = state[2] + state[5] * dt + 0.5 * ay * dt * dt
+--  state[3] = state[3] + state[6] * dt + 0.5 * az * dt * dt
+--  state[4] = state[4] + ax * dt
+--  state[5] = state[5] + ay * dt
+--  state[6] = state[6] + az * dt
+--  print(state)
+--end
