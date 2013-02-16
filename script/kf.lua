@@ -56,54 +56,39 @@ for i = 2, #dataset - 1 do
       -- update orientation
       acc[3] = acc[3] - 1
       acc:mul(9.8)
-  --    print(acc)
-  --    rpy = rpy + torch.cmul(angularVel, torch.ones(3):mul(dt))
-  --    R = rpy2R(rpy)
-  --    acc1 = R * acc
-  --    print(acc1)
-  --    print(acc1:norm())
-  --    print(R)
-  --    print(angularVel)
-  --    print(rpy)
-  
+ 
       dAngle = angularVel:norm() * dt
       dAxis = angularVel:div(angularVel:norm()) 
       dq[1] = math.cos(dAngle / 2)
       dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
       q:copy(QuaternionMul(q, dq))
       
- --     print(acc[1], acc[2], acc[3])
-  --    vel = torch.DoubleTensor({0.5, 0.6, 0.7})
       pos = pos + torch.mv(torch.diag(torch.ones(3)):mul(dt), linearVel) 
                 + acc:clone():mul(dt^2*0.5)
       linearVel = linearVel + acc:clone():mul(dt)
       st = {pos[1], pos[2], pos[3], linearVel[1], linearVel[2], linearVel[3]}
       savedata = serialization.serialize(st)    
---      print(savedata)
-  --    print(linearVel)
-  --    pos[1] = pos[1] + linearVel[1] * dt + 0.5 * acc[1] * dt ^ 2
-  --    pos[2] = pos[2] + linearVel[2] * dt + 0.5 * acc[2] * dt ^ 2
-  --    pos[3] = pos[3] + linearVel[3] * dt + 0.5 * acc[3] * dt ^ 2
-  --    linearVel[1] = linearVel[1] + dt * acc[1]
-  --    linearVel[2] = linearVel[2] + dt * acc[2]
-  --    linearVel[3] = linearVel[3] + dt * acc[3] 
+      imucount = imucount + 1
+      imuax[imucount] = acc[1]
+      imuay[imucount] = acc[2]
+      imuaz[imucount] = acc[3]
     end
   elseif dataset[i].type == 'gps' then
-    if dataset[i].latitude and dataset[i].latitude ~= '' then
-      lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
-                              dataset[i].longtitude, dataset[i].eastwest)
-      gpspos = geo.Forward(lat, lnt, 6)
-      if firstlat then
-        basepos = gpspos
-        firstlat = false
-      else
-        relativeCount = relativeCount + 1
-        relativePosX[relativeCount] = gpspos.x - basepos.x
-        relativePosY[relativeCount] = gpspos.y - basepos.y
-        print(relativePosX[relativeCount], relativePosY[relativeCount])
-      end
-    end
-
+--    if dataset[i].latitude and dataset[i].latitude ~= '' then
+--      lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
+--                              dataset[i].longtitude, dataset[i].eastwest)
+--      gpspos = geo.Forward(lat, lnt, 6)
+--      if firstlat then
+--        basepos = gpspos
+--        firstlat = false
+--      else
+--        relativeCount = relativeCount + 1
+--        relativePosX[relativeCount] = gpspos.x - basepos.x
+--        relativePosY[relativeCount] = gpspos.y - basepos.y
+--        print(relativePosX[relativeCount], relativePosY[relativeCount])
+--      end
+--    end
+--
 --    util.ptable(dataset[i])
   end
 end
@@ -129,6 +114,16 @@ q3 = QuaternionMul(q1, q2)
 --print(rotX(math.pi/3))
 --print(rotY(math.pi/3))
 --print(rotZ(math.pi/3))
-x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
-y = torch.cmul(x, torch.ones(3):mul(0.0002))
+--x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
+--y = torch.cmul(x, torch.ones(3):mul(0.0002))
 --print(y)
+
+ax = torch.Tensor(1000)
+ay = torch.Tensor(#imuay)
+az = torch.Tensor(#imuaz)
+for i = 1, 1000 do
+  ax[i] = imuax[i]
+  ay[i] = imuay[i]
+  az[i] = imuaz[i]
+end
+gnuplot.plot(ax, '-')
