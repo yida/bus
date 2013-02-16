@@ -44,54 +44,55 @@ function syncData(data, set1, set2)
   return data
 end
 
-local datasetpath = '../data/dataset8/'
+local datasetpath = '../data/010213180247/'
 
---imu = loadData(datasetpath, 'imu')
+imu = loadData(datasetpath, 'imuPruned')
 --mag = loadData(datasetpath, 'mag')
 gps = loadData(datasetpath, 'gps')
-label = loadData(datasetpath, 'label')
+--label = loadData(datasetpath, 'label')
 
-data = syncData(_, gps, label)
+data = syncData(_, gps, imu)
 
-print(#gps, #label, #data)
---saveData(data, 'syncdlabelgps')
-
-LabelwGPS = {}
-LabelwGPScounter = 0
--- search closest GPS stamp for every label
-for cnt = 1, #data do
-  if data[cnt].type == 'label' then
---    print(cnt) 
-    local leftclosegps = cnt
-    local rightclosegps = cnt
-
-    for i = cnt - 1, 1, -1 do
-      if data[i].type == 'gps' and data[i].latitude ~= nil then
-        leftclosegps = i break
-      end
-    end
-    for i = cnt + 1, #data, 1 do
-      if data[i].type == 'gps' and data[i].latitude ~= nil then
-        rightclosegps = i break
-      end
-    end
-    local leftTimeDiff = data[cnt].timstamp - data[leftclosegps].timstamp
-    local rightTimeDiff = data[rightclosegps].timstamp - data[cnt].timstamp
-    if leftTimeDiff < rightTimeDiff then 
-      LabelwGPScounter = LabelwGPScounter + 1
-      LabelwGPS[LabelwGPScounter] = data[leftclosegps]
-      LabelwGPS[LabelwGPScounter].value = data[cnt].value
-      print(data[leftclosegps].latitude) 
-    else 
-      LabelwGPScounter = LabelwGPScounter + 1
-      LabelwGPS[LabelwGPScounter] = data[rightclosegps]
-      LabelwGPS[LabelwGPScounter].value = data[cnt].value      
-      print(data[rightclosegps].latitude) 
-    end
-  end  
-end
-
-saveData(LabelwGPS, 'labelgps')
+print(#gps, #imu, #data)
+----saveData(data, 'syncdlabelgps')
+--
+--LabelwGPS = {}
+--LabelwGPScounter = 0
+---- search closest GPS stamp for every label
+--for cnt = 1, #data do
+--  if data[cnt].type == 'label' then
+----    print(cnt) 
+--    local leftclosegps = cnt
+--    local rightclosegps = cnt
+--
+--    for i = cnt - 1, 1, -1 do
+--      if data[i].type == 'gps' and data[i].latitude ~= nil then
+--        leftclosegps = i break
+--      end
+--    end
+--    for i = cnt + 1, #data, 1 do
+--      if data[i].type == 'gps' and data[i].latitude ~= nil then
+--        rightclosegps = i break
+--      end
+--    end
+--    local leftTimeDiff = data[cnt].timstamp - data[leftclosegps].timstamp
+--    local rightTimeDiff = data[rightclosegps].timstamp - data[cnt].timstamp
+--    if leftTimeDiff < rightTimeDiff then 
+--      LabelwGPScounter = LabelwGPScounter + 1
+--      LabelwGPS[LabelwGPScounter] = data[leftclosegps]
+--      LabelwGPS[LabelwGPScounter].value = data[cnt].value
+--      print(data[leftclosegps].latitude) 
+--    else 
+--      LabelwGPScounter = LabelwGPScounter + 1
+--      LabelwGPS[LabelwGPScounter] = data[rightclosegps]
+--      LabelwGPS[LabelwGPScounter].value = data[cnt].value      
+--      print(data[rightclosegps].latitude) 
+--    end
+--  end  
+--end
+--
+--saveData(LabelwGPS, 'labelgps')
+saveData(data, 'imugps')
 
 --while true do
 --end

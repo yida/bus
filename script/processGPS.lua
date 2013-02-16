@@ -29,6 +29,7 @@ for i = 1, #gpsset do
       relativeCount = relativeCount + 1
       relativePosX[relativeCount] = pos.x - basepos.x
       relativePosY[relativeCount] = pos.y - basepos.y
+      print(relativePosX[relativeCount], relativePosY[relativeCount])
     end
   end
 end

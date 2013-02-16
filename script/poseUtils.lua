@@ -62,6 +62,25 @@ function R2rpy(R)
   return rpy
 end
 
+
+function rotX(theta)
+  return torch.DoubleTensor({{1,               0,                0}, 
+                             {0, math.cos(theta), -math.sin(theta)}, 
+                             {0, math.sin(theta),  math.cos(theta)}})
+end
+
+function rotY(theta)
+  return torch.DoubleTensor({{math.cos(theta), 0, math.sin(theta)},
+                             {0,               1,               0}, 
+                             {-math.sin(theta),0, math.cos(theta)}})
+end
+
+function rotZ(theta)
+  return torch.DoubleTensor({{math.cos(theta), -math.sin(theta), 0},
+                             {math.sin(theta), math.cos(theta), 0},
+                             {0,               0,                1}})
+end
+
 function rpy2R(rpy)
   local Rz = torch.DoubleTensor(3,3):fill(0)
   local Ry = torch.DoubleTensor(3,3):fill(0)
@@ -69,21 +88,9 @@ function rpy2R(rpy)
   local r = rpy[{1}]
   local p = rpy[{2}]
   local y = rpy[{3}]
-  Rz[{1, 1}] = math.cos(y) 
-  Rz[{2, 1}] = math.sin(y) 
-  Rz[{1, 2}] = -math.sin(y) 
-  Rz[{2, 2}] = math.cos(y) 
-  Rz[{3, 3}] = 1
-  Ry[{1, 1}] = math.cos(p)
-  Ry[{3, 1}] = -math.sin(p)
-  Ry[{1, 3}] = math.sin(p)
-  Ry[{3, 3}] = math.cos(p)
-  Ry[{2, 2}] = 1
-  Rx[{2, 2}] = math.cos(r)
-  Rx[{3, 2}] = math.sin(r)
-  Rx[{2, 3}] = -math.sin(r)
-  Rx[{3, 3}] = math.cos(r)
-  Rx[{1, 1}] = 1
+  Rz = rotZ(y)
+  Ry = rotY(p)
+  Rx = rotX(r)
   local R = torch.mm(Rz, Ry, Rx)
   return R
 end
