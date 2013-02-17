@@ -8,122 +8,76 @@ local serialization = require('serialization');
 local util = require('util');
 local geo = require 'GeographicLib'
 
+
 local datasetpath = '../data/010213180247/'
 local dataset = loadData(datasetpath, 'imugps')
---
-----imuPruned = pruneTUC(dataset)
---
-----saveData(imuPruned, 'imuPruned')
---
+
+processInit = false
+imuTstep = 0
+function processUpdate(tstep, acc)
+  if processInit == false then 
+--    print('init')
+    processInit = true
+    imuTstep = tstep
+    return
+  end
+  
+  local dt = tstep - imuTstep
+  if dt == 0 then return end 
+  imuTstep = tstep
+
+  acc[3] = acc[3] - 1
+  acc:mul(9.8)
+  F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
+                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
+  G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
+                          {dt,0,0}, {0,dt,0}, {0,0,dt}})
+  state = F * state + G * acc
+  Q = G * G:t() * 0.01 * 0.01
+  P = F * P * F:t() + Q
+end
+
+function measurementGPSUpdate(GPSpos)
+  H = torch.DoubleTensor({{1,0,0,0,0,0}, {0,1,0,0,0,0}, {0,0,1,0,0,0}})
+  y = GPSpos - H * state
+  S = H * P * H:t() + R
+  K = P * H:t() * torch.inverse(S)
+  state = state + K * y
+  P = (torch.ones(6,6) - K * H) * P
+end
+
 state = {}
-state = torch.DoubleTensor(13):fill(0) -- x, y, z, q0, q1, q2, q3, vx, vy, vz, wx, wy, wz
-pos = state:narrow(1, 1, 3)
-q = state:narrow(1, 4, 4)
-q[1] = 1
-linearVel = state:narrow(1, 8, 3)
-angularVel = state:narrow(1, 11, 3)
+-- x, y, z, vx, vy, vz
+state = torch.DoubleTensor(6):fill(0) 
+P = torch.eye(6):mul(1000)
+R = torch.eye(3):mul(1000)
 
 -- Geo Init
 local firstlat = true
 local basepos = {0.0, 0.0, 0.0}
-local relativePosX = {}
-local relativePosY = {} 
-local relativeCount = 0
-
--- imu init
-local imuax = {}
-local imuay = {}
-local imuaz = {}
-local imucount = 0
 
 ----local q = torch.DoubleTensor(4):fill(0)
-local dq = torch.DoubleTensor(4):fill(0)
-local rpy = torch.DoubleTensor(3):fill(0)
-local rpy1 = torch.DoubleTensor(3):fill(0)
 local lasetstep = dataset[1].timstamp
-for i = 2, #dataset - 1 do
---for i = 2, 1000 do
+for i = 1, #dataset do
+--for i = 1, 20 do
   if dataset[i].type == 'imu' then
-    angularVel[1] = dataset[i].wr
-    angularVel[2] = dataset[i].wp
-    angularVel[3] = dataset[i].wy
     -- Rotate pi on X axes
-    acc = torch.mv(rotX(math.pi), 
-              torch.DoubleTensor({dataset[i].ax, dataset[i].ay, dataset[i].az}))
-    local dt = dataset[i].timstamp - lasetstep
-    lasetstep = dataset[i].timstamp
-    if angularVel:norm() ~= 0 and dt ~= 0 then 
-      -- update orientation
-      acc[3] = acc[3] - 1
-      acc:mul(9.8)
- 
-      dAngle = angularVel:norm() * dt
-      dAxis = angularVel:div(angularVel:norm()) 
-      dq[1] = math.cos(dAngle / 2)
-      dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
-      q:copy(QuaternionMul(q, dq))
-      
-      pos = pos + torch.mv(torch.diag(torch.ones(3)):mul(dt), linearVel) 
-                + acc:clone():mul(dt^2*0.5)
-      linearVel = linearVel + acc:clone():mul(dt)
-      st = {pos[1], pos[2], pos[3], linearVel[1], linearVel[2], linearVel[3]}
-      savedata = serialization.serialize(st)    
-      imucount = imucount + 1
-      imuax[imucount] = acc[1]
-      imuay[imucount] = acc[2]
-      imuaz[imucount] = acc[3]
-    end
+    acc = torch.mv(rotX(math.pi), torch.DoubleTensor({dataset[i].ax, dataset[i].ay, dataset[i].az}))
+    processUpdate(dataset[i].timstamp, acc)
   elseif dataset[i].type == 'gps' then
---    if dataset[i].latitude and dataset[i].latitude ~= '' then
---      lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
---                              dataset[i].longtitude, dataset[i].eastwest)
---      gpspos = geo.Forward(lat, lnt, 6)
---      if firstlat then
---        basepos = gpspos
---        firstlat = false
---      else
---        relativeCount = relativeCount + 1
---        relativePosX[relativeCount] = gpspos.x - basepos.x
---        relativePosY[relativeCount] = gpspos.y - basepos.y
---        print(relativePosX[relativeCount], relativePosY[relativeCount])
---      end
---    end
---
---    util.ptable(dataset[i])
+    if dataset[i].latitude and dataset[i].latitude ~= '' then
+      lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
+                              dataset[i].longtitude, dataset[i].eastwest)
+      gpspos = geo.Forward(lat, lnt, 6)
+      if firstlat then
+        basepos = gpspos
+        firstlat = false
+      else
+        gpsposition = torch.DoubleTensor({gpspos.x - basepos.x, gpspos.y - basepos.y, 0})
+        measurementGPSUpdate(gpsposition)
+      end
+    end
+
   end
 end
-
---rpy = torch.DoubleTensor({math.pi/5, math.pi/3, math.pi/6})
---R = rpy2R(rpy)
---print(R)
---q:copy(R2Quaternion(R))
---R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
---print(q)
---R1 = Quaternion2R(q)
---print(R1)
---print(q:norm())
-
-q1 = torch.DoubleTensor({-0.2852, -0.1770, -0.6088, 0.7188})
-q2 = torch.DoubleTensor({1, -0.0020, 0.0008, 0.0010})
-q3 = QuaternionMul(q1, q2)
---print(q3)
-
 --local gravity = 9.81
-
-
---print(rotX(math.pi/3))
---print(rotY(math.pi/3))
---print(rotZ(math.pi/3))
---x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
---y = torch.cmul(x, torch.ones(3):mul(0.0002))
---print(y)
-
-ax = torch.Tensor(1000)
-ay = torch.Tensor(#imuay)
-az = torch.Tensor(#imuaz)
-for i = 1, 1000 do
-  ax[i] = imuax[i]
-  ay[i] = imuay[i]
-  az[i] = imuaz[i]
-end
-gnuplot.plot(ax, '-')

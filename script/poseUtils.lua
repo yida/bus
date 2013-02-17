@@ -1,3 +1,4 @@
+require 'torch-load'
 
 function Quaternion2R(q)
   local n = q:norm()
@@ -33,7 +34,9 @@ end
 
 function R2Quaternion(R)
   local q = torch.DoubleTensor(4)
+  print(R[1][1], R[2][2], R[3][3])
   q[1] = math.sqrt(1 + R[1][1] + R[2][2] + R[3][3]) / 2 
+  print(q[1])
   q[2] = (R[3][2] - R[2][3]) / (4 * q[1]) 
   q[3] = (R[1][3] - R[3][1]) / (4 * q[1]) 
   q[4] = (R[2][1] - R[1][2]) / (4 * q[1]) 
@@ -91,8 +94,33 @@ function rpy2R(rpy)
   Rz = rotZ(y)
   Ry = rotY(p)
   Rx = rotX(r)
+--  print(Rz)
+--  print(Ry)
+--  print(Rx)
   local R = torch.mm(Rz, Ry, Rx)
   return R
 end
+
+--rpy = torch.DoubleTensor({math.pi/5, math.pi/3, math.pi/6})
+--R = rpy2R(rpy)
+--print(R)
+--q:copy(R2Quaternion(R))
+--R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
+--print(q)
+--R1 = Quaternion2R(q)
+--print(R1)
+--print(q:norm())
+
+--q1 = torch.DoubleTensor({-0.2852, -0.1770, -0.6088, 0.7188})
+--q2 = torch.DoubleTensor({1, -0.0020, 0.0008, 0.0010})
+--q3 = QuaternionMul(q1, q2)
+--print(q3)
+
+--print(rotX(math.pi/3))
+--print(rotY(math.pi/3))
+--print(rotZ(math.pi/3))
+--x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
+--y = torch.cmul(x, torch.ones(3):mul(0.0002))
+--print(y)
 
 
