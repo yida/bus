@@ -10,15 +10,6 @@ local imuset = loadData(datasetpath, 'imuPruned')
 
 --saveData(imuPruned, 'imuPruned')
 
-function QuaterionMul(q1, q2)  --t = q1 x q2
-  t = torch.DoubleTensor(4)
-  t[{1}] = q2[{1}]*q1[{1}]-q2[{2}]*q1[{2}]-q2[{3}]*q1[{3}]-q2[{4}]*q1[{4}]
-  t[{2}] = q2[{1}]*q1[{2}]+q2[{2}]*q1[{1}]-q2[{3}]*q1[{4}]+q2[{4}]*q1[{3}]
-  t[{3}] = q2[{1}]*q1[{3}]+q2[{2}]*q1[{4}]+q2[{3}]*q1[{1}]-q2[{4}]*q1[{2}]
-  t[{4}] = q2[{1}]*q1[{4}]-q2[{2}]*q1[{3}]+q2[{3}]*q1[{2}]+q2[{4}]*q1[{1}]
-  return t
-end
-
 state = {}
 state = torch.DoubleTensor(6) -- x, y, z, vx, vy, vz
 --print(state)
