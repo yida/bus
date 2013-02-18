@@ -9,7 +9,25 @@ local util = require('util');
 local geo = require 'GeographicLib'
 
 local datasetpath = '../data/010213180247/'
-local dataset = loadData(datasetpath, 'imugps')
+local dataset = loadData(datasetpath, 'imugps', 10000)
+
+function QCompare(q, res)
+  if math.abs(q[1]) > res then return false end
+  if math.abs(q[2]) > res then return false end
+  if math.abs(q[3]) > res then return false end
+  if math.abs(q[4]) > res then return false end
+  return true
+end
+
+function QDiff(q1, q2, res)
+  print(q1, q2)
+  print(math.abs(q1[1] - q2[1]))
+  if math.abs(q1[1] - q2[1]) > res then return false end
+  if math.abs(q1[2] - q2[2]) > res then return false end
+  if math.abs(q1[3] - q2[3]) > res then return false end
+  if math.abs(q1[4] - q2[4]) > res then return false end
+  return true
+end
 
 function Omega2Q(w, dt)
   local dq = torch.DoubleTensor(4):fill(0)
@@ -32,8 +50,9 @@ state = {}
 state = torch.DoubleTensor(13):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3, wx, wy, wz
 state[7] = 1
 ns = 12
-P = torch.eye(12):mul(1000)
-Q = torch.eye(12):mul(1000)
+P = torch.eye(12):mul(10)
+Q = torch.eye(12):mul(10)
+Chi = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 
 -- Imu Init
 accBiasX = -0.03
@@ -77,61 +96,94 @@ function processUpdate(tstep, imu)
   end
   -- substract gravity from z axis
   acc[3] = acc[3] - g
+  state[11] = imu.wr
+  state[12] = imu.wp
+  state[13] = imu.wy
   
 --  print(acc[1], acc[2], acc[3])
-  state[11] = 2
-  state[12] = 3.2
-  state[13] = 4.3
+--  state[11] = 2
+--  state[12] = 3.2
+--  state[13] = 4.3
 
-  Omega = torch.sqrt((P+Q):mul(2*ns)) 
-  Chi = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
+  -- Sigma points
+  W = torch.sqrt((P+Q):mul(2*ns)) 
   Chi:narrow(2, 1, 1):copy(state)
   q = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
-
   for i = 2, ns + 1  do
-    OmegaCol = Omega:narrow(2, i-1, 1)
+    WCol = W:narrow(2, i-1, 1)
     posChi = Chi:narrow(2, i, 1):copy(state)
     negChi = Chi:narrow(2, i + ns, 1):copy(state)
     -- Sigma points for pos and vel
-    posChi:narrow(1, 1, 6):add(OmegaCol:narrow(1, 1, 6))
-    negChi:narrow(1, 1, 6):add(-OmegaCol:narrow(1, 1, 6))
+    posChi:narrow(1, 1, 6):add(WCol:narrow(1, 1, 6))
+    negChi:narrow(1, 1, 6):add(-WCol:narrow(1, 1, 6))
     -- Sigma points for angular vel
-    posChi:narrow(1, 11, 3):add(OmegaCol:narrow(1, 10, 3))
-    negChi:narrow(1, 11, 3):add(-OmegaCol:narrow(1, 10, 3))
+    posChi:narrow(1, 11, 3):add(WCol:narrow(1, 10, 3))
+    negChi:narrow(1, 11, 3):add(-WCol:narrow(1, 10, 3))
 
     -- Sigma points for Quaternion
-    qOmega = Omega2Q(OmegaCol:narrow(1, 7, 3))
-    negqOmega = Omega2Q(-OmegaCol:narrow(1, 7, 3))
-    if qOmega ~= -1 and negqOmega ~= -1 then
-      posChi:narrow(1, 7, 4):copy(QuaternionMul(q, qOmega))
-      negChi:narrow(1, 7, 4):copy(QuaternionMul(q, negqOmega))
+    qW = Omega2Q(WCol:narrow(1, 7, 3))
+    negqW = Omega2Q(-WCol:narrow(1, 7, 3))
+    if qW ~= -1 and negqW ~= -1 then
+      posChi:narrow(1, 7, 4):copy(QuaternionMul(q, qW))
+      negChi:narrow(1, 7, 4):copy(QuaternionMul(q, negqW))
     end
   end
-
   
+--  print(Chi)
+
+  -- Process Model Update and generate y
+  F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
+                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
+  G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
+                          {dt,0,0}, {0,dt,0}, {0,0,dt}})
+    -- Y
+  Y = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
+  for i = 1, 2 * ns + 1 do
+    Chicol = Chi:narrow(2, i, 1)
+    Ycol = Y:narrow(2, i, 1)
+    posvel = Chicol:narrow(1, 1, 6)
+
+    posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+    omega = Ycol:narrow(1, 11, 3) 
+    omega:copy(Chicol:narrow(1, 11, 3))
+    
+    q = torch.DoubleTensor(4):copy(Chicol:narrow(1, 7, 4))
+    dq = Omega2Q(Chicol:narrow(1, 11, 3))
+    if dq ~= -1 then
+--      print(QuaternionMul(q,dq))
+      Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
+    else
+      Ycol:narrow(1, 7, 4):copy(Chicol:narrow(1, 7, 4))
+    end
+  end
+--  print(Y)
+  -- Generate priori estimate state and covariance
+  statePriori = torch.DoubleTensor(state:size()):copy(torch.mean(Y, 2))
+
+  qIter = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
+  local iter = 0
+  repeat
+    iter = iter + 1
+    e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
+    for i = 1, 2 * ns + 1 do
+      ei = e:narrow(2, i, 1):fill(0)
+      qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
+      eQ = QuaternionMul(qi, QInverse(qIter))
+      alphaW = math.acos(eQ[1])
+      if alphaW ~= 0 then
+        ei[1] = eQ[2] / math.sin(alphaW) * alphaW
+        ei[2] = eQ[3] / math.sin(alphaW) * alphaW
+        ei[3] = eQ[4] / math.sin(alphaW) * alphaW
+      end
+    end
+    eMean = torch.DoubleTensor(3):copy(torch.mean(e,2))
+    qIterNext = QuaternionMul(Omega2Q(eMean), qIter)
+    qIterDiff = qIterNext - qIter
+    qIter:copy(qIterNext)
+  until QCompare(qIterDiff, 0.001)
+  statePriori:narrow(1, 7, 4):copy(qIter)  
   print(Chi)
-
---  angularVel[1] = imuset[i].wr
---  angularVel[2] = imuset[i].wp
---  angularVel[3] = imuset[i].wy
---
---  if angularVel:norm() ~= 0 and dt ~= 0 then 
---    -- update orientation
---    dAngle = angularVel:norm() * dt
---    dAxis = angularVel:div(angularVel:norm()) 
---    dq[1] = math.cos(dAngle / 2)
---    dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
---    q:copy(QuaternionMul(q, dq))
---    
---  end
-
-
---  acc[3] = acc[3] - 1
---  acc:mul(9.8)
---  F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
---                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
---  G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
---                          {dt,0,0}, {0,dt,0}, {0,0,dt}})
+  print(statePriori)
 end
 
 
@@ -164,3 +216,5 @@ for i = 1, 500 do
 
   end
 end
+
+print('done')

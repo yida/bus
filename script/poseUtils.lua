@@ -1,5 +1,11 @@
 require 'torch-load'
 
+function QInverse(q)
+  local norm = q:norm()
+  return torch.DoubleTensor({q[1]/norm, -q[2]/norm,
+                            -q[3]/norm, -q[4]/norm})
+end
+
 function Quaternion2R(q)
   local n = q:norm()
   local nq = q:div(q:norm())
