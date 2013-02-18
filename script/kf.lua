@@ -56,14 +56,17 @@ R = torch.eye(3):mul(1000)
 local firstlat = true
 local basepos = {0.0, 0.0, 0.0}
 
+
 ----local q = torch.DoubleTensor(4):fill(0)
 local lasetstep = dataset[1].timstamp
 for i = 1, #dataset do
 --for i = 1, 20 do
   if dataset[i].type == 'imu' then
+    acc = torch.DoubleTensor({dataset[i].ax - accBiasX, dataset[i].ay - accBiasY, dataset[i].az - accBiasZ})
     -- Rotate pi on X axes
-    acc = torch.mv(rotX(math.pi), torch.DoubleTensor({dataset[i].ax, dataset[i].ay, dataset[i].az}))
-    processUpdate(dataset[i].timstamp, acc)
+    acc = torch.mv(rotX(math.pi), acc)
+    print(acc[1], acc[2], acc[3])
+--    processUpdate(dataset[i].timstamp, acc)
   elseif dataset[i].type == 'gps' then
     if dataset[i].latitude and dataset[i].latitude ~= '' then
       lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
@@ -74,7 +77,7 @@ for i = 1, #dataset do
         firstlat = false
       else
         gpsposition = torch.DoubleTensor({gpspos.x - basepos.x, gpspos.y - basepos.y, 0})
-        measurementGPSUpdate(gpsposition)
+--        measurementGPSUpdate(gpsposition)
       end
     end
 
