@@ -32,6 +32,7 @@ Pzz = torch.eye(12):mul(1)
 Pvv = torch.eye(12):mul(1)
 Pxz = torch.eye(12):mul(1)
 K = torch.DoubleTensor(12, 12):fill(0)
+e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
 
 -- Imu Init
 accBiasX = -0.03
@@ -185,7 +186,7 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    if zqMean:norm() ~= 0 then 
+    if zqMean:norm() ~= 0 then
       local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
       local ze = Q2Vector(zqDiff)
       ZDiff:narrow(1, 7, 3):copy(ze)
@@ -233,7 +234,6 @@ function KalmanGainUpdate()
       local ze = Q2Vector(zqDiff)
       ZDiff:narrow(1, 7, 3):copy(ze)
     end
-
     Pxz:add(WDiff * ZDiff:t())
   end
   Pxz:div(2 * ns + 1)
