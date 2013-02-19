@@ -1,5 +1,50 @@
 require 'torch-load'
 
+function QCompare(q, res)
+  if math.abs(q[1]) > res then return false end
+  if math.abs(q[2]) > res then return false end
+  if math.abs(q[3]) > res then return false end
+  if math.abs(q[4]) > res then return false end
+  return true
+end
+
+function QDiff(q1, q2, res)
+  print(q1, q2)
+  print(math.abs(q1[1] - q2[1]))
+  if math.abs(q1[1] - q2[1]) > res then return false end
+  if math.abs(q1[2] - q2[2]) > res then return false end
+  if math.abs(q1[3] - q2[3]) > res then return false end
+  if math.abs(q1[4] - q2[4]) > res then return false end
+  return true
+end
+
+function Vector2Q(w, dt)
+  local dq = torch.DoubleTensor(4):fill(0)
+  if w:norm() == 0 then
+    return -1
+  end
+  if dt then
+    dAngle = w:norm() * dt
+  else
+    dAngle = w:norm()
+  end
+  dAxis = w:div(w:norm()) 
+  dq[1] = math.cos(dAngle / 2)
+  dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
+  return dq
+end
+
+function Q2Vector(q)
+  local alphaW = math.acos(q[1])
+  local v = torch.DoubleTensor(3):fill(0)
+  if alphaW ~= 0 then
+    v[1] = q[2] / math.sin(alphaW) * alphaW
+    v[2] = q[3] / math.sin(alphaW) * alphaW
+    v[3] = q[4] / math.sin(alphaW) * alphaW
+  end
+  return v
+end
+
 function QInverse(q)
   local norm = q:norm()
   return torch.DoubleTensor({q[1]/norm, -q[2]/norm,

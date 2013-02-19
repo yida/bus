@@ -11,40 +11,6 @@ local geo = require 'GeographicLib'
 local datasetpath = '../data/010213180247/'
 local dataset = loadData(datasetpath, 'imugps', 10000)
 
-function QCompare(q, res)
-  if math.abs(q[1]) > res then return false end
-  if math.abs(q[2]) > res then return false end
-  if math.abs(q[3]) > res then return false end
-  if math.abs(q[4]) > res then return false end
-  return true
-end
-
-function QDiff(q1, q2, res)
-  print(q1, q2)
-  print(math.abs(q1[1] - q2[1]))
-  if math.abs(q1[1] - q2[1]) > res then return false end
-  if math.abs(q1[2] - q2[2]) > res then return false end
-  if math.abs(q1[3] - q2[3]) > res then return false end
-  if math.abs(q1[4] - q2[4]) > res then return false end
-  return true
-end
-
-function Omega2Q(w, dt)
-  local dq = torch.DoubleTensor(4):fill(0)
-  if w:norm() == 0 then
-    return -1
-  end
-  if dt then
-    dAngle = w:norm() * dt
-  else
-    dAngle = w:norm()
-  end
-  dAxis = w:div(w:norm()) 
-  dq[1] = math.cos(dAngle / 2)
-  dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
-  return dq
-end
-
 --state init
 state = {}
 state = torch.DoubleTensor(13):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3, wx, wy, wz
@@ -121,8 +87,8 @@ function processUpdate(tstep, imu)
     negChi:narrow(1, 11, 3):add(-WCol:narrow(1, 10, 3))
 
     -- Sigma points for Quaternion
-    qW = Omega2Q(WCol:narrow(1, 7, 3))
-    negqW = Omega2Q(-WCol:narrow(1, 7, 3))
+    qW = Vector2Q(WCol:narrow(1, 7, 3))
+    negqW = Vector2Q(-WCol:narrow(1, 7, 3))
     if qW ~= -1 and negqW ~= -1 then
       posChi:narrow(1, 7, 4):copy(QuaternionMul(q, qW))
       negChi:narrow(1, 7, 4):copy(QuaternionMul(q, negqW))
@@ -148,7 +114,7 @@ function processUpdate(tstep, imu)
     omega:copy(Chicol:narrow(1, 11, 3))
     
     q = torch.DoubleTensor(4):copy(Chicol:narrow(1, 7, 4))
-    dq = Omega2Q(Chicol:narrow(1, 11, 3))
+    dq = Vector2Q(Chicol:narrow(1, 11, 3))
     if dq ~= -1 then
 --      print(QuaternionMul(q,dq))
       Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
@@ -169,21 +135,34 @@ function processUpdate(tstep, imu)
       ei = e:narrow(2, i, 1):fill(0)
       qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
       eQ = QuaternionMul(qi, QInverse(qIter))
-      alphaW = math.acos(eQ[1])
-      if alphaW ~= 0 then
-        ei[1] = eQ[2] / math.sin(alphaW) * alphaW
-        ei[2] = eQ[3] / math.sin(alphaW) * alphaW
-        ei[3] = eQ[4] / math.sin(alphaW) * alphaW
-      end
+      ei:copy(Q2Vector(eQ))
     end
     eMean = torch.DoubleTensor(3):copy(torch.mean(e,2))
-    qIterNext = QuaternionMul(Omega2Q(eMean), qIter)
+    qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
     qIterDiff = qIterNext - qIter
     qIter:copy(qIterNext)
   until QCompare(qIterDiff, 0.001)
   statePriori:narrow(1, 7, 4):copy(qIter)  
-  print(Chi)
-  print(statePriori)
+  PPrioro = torch.DoubleTensor(12, 12):fill(0)
+  for i = 1, 2 * ns + 1 do
+    Chicol = Chi:narrow(2, i, 1)
+    WDiff = torch.DoubleTensor(12, 1):fill(0)
+    -- Pos & Vel
+    WDiff:narrow(1, 1, 6):copy(Chicol:narrow(1, 1, 6))
+    WDiff:narrow(1, 1, 6):add(-statePriori:narrow(1, 1, 6))
+    -- Angular Vel
+    WDiff:narrow(1, 9, 3):copy(Chicol:narrow(1, 11, 3))
+    WDiff:narrow(1, 9, 3):add(-statePriori:narrow(1, 11, 3))
+    -- Rotation
+    WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
+--    print(WDiff * WDiff:t())
+    PPrioro:add(WDiff * WDiff:t())
+  end
+  PPrioro:div(2 * ns + 1)
+  print(PPrioro)
+--  print(Chi)
+--  print(statePriori)
+
 end
 
 
