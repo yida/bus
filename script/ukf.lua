@@ -19,7 +19,7 @@ state[8] = 1
 ns = 12
 P = torch.eye(12):mul(0.0001)
 Q = torch.eye(12):mul(0.0001)
-R = torch.DoubleTensor(12):fill(0)
+R = torch.DoubleTensor(12, 12):fill(0)
 Chi = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 statePriori = torch.DoubleTensor(state:size()):fill(0)
 PPrioro = torch.DoubleTensor(12, 12):fill(0)
@@ -183,6 +183,8 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = Zcol:narrow(1, 7, 4)
     local zqMean = zMean:narrow(1, 7, 4)
+    print(zqi)
+    print(zqMean)
     local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
     local ze = Q2Vector(zqDiff)
     ZDiff:narrow(1, 7, 3):copy(ze)
@@ -287,7 +289,21 @@ function measurementGravityUpdate()
   KalmanGainUpdate()
 end
 
-function measurementGPSUpdate()
+-- Geo Init
+local firstlat = true
+local basepos = {0.0, 0.0, 0.0}
+function measurementGPSUpdate(tstep, gps)
+  if gps.latitude == nil or gps.latitude == '' then return end
+  local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
+  local gpsposAb = geo.Forward(lat, lnt, 6)
+
+  if firstlat then
+      basepos = gpsposAb
+      firstlat = false
+      return
+  end
+  local gpspos = torch.DoubleTensor({gpsposAb.x - basepos.x, gpsposAb.y - basepos.y, 0})
+  print(Z)
 end
 
 function measurementMagUpdate()
@@ -298,10 +314,6 @@ end
 
 --local q = torch.DoubleTensor(4):fill(0)
 
--- Geo Init
-local firstlat = true
-local basepos = {0.0, 0.0, 0.0}
-
 for i = 1, #dataset do
 --for i = 1, 500 do
   if dataset[i].type == 'imu' then
@@ -309,20 +321,9 @@ for i = 1, #dataset do
     measurementGravityUpdate()
     measurementRotUpdate()
   elseif dataset[i].type == 'gps' then
-    if dataset[i].latitude and dataset[i].latitude ~= '' then
-      lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 
-                              dataset[i].longtitude, dataset[i].eastwest)
-      gpspos = geo.Forward(lat, lnt, 6)
-      if firstlat then
-        basepos = gpspos
-        firstlat = false
-      else
-        gpsposition = torch.DoubleTensor({gpspos.x - basepos.x, gpspos.y - basepos.y, 0})
-        measurementGPSUpdate(gpsposition)
-      end
-    end
+    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'mag' then
-    measurementMagUpdate()
+    measurementMagUpdate(dataset[i].timstamp, dataset[i])
   end
 end
 
