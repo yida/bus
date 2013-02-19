@@ -85,12 +85,32 @@ end
 
 function R2Quaternion(R)
   local q = torch.DoubleTensor(4)
-  print(R[1][1], R[2][2], R[3][3])
-  q[1] = math.sqrt(1 + R[1][1] + R[2][2] + R[3][3]) / 2 
-  print(q[1])
-  q[2] = (R[3][2] - R[2][3]) / (4 * q[1]) 
-  q[3] = (R[1][3] - R[3][1]) / (4 * q[1]) 
-  q[4] = (R[2][1] - R[1][2]) / (4 * q[1]) 
+  local tr = R[1][1] + R[2][2] + R[3][3]
+  if tr > 0 then
+    local S = math.sqrt(tr + 1.0) * 2
+    q[1] = 0.25 * S
+    q[2] = (R[3][2] - R[2][3]) / S
+    q[3] = (R[1][3] - R[3][1]) / S
+    q[4] = (R[2][1] - R[1][2]) / S
+  elseif R[1][1] > R[2][2] and R[1][1] > R[3][3] then
+    local S = math.sqrt(1.0 + R[1][1] - R[2][2] - R[3][3]) * 2
+    q[1] = (R[3][2] - R[2][3]) / S
+    q[2] = 0.25 * S
+    q[3] = (R[1][2] + R[2][1]) / S 
+    q[4] = (R[1][3] + R[3][1]) / S
+  elseif R[2][2] > R[3][3] then
+    local S = math.sqrt(1.0 + R[2][2] - R[1][1] - R[3][3]) * 2
+    q[1] = (R[1][3] - R[3][1]) / S
+    q[2] = (R[1][2] + R[2][1]) / S 
+    q[3] = 0.25 * S
+    q[4] = (R[2][3] + R[3][2]) / S
+  else
+    local S = math.sqrt(1.0 + R[3][3] - R[1][1] - R[2][2]) * 2
+    q[1] = (R[2][1] - R[1][2]) / S
+    q[2] = (R[1][3] + R[3][1]) / S 
+    q[3] = (R[2][3] + R[3][2]) / S
+    q[4] = 0.25 * S
+  end
   return q
 end
 
@@ -152,10 +172,10 @@ function rpy2R(rpy)
   return R
 end
 
---rpy = torch.DoubleTensor({math.pi/5, math.pi/3, math.pi/6})
+--rpy = torch.DoubleTensor({math.pi, 0, 0})
 --R = rpy2R(rpy)
 --print(R)
---q:copy(R2Quaternion(R))
+--print(R2Quaternion(R))
 --R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
 --print(q)
 --R1 = Quaternion2R(q)
