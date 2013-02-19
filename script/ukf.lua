@@ -9,8 +9,8 @@ local util = require('util');
 local geo = require 'GeographicLib'
 
 local datasetpath = '../data/010213180247/'
-local dataset = loadData(datasetpath, 'imugps', 10000)
---local dataset = loadData(datasetpath, 'imugps')
+--local dataset = loadData(datasetpath, 'imugps', 10000)
+local dataset = loadData(datasetpath, 'imugps')
 
 --state init
 state = {}
@@ -147,6 +147,7 @@ function processUpdate(tstep, imu)
   until QCompare(qIterDiff, 0.001)
   statePriori:narrow(1, 7, 4):copy(qIter)  
 
+  print('priori estimate '..utime())
   PPrioro:fill(0)
   for i = 1, 2 * ns + 1 do
     local Chicol = Chi:narrow(2, i, 1)
@@ -181,10 +182,8 @@ function KalmanGainUpdate()
     ZDiff:narrow(1, 9, 3):add(-zMean:narrow(1, 11, 3))
 
     -- Rotation
-    local zqi = Zcol:narrow(1, 7, 4)
+    local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    print(zqi)
-    print(zqMean)
     local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
     local ze = Q2Vector(zqDiff)
     ZDiff:narrow(1, 7, 3):copy(ze)
@@ -208,7 +207,7 @@ function KalmanGainUpdate()
     -- Rotation
     WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
     -- Rotation
-    local yqi = Ycol:narrow(1, 7, 4)
+    local yqi = torch.DoubleTensor(4):copy(Ycol:narrow(1, 7, 4))
     local yqMean = statePriori:narrow(1, 7, 4)
     local yqDiff = QuaternionMul(yqi, QInverse(yqMean))
     local ye = Q2Vector(yqDiff)
@@ -225,7 +224,7 @@ function KalmanGainUpdate()
     ZDiff:narrow(1, 9, 3):add(-zMean:narrow(1, 11, 3))
 
     -- Rotation
-    local zqi = Zcol:narrow(1, 7, 4)
+    local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
     local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
     local ze = Q2Vector(zqDiff)
@@ -236,6 +235,7 @@ function KalmanGainUpdate()
   Pxz:div(2 * ns + 1)
 
   -- K
+  print(Pvv)
   K = Pxz * torch.inverse(Pvv)
 
   -- posterior
@@ -290,7 +290,7 @@ function measurementGravityUpdate()
 end
 
 -- Geo Init
-local firstlat = true
+firstlat = true
 local basepos = {0.0, 0.0, 0.0}
 function measurementGPSUpdate(tstep, gps)
   if gps.latitude == nil or gps.latitude == '' then return end
@@ -300,16 +300,51 @@ function measurementGPSUpdate(tstep, gps)
   if firstlat then
       basepos = gpsposAb
       firstlat = false
-      return
   end
   local gpspos = torch.DoubleTensor({gpsposAb.x - basepos.x, gpsposAb.y - basepos.y, 0})
-  print(Z)
+--  print(gpspos)
+  Z:fill(0)
+  for i = 1, 2 * ns + 1 do
+    local Zcol = Z:narrow(2, i, 1)
+    local Chicol = Chi:narrow(2, i , 1)
+    Zcol:narrow(1, 1, 3):copy(Chicol:narrow(1, 1, 3))
+  end
+  zMean = torch.mean(Z, 2)
+  local zk = torch.DoubleTensor(13):fill(0)
+  zk:narrow(1, 1, 3):copy(gpspos)
+  v = zk - zMean
+  R:fill(0)
+  R[1][1] = 4
+  R[2][2] = 4
+  R[3][3] = 4
+
+  KalmanGainUpdate()
+
 end
 
 function measurementMagUpdate()
 end
 
-function measurementRotUpdate()
+function measurementRotUpdate(tstep, imu)
+  local zk = torch.DoubleTensor(13):fill(0)
+  zk[11] = imu.wr
+  zk[12] = imu.wp
+  zk[13] = imu.wy
+  Z:fill(0)
+  for i = 1, 2 * ns + 1 do
+    local Zcol = Z:narrow(2, i, 1)
+    local Chicol = Chi:narrow(2, i , 1)
+    Zcol:narrow(1, 11, 3):copy(Chicol:narrow(1, 11, 3))
+  end
+  zMean = torch.mean(Z, 2)
+  v = zk - zMean
+  R:fill(0)
+  R[10][10] = 0.0001
+  R[11][11] = 0.0001
+  R[12][12] = 0.0001
+
+  KalmanGainUpdate()
+
 end
 
 --local q = torch.DoubleTensor(4):fill(0)
@@ -319,7 +354,7 @@ for i = 1, #dataset do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
-    measurementRotUpdate()
+    measurementRotUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'gps' then
     measurementGPSUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'mag' then
