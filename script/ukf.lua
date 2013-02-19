@@ -31,6 +31,7 @@ Pzz = torch.DoubleTensor(12, 12):fill(0)
 Pvv = torch.DoubleTensor(12, 12):fill(0)
 Pxz = torch.DoubleTensor(12, 12):fill(0)
 K = torch.DoubleTensor(12, 12):fill(0)
+e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
 
 -- Imu Init
 accBiasX = -0.03
@@ -133,7 +134,7 @@ function processUpdate(tstep, imu)
 
   local qIter = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
   repeat
-    e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
+    e:fill(0)
     for i = 1, 2 * ns + 1 do
       local ei = e:narrow(2, i, 1):fill(0)
       local qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
@@ -184,10 +185,11 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-    local ze = Q2Vector(zqDiff)
-    ZDiff:narrow(1, 7, 3):copy(ze)
-
+    if zqMean:norm() ~= 0 then
+      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+      local ze = Q2Vector(zqDiff)
+      ZDiff:narrow(1, 7, 3):copy(ze)
+    end
     Pzz:add(ZDiff * ZDiff:t())
   end
   Pzz:div(2 * ns + 1)
@@ -226,9 +228,11 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-    local ze = Q2Vector(zqDiff)
-    ZDiff:narrow(1, 7, 3):copy(ze)
+    if zqMean:norm() ~= 0 then
+      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+      local ze = Q2Vector(zqDiff)
+      ZDiff:narrow(1, 7, 3):copy(ze)
+    end
     
     Pxz:add(WDiff * ZDiff:t())
   end
