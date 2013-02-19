@@ -21,7 +21,8 @@ end
 function Vector2Q(w, dt)
   local dq = torch.DoubleTensor(4):fill(0)
   if w:norm() == 0 then
-    return -1
+    dq[1] = 1
+    return dq
   end
   if dt then
     dAngle = w:norm() * dt
@@ -51,37 +52,53 @@ function QInverse(q)
                             -q[3]/norm, -q[4]/norm})
 end
 
-function Quaternion2R(q)
-  local n = q:norm()
-  local nq = q:div(q:norm())
-  local w = nq[1]
-  local x = nq[2]
-  local y = nq[3]
-  local z = nq[4]
-  local w2 = w * w
-  local x2 = x * x
-  local y2 = y * y
-  local z2 = z * z
-  local xy = x * y
-  local xz = x * z
-  local yz = y * z
-  local wx = w * x
-  local wy = w * y
-  local wz = w * z
+function Quaternion2R(qin)
   local R = torch.DoubleTensor(3,3):fill(0)
-  R[1][1] = w2 + x2 - y2 - z2
-  R[2][1] = 2 * (wz + xy)
-  R[3][1] = 2 * (xz - wy)
-  R[1][2] = 2 * (xy - wz) 
-  R[2][2] = w2 - x2 + y2 - z2 
-  R[3][2] = 2 * (wx + yz)
-  R[1][2] = 2 * (wy + xz)
-  R[2][2] = 2 * (yz - wx) 
-  R[3][2] = w2 - x2 - y2 + z2
---  print(R)
---  print(w2, x2, y2, z2)
+  local q = torch.DoubleTensor(4):copy(qin)
+
+  R[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
+  R[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
+  R[1][3] = 2 * q[2] * q[4] + 2 * q[3] * q[1]
+  R[2][1] = 2 * q[2] * q[3] + 2 * q[4] * q[1]
+  R[2][2] = 1 - 2 * q[2] * q[2] - 2 * q[4] * q[4]
+  R[2][3] = 2 * q[3] * q[4] - 2 * q[2] * q[1]
+  R[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
+  R[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
+  R[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
+
   return R
 end
+--function Quaternion2R(q)
+--  local n = q:norm()
+--  local nq = q:div(q:norm())
+--  local w = nq[1]
+--  local x = nq[2]
+--  local y = nq[3]
+--  local z = nq[4]
+--  local w2 = w * w
+--  local x2 = x * x
+--  local y2 = y * y
+--  local z2 = z * z
+--  local xy = x * y
+--  local xz = x * z
+--  local yz = y * z
+--  local wx = w * x
+--  local wy = w * y
+--  local wz = w * z
+--  local R = torch.DoubleTensor(3,3):fill(0)
+--  R[1][1] = w2 + x2 - y2 - z2
+--  R[2][1] = 2 * (wz + xy)
+--  R[3][1] = 2 * (xz - wy)
+--  R[1][2] = 2 * (xy - wz) 
+--  R[2][2] = w2 - x2 + y2 - z2 
+--  R[3][2] = 2 * (wx + yz)
+--  R[1][2] = 2 * (wy + xz)
+--  R[2][2] = 2 * (yz - wx) 
+--  R[3][2] = w2 - x2 - y2 + z2
+----  print(R)
+----  print(w2, x2, y2, z2)
+--  return R
+--end
 
 function R2Quaternion(R)
   local q = torch.DoubleTensor(4)
@@ -172,10 +189,12 @@ function rpy2R(rpy)
   return R
 end
 
---rpy = torch.DoubleTensor({math.pi, 0, 0})
---R = rpy2R(rpy)
---print(R)
---print(R2Quaternion(R))
+rpy = torch.DoubleTensor({math.pi, 0, 0})
+R = rpy2R(rpy)
+print(R)
+q = R2Quaternion(R)
+print(R2Quaternion(R))
+print(Quaternion2R(q))
 --R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
 --print(q)
 --R1 = Quaternion2R(q)
