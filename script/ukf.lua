@@ -19,17 +19,18 @@ state[8] = 1
 ns = 12
 P = torch.eye(12):mul(0.0001)
 Q = torch.eye(12):mul(0.0001)
-R = torch.DoubleTensor(12, 12):fill(0)
+R = torch.eye(12):mul(1)
 Chi = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 statePriori = torch.DoubleTensor(state:size()):fill(0)
-PPrioro = torch.DoubleTensor(12, 12):fill(0)
+PPrioro = torch.eye(12, 12):mul(1)
+e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
 Y = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 Z = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 zMean = torch.DoubleTensor(13):fill(0)
 v = torch.DoubleTensor(12):fill(0)
-Pzz = torch.DoubleTensor(12, 12):fill(0)
-Pvv = torch.DoubleTensor(12, 12):fill(0)
-Pxz = torch.DoubleTensor(12, 12):fill(0)
+Pzz = torch.eye(12):mul(1)
+Pvv = torch.eye(12):mul(1)
+Pxz = torch.eye(12):mul(1)
 K = torch.DoubleTensor(12, 12):fill(0)
 
 -- Imu Init
@@ -133,7 +134,7 @@ function processUpdate(tstep, imu)
 
   local qIter = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
   repeat
-    e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
+    e:fill(0)
     for i = 1, 2 * ns + 1 do
       local ei = e:narrow(2, i, 1):fill(0)
       local qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
@@ -184,10 +185,11 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-    local ze = Q2Vector(zqDiff)
-    ZDiff:narrow(1, 7, 3):copy(ze)
-
+    if zqMean:norm() ~= 0 then 
+      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+      local ze = Q2Vector(zqDiff)
+      ZDiff:narrow(1, 7, 3):copy(ze)
+    end
     Pzz:add(ZDiff * ZDiff:t())
   end
   Pzz:div(2 * ns + 1)
@@ -226,19 +228,21 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-    local ze = Q2Vector(zqDiff)
-    ZDiff:narrow(1, 7, 3):copy(ze)
-    
+    if zqMean:norm() ~= 0 then
+      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+      local ze = Q2Vector(zqDiff)
+      ZDiff:narrow(1, 7, 3):copy(ze)
+    end
+
     Pxz:add(WDiff * ZDiff:t())
   end
   Pxz:div(2 * ns + 1)
 
   -- K
-  print(Pvv)
   K = Pxz * torch.inverse(Pvv)
 
   -- posterior
+   
   state = statePriori + K * v
   P = PPrioro - K * Pvv * K:t() 
 
@@ -275,7 +279,6 @@ function measurementGravityUpdate()
   zMean:fill(0)
   zMean:narrow(1, 7, 4):copy(qIter)
 
-  R:fill(0)
   R[7][7] = 0.0001
   R[8][8] = 0.0001 
   R[8][8] = 0.0001
@@ -313,7 +316,6 @@ function measurementGPSUpdate(tstep, gps)
   local zk = torch.DoubleTensor(13):fill(0)
   zk:narrow(1, 1, 3):copy(gpspos)
   v = zk - zMean
-  R:fill(0)
   R[1][1] = 4
   R[2][2] = 4
   R[3][3] = 4
@@ -338,7 +340,6 @@ function measurementRotUpdate(tstep, imu)
   end
   zMean = torch.mean(Z, 2)
   v = zk - zMean
-  R:fill(0)
   R[10][10] = 0.0001
   R[11][11] = 0.0001
   R[12][12] = 0.0001
@@ -350,6 +351,7 @@ end
 --local q = torch.DoubleTensor(4):fill(0)
 
 for i = 1, #dataset do
+--for i = 1, #dataset do
 --for i = 1, 500 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
