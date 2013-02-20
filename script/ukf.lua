@@ -78,7 +78,7 @@ function PrioriEstimate()
   until QCompare(qIterDiff, 0.001)
   state:narrow(1, 7, 4):copy(qIter)
 
-  print(state)
+--  print(state)
 
   print('priori estimate '..tostring(utime()))
 --  print(Chi)
@@ -102,7 +102,7 @@ function PrioriEstimate()
   P:copy(PPrioro)
 --  print(PPrioro)
 
-  print(P)
+--  print(P)
 
 end
 
@@ -275,13 +275,16 @@ function KalmanGainUpdate()
   K = Pxz * torch.inverse(Pvv)
 
   -- posterior
+--  print(K)
+--  print(v)
   local stateadd = K * v
-  state:narrow(1, 1, 6):copy(stateadd:narrow(1, 1, 6))
-  state:narrow(1, 11, 3):copy(stateadd:narrow(1, 10, 3))
+  state:narrow(1, 1, 6):add(stateadd:narrow(1, 1, 6))
+  state:narrow(1, 11, 3):add(stateadd:narrow(1, 10, 3))
   local stateqi = state:narrow(1, 7, 4)
   local stateaddqi = Vector2Q(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t() 
+--  print(state)
 
 end
 
@@ -365,10 +368,6 @@ function measurementMagUpdate()
 end
 
 function measurementRotUpdate(tstep, imu)
-  local zk = torch.DoubleTensor(13):fill(0)
-  zk[11] = imu.wr
-  zk[12] = imu.wp
-  zk[13] = imu.wy
   Z:fill(0)
   for i = 1, 2 * ns + 1 do
     local Zcol = Z:narrow(2, i, 1)
@@ -376,10 +375,15 @@ function measurementRotUpdate(tstep, imu)
     Zcol:narrow(1, 11, 3):copy(Chicol:narrow(1, 11, 3))
   end
   zMean = torch.mean(Z, 2)
-  v = zk - zMean
   R[10][10] = 0.0001
   R[11][11] = 0.0001
   R[12][12] = 0.0001
+
+  v:fill(0)
+  v[10]:copy(-zMean[11]):add(imu.wr) 
+  v[11]:copy(-zMean[12]):add(imu.wp)
+  v[12]:copy(-zMean[13]):add(imu.wy)
+--  v:narrow(1, 10, 3):copy()
 
   KalmanGainUpdate()
 
@@ -389,14 +393,14 @@ end
 
 --for i = 1, #dataset do
 --for i = 1, #dataset do
---for i = 300, 20000 do
+for i = 300, 20000 do
 --for i = 300, 494 do
 --for i = 300, 496 do
-for i = 300, 696 do
+--for i = 300, 696 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
---    measurementRotUpdate(dataset[i].timstamp, dataset[i])
+    measurementRotUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'mag' then
