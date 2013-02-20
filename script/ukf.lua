@@ -56,29 +56,104 @@ gravityInit = false
 gravity = 9.80
 imuTstep = 0
 
+function PrioriEstimate()
+  -- Generate priori estimate state and covariance
+  -- Get mean of pos, vel and avel
+  state:narrow(1, 1, 6):copy(torch.mean(Y:narrow(1, 1, 6), 2))
+  state:narrow(1, 11, 3):copy(torch.mean(Y:narrow(1, 11, 3), 2))
+
+  local qIter = torch.DoubleTensor(4, 1):copy(state:narrow(1, 7, 4))
+  repeat
+    e:fill(0)
+    for i = 1, 2 * ns + 1 do
+      local ei = e:narrow(2, i, 1):fill(0)
+      local qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
+      local eQ = QuaternionMul(qi, QInverse(qIter))
+      ei:copy(Q2Vector(eQ))
+    end
+    local eMean = torch.mean(e,2)
+    local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
+    local qIterDiff = qIterNext - qIter
+    qIter:copy(qIterNext)
+  until QCompare(qIterDiff, 0.001)
+  state:narrow(1, 7, 4):copy(qIter)
+
+--  print(state)
+
+  print('priori estimate '..utime())
+--  print(Chi)
+  PPrioro:fill(0)
+  for i = 1, 2 * ns + 1 do
+    local Chicol = Chi:narrow(2, i, 1)
+    local WDiff = torch.DoubleTensor(12, 1):fill(0)
+    -- Pos & Vel
+    WDiff:narrow(1, 1, 6):copy(Chicol:narrow(1, 1, 6))
+    WDiff:narrow(1, 1, 6):add(-state:narrow(1, 1, 6))
+    -- Angular Vel
+    WDiff:narrow(1, 9, 3):copy(Chicol:narrow(1, 11, 3))
+    WDiff:narrow(1, 9, 3):add(-state:narrow(1, 11, 3))
+    -- Rotation
+    WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
+--    print(WDiff)
+    PPrioro:add(WDiff * WDiff:t())
+  end
+  --print(PPrioro)
+  PPrioro:div(2 * ns + 1)
+  P:copy(PPrioro)
+--  print(PPrioro)
+
+--  print(statePriori)
+
+end
+
+function ProcessModel(dt)
+  -- Process Model Update and generate y
+  local F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
+                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
+  local G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
+                          {dt,0,0}, {0,dt,0}, {0,0,dt}})
+  -- Y
+  for i = 1, 2 * ns + 1 do
+    local Chicol = Chi:narrow(2, i, 1)
+    local Ycol = Y:narrow(2, i, 1)
+    local posvel = Ycol:narrow(1, 1, 6)
+
+    posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+    local omega = Ycol:narrow(1, 11, 3) 
+    omega:copy(gyro)
+    
+    local q = Chicol:narrow(1, 7, 4)
+    local dq = Vector2Q(gyro, dt)
+    Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
+  end
+end
+
 function GenerateSigmaPoints()
   -- Sigma points
-  local W = torch.sqrt((P+Q):mul(2*ns)) 
---  print(W)
+  local W = cholesky(P+Q):mul(math.sqrt(2*ns))
+  print(W)
   Chi:narrow(2, 1, 1):copy(state)
-  local q = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
+  local q = state:narrow(1, 7, 4)
   for i = 2, ns + 1  do
-    local WCol = W:narrow(2, i-1, 1)
+    local Wcol = W:narrow(2, i-1, 1)
     local posChi = Chi:narrow(2, i, 1):copy(state)
     local negChi = Chi:narrow(2, i + ns, 1):copy(state)
     -- Sigma points for pos and vel
-    posChi:narrow(1, 1, 6):add(WCol:narrow(1, 1, 6))
-    negChi:narrow(1, 1, 6):add(-WCol:narrow(1, 1, 6))
+    posChi:narrow(1, 1, 6):add(Wcol:narrow(1, 1, 6))
+    negChi:narrow(1, 1, 6):add(-Wcol:narrow(1, 1, 6))
     -- Sigma points for angular vel
-    posChi:narrow(1, 11, 3):add(WCol:narrow(1, 10, 3))
-    negChi:narrow(1, 11, 3):add(-WCol:narrow(1, 10, 3))
+    posChi:narrow(1, 11, 3):add(Wcol:narrow(1, 10, 3))
+    negChi:narrow(1, 11, 3):add(-Wcol:narrow(1, 10, 3))
 
     -- Sigma points for Quaternion
-    local qW = Vector2Q(WCol:narrow(1, 7, 3))
-    local negqW = Vector2Q(-WCol:narrow(1, 7, 3))
+    local qW = Vector2Q(Wcol:narrow(1, 7, 3))
+    local negqW = Vector2Q(-Wcol:narrow(1, 7, 3))
+--    print(qW)
+--    print(negqW)
     posChi:narrow(1, 7, 4):copy(QuaternionMul(q, qW))
     negChi:narrow(1, 7, 4):copy(QuaternionMul(q, negqW))
   end
+--  print(Chi)
 end
 
 function processUpdate(tstep, imu)
@@ -111,77 +186,21 @@ function processUpdate(tstep, imu)
     end
   end
   -- substract gravity from z axis and convert from g to m/s^2
---  acc[3] = acc[3] - g
---  acc:mul(gravity)
---  gyro[1] = imu.wr
---  gyro[2] = imu.wy
---  gyro[3] = imu.wp
-  
---  GenerateSigmaPoints()
+  acc[3] = acc[3] - g
+  acc:mul(gravity)
+  gyro[1] = imu.wr
+  gyro[2] = imu.wy
+  gyro[3] = imu.wp
 
-  
---  -- Process Model Update and generate y
---  local F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
---                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
---  local G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
---                          {dt,0,0}, {0,dt,0}, {0,0,dt}})
---    -- Y
---  for i = 1, 2 * ns + 1 do
---    local Chicol = Chi:narrow(2, i, 1)
---    local Ycol = Y:narrow(2, i, 1)
---    local posvel = Ycol:narrow(1, 1, 6)
---
---    posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
---    local omega = Ycol:narrow(1, 11, 3) 
---    omega:copy(Chicol:narrow(1, 11, 3))
---    
---    local q = torch.DoubleTensor(4):copy(Chicol:narrow(1, 7, 4))
---    local dq = Vector2Q(gyro)
---    if dq ~= -1 then
-----      print(QuaternionMul(q,dq))
---      Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
---    else
---      Ycol:narrow(1, 7, 4):copy(Chicol:narrow(1, 7, 4))
---    end
---  end
---  -- Generate priori estimate state and covariance
---  statePriori:copy(torch.mean(Y, 2))
---
---  local qIter = torch.DoubleTensor(4):copy(state:narrow(1, 7, 4))
---  repeat
---    e:fill(0)
---    for i = 1, 2 * ns + 1 do
---      local ei = e:narrow(2, i, 1):fill(0)
---      local qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
---      local eQ = QuaternionMul(qi, QInverse(qIter))
---      ei:copy(Q2Vector(eQ))
---    end
---    local eMean = torch.DoubleTensor(3):copy(torch.mean(e,2))
---    local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
---    local qIterDiff = qIterNext - qIter
---    qIter:copy(qIterNext)
---  until QCompare(qIterDiff, 0.001)
---  statePriori:narrow(1, 7, 4):copy(qIter)  
---
---  print('priori estimate '..utime())
---  PPrioro:fill(0)
---  for i = 1, 2 * ns + 1 do
---    local Chicol = Chi:narrow(2, i, 1)
---    local WDiff = torch.DoubleTensor(12, 1):fill(0)
---    -- Pos & Vel
---    WDiff:narrow(1, 1, 6):copy(Chicol:narrow(1, 1, 6))
---    WDiff:narrow(1, 1, 6):add(-statePriori:narrow(1, 1, 6))
---    -- Angular Vel
---    WDiff:narrow(1, 9, 3):copy(Chicol:narrow(1, 11, 3))
---    WDiff:narrow(1, 9, 3):add(-statePriori:narrow(1, 11, 3))
---    -- Rotation
---    WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
---    PPrioro:add(WDiff * WDiff:t())
---  end
---  PPrioro:div(2 * ns + 1)
-----  print(PPrioro)
---
-----  print(statePriori)
+  GenerateSigmaPoints()
+--  print('sigma points')
+--  print(state:t())
+  ProcessModel(dt)
+--  print('process points')
+--  print(state:t())
+  PrioriEstimate()
+--  print('priori points')
+--  print(state:t())  
 end
 
 function KalmanGainUpdate()
@@ -364,9 +383,10 @@ end
 
 --local q = torch.DoubleTensor(4):fill(0)
 
-for i = 1, #dataset do
 --for i = 1, #dataset do
---for i = 1, 500 do
+--for i = 1, #dataset do
+--for i = 300, 20000 do
+for i = 300, 495 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
 --    measurementGravityUpdate()
