@@ -95,7 +95,7 @@ function PrioriEstimate()
     e:fill(0)
     for i = 1, 2 * ns + 1 do
       local ei = e:narrow(2, i, 1):fill(0)
-      local qi = torch.DoubleTensor(4):copy(Y:narrow(2, i, 1):narrow(1, 7, 4))
+      local qi = Y:narrow(2, i, 1):narrow(1, 7, 4)
       local eQ = QuaternionMul(qi, QInverse(qIter))
       ei:copy(Q2Vector(eQ))
     end
@@ -237,7 +237,7 @@ function KalmanGainUpdate()
     ZDiff:narrow(1, 9, 3):add(-zMean:narrow(1, 11, 3))
 
     -- Rotation
-    local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
+    local zqi = Zcol:narrow(1, 7, 4)
     local zqMean = zMean:narrow(1, 7, 4)
     local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
     local ze = Q2Vector(zqDiff)
@@ -262,7 +262,7 @@ function KalmanGainUpdate()
     -- Rotation
     WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
     -- Rotation
-    local yqi = torch.DoubleTensor(4):copy(Ycol:narrow(1, 7, 4))
+    local yqi = Ycol:narrow(1, 7, 4)
     local yqMean = statePriori:narrow(1, 7, 4)
     local yqDiff = QuaternionMul(yqi, QInverse(yqMean))
     local ye = Q2Vector(yqDiff)
@@ -313,7 +313,7 @@ function measurementGravityUpdate()
   for i = 1, 2 * ns + 1 do
     local Zcol = Z:narrow(2, i, 1)
     local Chicol = Chi:narrow(2, i , 1)
-    local qk = torch.DoubleTensor(4):copy(Chicol:narrow(1, 7, 4))
+    local qk = Chicol:narrow(1, 7, 4)
 --    print(QuaternionMul(QuaternionMul(qk, gq), QInverse(qk)))
     Zcol:narrow(1, 7, 4):copy(QuaternionMul(QuaternionMul(qk, gq), QInverse(qk)))
   end
@@ -325,11 +325,11 @@ function measurementGravityUpdate()
     local e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
     for i = 1, 2 * ns + 1 do
       local ei = e:narrow(2, i, 1):fill(0)
-      local qi = torch.DoubleTensor(4):copy(Z:narrow(2, i, 1):narrow(1, 7, 4))
+      local qi = Z:narrow(2, i, 1):narrow(1, 7, 4)
       local eQ = QuaternionMul(qi, QInverse(qIter))
       ei:copy(Q2Vector(eQ))
     end
-    local eMean = torch.DoubleTensor(3):copy(torch.mean(e,2))
+    local eMean = torch.mean(e,2)
     local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
     local qIterDiff = qIterNext - qIter
     qIter:copy(qIterNext)
@@ -411,10 +411,10 @@ end
 
 --for i = 1, #dataset do
 --for i = 1, #dataset do
-for i = 300, 20000 do
+--for i = 300, 20000 do
 --for i = 300, 494 do
 --for i = 300, 496 do
---for i = 300, 696 do
+for i = 300, 696 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
