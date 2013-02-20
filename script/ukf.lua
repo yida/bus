@@ -33,7 +33,7 @@ e = torch.DoubleTensor(3, 2 * ns + 1):fill(0)
 Y = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 Z = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
 zMean = torch.DoubleTensor(13, 1):fill(0)
-v = torch.DoubleTensor(12):fill(0)
+v = torch.DoubleTensor(12, 1):fill(0)
 Pzz = torch.eye(12):mul(1)
 Pvv = torch.eye(12):mul(1)
 Pxz = torch.eye(12):mul(1)
@@ -102,7 +102,7 @@ function PrioriEstimate()
   P:copy(PPrioro)
 --  print(PPrioro)
 
---  print(statePriori)
+--  print(P)
 
 end
 
@@ -131,7 +131,6 @@ end
 function GenerateSigmaPoints()
   -- Sigma points
   local W = cholesky(P+Q):mul(math.sqrt(2*ns))
-  print(W)
   Chi:narrow(2, 1, 1):copy(state)
   local q = state:narrow(1, 7, 4)
   for i = 2, ns + 1  do
@@ -219,11 +218,10 @@ function KalmanGainUpdate()
     -- Rotation
     local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
     local zqMean = zMean:narrow(1, 7, 4)
-    if zqMean:norm() ~= 0 then
-      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-      local ze = Q2Vector(zqDiff)
-      ZDiff:narrow(1, 7, 3):copy(ze)
-    end
+    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+    local ze = Q2Vector(zqDiff)
+    ZDiff:narrow(1, 7, 3):copy(ze)
+
     Pzz:add(ZDiff * ZDiff:t())
   end
   Pzz:div(2 * ns + 1)
@@ -260,13 +258,12 @@ function KalmanGainUpdate()
     ZDiff:narrow(1, 9, 3):add(-zMean:narrow(1, 11, 3))
 
     -- Rotation
-    local zqi = torch.DoubleTensor(4):copy(Zcol:narrow(1, 7, 4))
+    local zqi = Zcol:narrow(1, 7, 4)
     local zqMean = zMean:narrow(1, 7, 4)
-    if zqMean:norm() ~= 0 then
-      local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
-      local ze = Q2Vector(zqDiff)
-      ZDiff:narrow(1, 7, 3):copy(ze)
-    end
+    local zqDiff = QuaternionMul(zqi, QInverse(zqMean))
+    local ze = Q2Vector(zqDiff)
+    ZDiff:narrow(1, 7, 3):copy(ze)
+
     Pxz:add(WDiff * ZDiff:t())
   end
   Pxz:div(2 * ns + 1)
@@ -275,9 +272,13 @@ function KalmanGainUpdate()
   K = Pxz * torch.inverse(Pvv)
 
   -- posterior
-   
-  state = statePriori + K * v
-  P = PPrioro - K * Pvv * K:t() 
+  local stateadd = K * v
+  state:narrow(1, 1, 6):copy(stateadd:narrow(1, 1, 6))
+  state:narrow(1, 11, 3):copy(stateadd:narrow(1, 10, 3))
+  local stateqi = state:narrow(1, 7, 4)
+  local stateaddqi = Vector2Q(stateadd:narrow(1, 7, 3))
+  state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
+  P = P - K * Pvv * K:t() 
 
 end
 
@@ -385,11 +386,11 @@ end
 
 --for i = 1, #dataset do
 --for i = 1, #dataset do
---for i = 300, 20000 do
-for i = 300, 495 do
+for i = 300, 20000 do
+--for i = 300, 495 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
---    measurementGravityUpdate()
+    measurementGravityUpdate()
 --    measurementRotUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
