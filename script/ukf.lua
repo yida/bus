@@ -21,9 +21,36 @@ state[8] = 1
 state[9] = 0
 state[10] = 0
 -- state Cov, Posterior
-P = torch.eye(12):mul(0.0001)
-Q = torch.eye(12):mul(0.0001)
-R = torch.eye(12):mul(1)
+P = torch.eye(12):mul(1) -- estimate error covariance
+posCov = torch.eye(3, 3):mul(0.0001)
+P:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
+velCov = torch.eye(3, 3):mul(0.0004)
+P:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
+qCov   = torch.eye(3, 3):mul(0.00001)
+P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
+omegaCov = torch.eye(3, 3):mul(0.0002)
+P:narrow(1, 10, 3):narrow(2, 10, 3):copy(omegaCov)
+
+Q = torch.eye(12):mul(1) -- process noise covariance
+posCov = torch.eye(3, 3):mul(0.0001)
+velCov = torch.eye(3, 3):mul(0.0004)
+qCov   = torch.eye(3, 3):mul(0.00001)
+omegaCov = torch.eye(3, 3):mul(0.000002)
+Q:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
+Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
+Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
+Q:narrow(1, 10, 3):narrow(2, 10, 3):copy(omegaCov)
+
+R = torch.eye(12):mul(1) -- measurement noise covariance
+posCov = torch.eye(3, 3):mul(4)
+velCov = torch.eye(3, 3):mul(0.0004)
+qCov   = torch.eye(3, 3):mul(0.001)
+omegaCov = torch.eye(3, 3):mul(0.000002)
+R:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
+R:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
+R:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
+R:narrow(1, 10, 3):narrow(2, 10, 3):copy(omegaCov)
+
 
 ns = 12
 Chi = torch.DoubleTensor(state:size(1), 2 * ns + 1):fill(0)
@@ -56,6 +83,7 @@ gravityInit = false
 gravity = 9.80
 imuTstep = 0
 
+local times = 0
 function PrioriEstimate()
   -- Generate priori estimate state and covariance
   -- Get mean of pos, vel and avel
@@ -80,7 +108,8 @@ function PrioriEstimate()
 
 --  print(state)
 
-  print('priori estimate '..tostring(utime()))
+  print('priori estimate '..times)
+  times = times + 1
 --  print(Chi)
   PPrioro:fill(0)
   for i = 1, 2 * ns + 1 do
@@ -94,13 +123,10 @@ function PrioriEstimate()
     WDiff:narrow(1, 9, 3):add(-state:narrow(1, 11, 3))
     -- Rotation
     WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
---    print(WDiff)
     PPrioro:add(WDiff * WDiff:t())
   end
-  --print(PPrioro)
   PPrioro:div(2 * ns + 1)
   P:copy(PPrioro)
---  print(PPrioro)
 
 --  print(P)
 
@@ -150,8 +176,6 @@ function GenerateSigmaPoints()
     -- Sigma points for Quaternion
     local qW = Vector2Q(Wcol:narrow(1, 7, 3))
     local negqW = Vector2Q(-Wcol:narrow(1, 7, 3))
---    print(qW)
---    print(negqW)
     posChi:narrow(1, 7, 4):copy(QuaternionMul(q, qW))
     negChi:narrow(1, 7, 4):copy(QuaternionMul(q, negqW))
   end
@@ -195,14 +219,8 @@ function processUpdate(tstep, imu)
   gyro[3] = imu.wp
 
   GenerateSigmaPoints()
---  print('sigma points')
---  print(state:t())
   ProcessModel(dt)
---  print('process points')
---  print(state:t())
   PrioriEstimate()
---  print('priori points')
---  print(state:t())  
 end
 
 function KalmanGainUpdate()
