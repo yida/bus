@@ -10,7 +10,7 @@ local geo = require 'GeographicLib'
 
 
 local datasetpath = '../data/010213180247/'
-local dataset = loadData(datasetpath, 'imugps')
+local dataset = loadData(datasetpath, 'imugps', 10000)
 
 processInit = false
 imuTstep = 0
@@ -35,6 +35,7 @@ function processUpdate(tstep, acc)
   state = F * state + G * acc
   Q = G * G:t() * 0.01 * 0.01
   P = F * P * F:t() + Q
+  print(state)
 end
 
 function measurementGPSUpdate(GPSpos)
@@ -56,17 +57,19 @@ R = torch.eye(3):mul(1000)
 local firstlat = true
 local basepos = {0.0, 0.0, 0.0}
 
+accBiasX = -0.03
+accBiasY = 0
+accBiasZ = 0
 
 ----local q = torch.DoubleTensor(4):fill(0)
 local lasetstep = dataset[1].timstamp
-for i = 1, #dataset do
---for i = 1, 20 do
+--for i = 1, #dataset do
+for i = 300, 494 do
   if dataset[i].type == 'imu' then
     acc = torch.DoubleTensor({dataset[i].ax - accBiasX, dataset[i].ay - accBiasY, dataset[i].az - accBiasZ})
     -- Rotate pi on X axes
     acc = torch.mv(rotX(math.pi), acc)
-    print(acc[1], acc[2], acc[3])
---    processUpdate(dataset[i].timstamp, acc)
+    processUpdate(dataset[i].timstamp, acc)
   elseif dataset[i].type == 'gps' then
     if dataset[i].latitude and dataset[i].latitude ~= '' then
       lat, lnt = nmea2degree(dataset[i].latitude, dataset[i].northsouth, 

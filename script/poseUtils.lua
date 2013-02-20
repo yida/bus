@@ -1,21 +1,11 @@
 require 'torch-load'
 
-function QCompare(q, res)
-  if math.abs(q[1]) > res then return false end
-  if math.abs(q[2]) > res then return false end
-  if math.abs(q[3]) > res then return false end
-  if math.abs(q[4]) > res then return false end
-  return true
-end
-
-function QDiff(q1, q2, res)
---  print(q1, q2)
---  print(math.abs(q1[1] - q2[1]))
-  if math.abs(q1[1] - q2[1]) > res then return false end
-  if math.abs(q1[2] - q2[2]) > res then return false end
-  if math.abs(q1[3] - q2[3]) > res then return false end
-  if math.abs(q1[4] - q2[4]) > res then return false end
-  return true
+function QCompare(q1, q2)
+  local e1 = Q2Vector(q1)
+  local e2 = Q2Vector(q2)
+--  print(e1:norm())
+--  print(e2:norm())
+  return math.abs(e1:norm() - e2:norm())
 end
 
 function Vector2Q(w, dt)
@@ -194,43 +184,19 @@ function rpy2R(rpy)
   return R
 end
 
---q = torch.DoubleTensor({1, 0, 0, 0})
---print(Q2Vector(q))
---rpy = torch.DoubleTensor({math.pi, 0, 0})
---R = rpy2R(rpy)
---print(R)
---q = R2Quaternion(R)
---print(R2Quaternion(R))
---print(Quaternion2R(q))
---R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
---print(q)
---R1 = Quaternion2R(q)
---print(R1)
---print(q:norm())
-
---q1 = torch.DoubleTensor({-0.2852, -0.1770, -0.6088, 0.7188})
---q2 = torch.DoubleTensor({1, -0.0020, 0.0008, 0.0010})
---q3 = QuaternionMul(q1, q2)
---print(q3)
-
---print(rotX(math.pi/3))
---print(rotY(math.pi/3))
---print(rotZ(math.pi/3))
---x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
---y = torch.cmul(x, torch.ones(3):mul(0.0002))
---print(y)
---a = torch.DoubleTensor({{1},{2}, {3}})
---print(a)
---print(a * a:t())
-
-function cholesky(A)
-  -- http://rosettacode.org/wiki/Cholesky_decomposition
+function pdcheck(A)
+--  print(A)
   local e = torch.symeig(A)
   for i = 1, e:size(1) do
+    if math.abs(e[i]) < 1e-6 then e[i] = 0; end
     if e[i] < 0 then
-      error('Not positive definite matrix')
+      error('Not positive definite matrix'.."("..i..","..e[i]..")")
     end
   end
+end
+function cholesky(A)
+  -- http://rosettacode.org/wiki/Cholesky_decomposition
+  pdcheck(A)
   local m = A:size(1)
   local L = torch.DoubleTensor(A:size(1), A:size(1)):fill(0)
   for i = 1, m do
@@ -247,6 +213,32 @@ function cholesky(A)
     end
   end
   return L
+end
+
+
+function QuaternionMean(QMax, qInit)
+--  print(QMax, qInit)
+  local qIter = torch.DoubleTensor(4):copy(qInit)
+  local e = torch.DoubleTensor(3, 2 * ns):fill(0)
+  local iter = 0
+  local diff = 0
+--  for i = 1, 10 do
+  repeat
+    iter = iter + 1
+    for i = 1, 2 * ns do
+      local ei = e:narrow(2, i, 1):fill(0)
+      local qi = QMax:narrow(2, i, 1)
+      local eQ = QuaternionMul(qi, QInverse(qIter))
+      ei:copy(Q2Vector(eQ))
+    end
+    local eMean = torch.mean(e,2)
+    local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
+    diff = QCompare(qIterNext, qIter)
+    qIter:copy(qIterNext)
+  until diff < 0.0001
+--  print(qIter)
+--  end
+  return qIter, e
 end
 
 --A = torch.DoubleTensor({{ 0.1029,-0.0000, 0.0000, 0.0000,-0.0001, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,0.0000, 0.0000},
@@ -277,3 +269,33 @@ end
 --omegaCov = torch.eye(3, 3):mul(0.0002)
 --P:narrow(1, 10, 3):narrow(2, 10, 3):copy(omegaCov)
 --print(P)
+--q = torch.DoubleTensor({1, 0, 0, 0})
+--print(Q2Vector(q))
+--rpy = torch.DoubleTensor({math.pi, 0, 0})
+--R = rpy2R(rpy)
+--print(R)
+--q = R2Quaternion(R)
+--print(R2Quaternion(R))
+--print(Quaternion2R(q))
+--R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
+--print(q)
+--R1 = Quaternion2R(q)
+--print(R1)
+--print(q:norm())
+
+--q1 = torch.DoubleTensor({-0.2852, -0.1770, -0.6088, 0.7188})
+--q2 = torch.DoubleTensor({1, -0.0020, 0.0008, 0.0010})
+--q3 = QuaternionMul(q1, q2)
+--print(q3)
+
+--print(rotX(math.pi/3))
+--print(rotY(math.pi/3))
+--print(rotZ(math.pi/3))
+--x = torch.DoubleTensor({-0.0020, 0.0008, 0.0010})
+--y = torch.cmul(x, torch.ones(3):mul(0.0002))
+--print(y)
+--a = torch.DoubleTensor({{1},{2}, {3}})
+--print(a)
+--print(a * a:t())
+rpy1 = {17}
+
