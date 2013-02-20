@@ -78,9 +78,9 @@ function PrioriEstimate()
   until QCompare(qIterDiff, 0.001)
   state:narrow(1, 7, 4):copy(qIter)
 
---  print(state)
+  print(state)
 
-  print('priori estimate '..utime())
+  print('priori estimate '..tostring(utime()))
 --  print(Chi)
   PPrioro:fill(0)
   for i = 1, 2 * ns + 1 do
@@ -102,7 +102,7 @@ function PrioriEstimate()
   P:copy(PPrioro)
 --  print(PPrioro)
 
---  print(P)
+  print(P)
 
 end
 
@@ -126,11 +126,14 @@ function ProcessModel(dt)
     local dq = Vector2Q(gyro, dt)
     Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
   end
+--  print(Y)
 end
 
 function GenerateSigmaPoints()
   -- Sigma points
-  local W = cholesky(P+Q):mul(math.sqrt(2*ns))
+--  print(cholesky(P+Q):t())
+  local W = cholesky(P+Q):t():mul(math.sqrt(2*ns))
+  --print(W)
   Chi:narrow(2, 1, 1):copy(state)
   local q = state:narrow(1, 7, 4)
   for i = 2, ns + 1  do
@@ -386,8 +389,10 @@ end
 
 --for i = 1, #dataset do
 --for i = 1, #dataset do
-for i = 300, 20000 do
---for i = 300, 495 do
+--for i = 300, 20000 do
+--for i = 300, 494 do
+--for i = 300, 496 do
+for i = 300, 696 do
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()

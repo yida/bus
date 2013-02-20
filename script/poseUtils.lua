@@ -228,7 +228,7 @@ function cholesky(A)
   local e = torch.symeig(A)
   for i = 1, e:size(1) do
     if e[i] < 0 then
-      print('Not positive definite matrix')
+      error('Not positive definite matrix')
     end
   end
   local m = A:size(1)
