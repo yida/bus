@@ -6,9 +6,9 @@ imucounter = 1
 
 tline = fgetl(fid);
 while ischar(tline)
-%  fprintf(1, '%s\n\n', tline);
-  st = lua2mat(tline)
-  time = st.timstamp
+%  fprintf(1, '\r%s\n\n', tline);
+  st = lua2mat(tline);
+  time = st.timstamp;
   imu(imucounter, :) = [st.r, st.p, st.y, st.wr, st.wp, st.wy, st.ax, st.ay, st.az];
   imucounter = imucounter + 1;
   tline = fgetl(fid);
