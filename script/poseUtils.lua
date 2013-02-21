@@ -11,7 +11,7 @@ end
 function Vector2Q(w, dt)
 --  print(w)
   local dq = torch.DoubleTensor(4):fill(0)
-  if w:norm() == 0 then
+  if w:norm() < 1e-6 then
     dq[1] = 1
     return dq
   end
@@ -40,9 +40,10 @@ end
 
 function QInverse(Q)
   local q = torch.DoubleTensor(4):copy(Q)
-  local norm = q:norm()
-  return torch.DoubleTensor({q[1]/norm, -q[2]/norm,
-                            -q[3]/norm, -q[4]/norm})
+  local rt = q[1]^2 + q[2]^2 + q[3]^2 + q[4]^2
+--  print(rt)
+  return torch.DoubleTensor({q[1]/rt, -q[2]/rt,
+                            -q[3]/rt, -q[4]/rt})
 end
 
 function Quaternion2R(qin)
@@ -61,37 +62,6 @@ function Quaternion2R(qin)
 
   return R
 end
---function Quaternion2R(q)
---  local n = q:norm()
---  local nq = q:div(q:norm())
---  local w = nq[1]
---  local x = nq[2]
---  local y = nq[3]
---  local z = nq[4]
---  local w2 = w * w
---  local x2 = x * x
---  local y2 = y * y
---  local z2 = z * z
---  local xy = x * y
---  local xz = x * z
---  local yz = y * z
---  local wx = w * x
---  local wy = w * y
---  local wz = w * z
---  local R = torch.DoubleTensor(3,3):fill(0)
---  R[1][1] = w2 + x2 - y2 - z2
---  R[2][1] = 2 * (wz + xy)
---  R[3][1] = 2 * (xz - wy)
---  R[1][2] = 2 * (xy - wz) 
---  R[2][2] = w2 - x2 + y2 - z2 
---  R[3][2] = 2 * (wx + yz)
---  R[1][2] = 2 * (wy + xz)
---  R[2][2] = 2 * (yz - wx) 
---  R[3][2] = w2 - x2 - y2 + z2
-----  print(R)
-----  print(w2, x2, y2, z2)
---  return R
---end
 
 function R2Quaternion(R)
   local q = torch.DoubleTensor(4)
@@ -124,7 +94,7 @@ function R2Quaternion(R)
   return q
 end
 
-function QuaternionMul(Q1, Q2)  -- q = q1 x q2
+function QuaternionMul2(Q1, Q2)
   local q = torch.DoubleTensor(4)
   local q1 = torch.DoubleTensor(4):copy(Q1)
   local q2 = torch.DoubleTensor(4):copy(Q2)
@@ -135,52 +105,103 @@ function QuaternionMul(Q1, Q2)  -- q = q1 x q2
   return q
 end
 
+function QuaternionMul(Q1, Q2)  -- q = q1 x q2
+  local q = torch.DoubleTensor(4)
+  local q1 = torch.DoubleTensor(4):copy(Q1)
+  local q2 = torch.DoubleTensor(4):copy(Q2)
+  local a1 = q1[1]
+  local b1 = q1[2]
+  local c1 = q1[3]
+  local d1 = q1[4]
+  local a2 = q2[1]
+  local b2 = q2[2]
+  local c2 = q2[3]
+  local d2 = q2[4]
+  q[1] = a1*a2 - b1*b2 - c1*c2 - d1*d2
+  q[2] = a1*b2 + b1*a2 + c1*d2 - d1*c2
+  q[3] = a1*c2 - b1*d2 + c1*a2 + d1*b2
+  q[4] = a1*d2 + b1*c2 - c1*b2 + d1*a2
+  return q
+end
+
 function R2rpy(R)
-  local n = R:narrow(2, 1, 1)
-  local o = R:narrow(2, 2, 1)
-  local a = R:narrow(2, 3, 1)
-  local rpy = torch.DoubleTensor(3):fill(0)
-  rpy[3] = torch.cdiv(n[2], n[1])
-  rpy[2] = torch.cdiv(-n[3], n[1]*math.cos(rpy[3])+n[2]*math.sin(rpy[3]))
-  rpy[1] = torch.cdiv(a[1]*math.sin(rpy[3])-a[2]*math.cos(rpy[3]), 
-                      -o[1]*math.sin(rpy[3])+o[2]*math.cos(rpy[3]))
-  rpy:atan()
+  -- http://planning.cs.uiuc.edu/node102.html
+  local y = math.atan2(R[2][1], R[1][1])
+  local p = math.atan2(-R[3][1], math.sqrt(R[3][2]^2+R[3][3]^2))
+  local r = math.atan2(R[3][2], R[3][3])
+  local rpy = torch.DoubleTensor({r, p, y})
   return rpy
 end
 
-
-function rotX(theta)
-  return torch.DoubleTensor({{1,               0,                0}, 
-                             {0, math.cos(theta), -math.sin(theta)}, 
-                             {0, math.sin(theta),  math.cos(theta)}})
+function rpy2Quaternion(rpyin)
+  return R2Quaternion(rpy2R(rpyin))
 end
 
-function rotY(theta)
-  return torch.DoubleTensor({{math.cos(theta), 0, math.sin(theta)},
-                             {0,               1,               0}, 
-                             {-math.sin(theta),0, math.cos(theta)}})
+function Quaternion2rpy(Qin)
+  local q = torch.DoubleTensor(4):copy(Qin)
+  local rpy = torch.DoubleTensor(3):fill(0)
+  rpy[1] = math.atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]))
+  rpy[2] = math.asin(2*(q[1]*q[3]-q[4]*q[2]))
+  rpy[3] = math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
+  return rpy
 end
 
-function rotZ(theta)
-  return torch.DoubleTensor({{math.cos(theta), -math.sin(theta), 0},
-                             {math.sin(theta), math.cos(theta), 0},
-                             {0,               0,                1}})
+function rotX(gamma)
+  -- http://planning.cs.uiuc.edu/node102.html
+  local R = torch.DoubleTensor(3,3):fill(0)
+  R[2][2] = cos(gamma)
+  R[3][2] = sin(gamma) 
+  R[1][1] = 1
+  R[2][3] = -sin(gamma)
+  R[3][3] = cos(gamma)
+  return R
+end
+
+function rotY(beta)
+  -- http://planning.cs.uiuc.edu/node102.html
+  local R = torch.DoubleTensor(3,3):fill(0)
+  R[1][1] = cos(beta)
+  R[1][3] = sin(beta) 
+  R[2][2] = 1
+  R[3][1] = -sin(beta)
+  R[3][3] = cos(beta)
+  return R
+end
+
+function rotZ(alpha)
+  -- http://planning.cs.uiuc.edu/node102.html
+  local R = torch.DoubleTensor(3,3):fill(0)
+  R[1][1] = cos(alpha)
+  R[2][1] = sin(alpha)
+  R[1][2] = -sin(alpha)
+  R[2][2] = cos(alpha)
+  R[3][3] = 1
+  return R
 end
 
 function rpy2R(rpy)
-  local Rz = torch.DoubleTensor(3,3):fill(0)
-  local Ry = torch.DoubleTensor(3,3):fill(0)
-  local Rx = torch.DoubleTensor(3,3):fill(0)
-  local r = rpy[{1}]
-  local p = rpy[{2}]
-  local y = rpy[{3}]
-  Rz = rotZ(y)
-  Ry = rotY(p)
-  Rx = rotX(r)
---  print(Rz)
---  print(Ry)
---  print(Rx)
-  local R = torch.mm(Rz, Ry, Rx)
+  -- http://planning.cs.uiuc.edu/node102.html
+  local R = torch.DoubleTensor(3,3):fill(0)
+  local alpha = rpy[3]
+  local beta = rpy[2]
+  local gamma = rpy[1]
+  R[1][1] = math.cos(alpha) * math.cos(beta)
+  R[2][1] = math.sin(alpha) * math.cos(beta)
+  R[3][1] = -math.sin(beta)
+  R[1][2] = math.cos(alpha) * math.sin(beta) * math.sin(gamma) - math.sin(alpha) * math.cos(gamma)
+  R[2][2] = math.sin(alpha) * math.sin(beta) * math.sin(gamma) + math.cos(alpha) * math.cos(gamma)
+  R[3][2] = math.cos(beta) * math.sin(gamma)
+  R[1][3] = math.cos(alpha) * math.sin(beta) * math.cos(gamma) + math.sin(alpha) * math.sin(gamma)
+  R[2][3] = math.sin(alpha) * math.sin(beta) * math.cos(gamma) - math.cos(alpha) * math.sin(gamma)
+  R[3][3] = math.cos(beta) * math.cos(gamma)
+
+--  local r = rpy[1]
+--  local p = rpy[2]
+--  local y = rpy[3]
+--  Rz = rotZ(y)
+--  Ry = rotY(p)
+--  Rx = rotX(r)
+--  local R = Rz * Ry * Rz
   return R
 end
 
@@ -219,13 +240,13 @@ end
 function QuaternionMean(QMax, qInit)
 --  print(QMax, qInit)
   local qIter = torch.DoubleTensor(4):copy(qInit)
-  local e = torch.DoubleTensor(3, 2 * ns):fill(0)
+  local e = torch.DoubleTensor(3, QMax:size(2)):fill(0)
   local iter = 0
   local diff = 0
 --  for i = 1, 10 do
   repeat
     iter = iter + 1
-    for i = 1, 2 * ns do
+    for i = 1, QMax:size(2) do
       local ei = e:narrow(2, i, 1):fill(0)
       local qi = QMax:narrow(2, i, 1)
       local eQ = QuaternionMul(qi, QInverse(qIter))
@@ -271,11 +292,11 @@ end
 --print(P)
 --q = torch.DoubleTensor({1, 0, 0, 0})
 --print(Q2Vector(q))
-rpy = torch.DoubleTensor({-math.pi, 0, -0.05})
-R = rpy2R(rpy)
-print(R)
---q = R2Quaternion(R)
-print(R2Quaternion(R))
+--rpy = torch.DoubleTensor({-math.pi, 0, -0.05})
+--R = rpy2R(rpy)
+--print(R)
+----q = R2Quaternion(R)
+--print(R2Quaternion(R))
 --print(Quaternion2R(q))
 --R = torch.DoubleTensor({{0.5, 0.6, 0},{0.3, 0.7, 0},{0, 0, 1}})
 --print(q)
@@ -297,5 +318,41 @@ print(R2Quaternion(R))
 --a = torch.DoubleTensor({{1},{2}, {3}})
 --print(a)
 --print(a * a:t())
-rpy1 = {17}
+--rpy1 = {17}
+--q1 = torch.DoubleTensor({1,0,1,0})
+--q2 = torch.DoubleTensor({1,0.5,0.5,0.75})
+--print(QInverse(q1))
+--print(QuaternionMul(q1, q2))
+--print(QuaternionMul2(q1, q2))
+rpy1 = torch.DoubleTensor({178*math.pi/180, 0,0})
+q1 = R2Quaternion(rpy2R(rpy1))
+rpy2 = torch.DoubleTensor({180*math.pi/180, 0,0})
+q2 = R2Quaternion(rpy2R(rpy2))
+print(q1)
+print(q2)
+print(QuaternionMul(q1, q2))
+--rpy3 = torch.DoubleTensor({179.21*math.pi/180, 0,0})
+--q3 = R2Quaternion(rpy2R(rpy3))
+----print(q1, q2)
+--Q = torch.DoubleTensor(4, 2)
+--Q:narrow(2, 1, 1):copy(q1)
+--Q:narrow(2, 2, 1):copy(q2)
+--print(Q)
+--print('mean')
+--y, e = QuaternionMean(Q, q3)
+--print(y)
+--print(R2rpy(Quaternion2R(y)))
+
+--rpyr = R2rpy(Quaternion2R(q1))
+--rpyr = rpyr * 180 / math.pi
+--print(rpyr)
+--rpy4 = torch.DoubleTensor({math.pi, 0, math.pi/3})
+--rpy4 = torch.DoubleTensor({-3.07, -0.06, -0.18})
+--print(rpy4)
+----print(R4)
+--q4 = rpy2Quaternion(rpy4)
+--print(q4)
+--print(Quaternion2rpy(q4))
+--print(q2)
+--print(Quaternion2rpy(rpy2Quaternion(rpy4)))
 

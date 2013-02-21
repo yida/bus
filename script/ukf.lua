@@ -9,6 +9,8 @@ local util = require 'util'
 local geo = require 'GeographicLib'
 
 local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/'
+--local dataset = loadData(datasetpath, 'log')
 local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugps')
 --local dataset = loadData(datasetpath, 'imuPruned')
@@ -121,6 +123,7 @@ function processUpdate(tstep, imu)
 
   local rpy = torch.DoubleTensor({imu.r, imu.p, imu.y})
   print(rpy)
+--  print(R2Quaternion(rpy2R(rpy)))
 
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc)
@@ -165,21 +168,24 @@ function ProcessModel(dt)
   local G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
                           {dt,0,0}, {0,dt,0}, {0,0,dt}})
   -- Y
+--  print(Chi)
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
     local Ycol = Y:narrow(2, i, 1)
     local posvel = Ycol:narrow(1, 1, 6)
 
     posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
-    
     local q = Chicol:narrow(1, 7, 4)
-    local dq = Vector2Q(gyro, dt)
+--    local dq = Vector2Q(gyro, dt)
+    local dq = torch.DoubleTensor({1,0,0,0})
     Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ, e = QuaternionMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
+--  print('yMean')
+--  print(yMean)
 end
 
 
@@ -189,9 +195,7 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local Pzz = torch.DoubleTensor(zMean:size(1), zMean:size(1)):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
-    local ZDiff = torch.DoubleTensor(zMean:size(1), 1):fill(0)
-    ZDiff:copy(Zcol)
-    ZDiff:add(-zMean)
+    local ZDiff = Zcol - zMean
     Pzz:add(ZDiff * ZDiff:t())
   end
   Pzz:div(2 * ns)
@@ -206,8 +210,6 @@ function KalmanGainUpdate(Z, zMean, v, R)
     WDiff:narrow(1, 1, 6):copy(Ycol:narrow(1, 1, 6))
     WDiff:narrow(1, 1, 6):add(-yMean:narrow(1, 1, 6))
     -- Rotation
-    WDiff:narrow(1, 7, 3):copy(e:narrow(2, i, 1))
-    -- Rotation
     local Yqi = Ycol:narrow(1, 7, 4)
     local YqMean = yMean:narrow(1, 7, 4)
     local YqDiff = QuaternionMul(Yqi, QInverse(YqMean))
@@ -215,10 +217,7 @@ function KalmanGainUpdate(Z, zMean, v, R)
     WDiff:narrow(1, 7, 3):copy(Ye)
 
     local Zcol = Z:narrow(2, i, 1)
-    local ZDiff = torch.DoubleTensor(zMean:size(1), 1):fill(0)
-    ZDiff:copy(Zcol)
-    ZDiff:add(-zMean)
-
+    local ZDiff = Zcol - zMean
     Pxz:add(WDiff * ZDiff:t())
   end
   Pxz:div(2 * ns)
@@ -233,7 +232,7 @@ function KalmanGainUpdate(Z, zMean, v, R)
   state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
   print(state)
---  print(gyro:t())
+  print(gyro:t())
 --  local Q = state:narrow(1, 7, 4)
 --  print 'fafaf'
 --  print(R2rpy(Quaternion2R(Q)))
@@ -300,12 +299,14 @@ end
 
 --for i = 350, #dataset do
 --for i = 1, #dataset do
-for i = 300, 10000 do
+--for i = 1, 10000 do
+--for i = 1, 20 do
 --for i = 350, 500 do
---for i = 300, 401 do
+for i = 300, 401 do
 --for i = 300, 696 do
 --for i = 300, 3000 do
   if dataset[i].type == 'imu' then
+--    util.ptable(dataset[i])
     processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
