@@ -14,7 +14,7 @@ local datasetpath = '../data/010213180247/'
 --local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
-local dataset = loadData(datasetpath, 'imugps')
+local dataset = loadData(datasetpath, 'imugps', 20000)
 --local dataset = loadData(datasetpath, 'imuPruned')
 
 -- state init Posterior state
@@ -39,7 +39,7 @@ Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
-posCovR = torch.eye(3, 3):mul(2^2)
+posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
 qCovR   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
 
@@ -92,11 +92,10 @@ function GenerateSigmaPoints()
 end
 
 function processUpdate(tstep, imu)
-  if gpsInit == false then return end
   rawacc[1] = imu.ax - accBiasX
   rawacc[2] = imu.ay - accBiasY
   rawacc[3] = imu.az - accBiasZ
-  local Rconst = rpy2R(torch.Tensor({math.pi, 0, 0}))
+  local Rconst = rpy2R(torch.Tensor({0, math.pi/2, 0}))
   local R = Quaternion2R(state:narrow(1, 7, 4))
   gacc = Rconst * R:t() * rawacc
 
@@ -121,6 +120,8 @@ function processUpdate(tstep, imu)
       return
     end
   end
+
+  if gpsInit == false then return end
 
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc)
@@ -249,6 +250,8 @@ function measurementGPSUpdate(tstep, gps)
 
   local gpspos = torch.Tensor({gpsposAb.x - basepos.x, 
                                       gpsposAb.y - basepos.y, 0})
+  gpspos[1] = -gpspos[1]
+  gpspos[2] = -gpspos[2]
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
@@ -256,7 +259,15 @@ function measurementGPSUpdate(tstep, gps)
     Zcol:copy(Chicol:narrow(1, 1, 3))
   end
   local zMean = torch.mean(Z, 2)
+
+  -- reset Z with zMean since no measurement here
+  print('state pos')
+  print(zMean)
+  print('gps pos')
+  print(gpspos)
+  gpspos[3] = zMean[3]
   local v = gpspos - zMean
+  print('error')
   print(v)
 
   local R = posCovR
@@ -276,6 +287,9 @@ for i = 1, #dataset do
 --for i = 100, 505 do
 --for i = 300, 696 do
 --for i = 100, 3000 do
+--  print(i)
+  if i > 11709 then error() end
+--  if i > 12709 then error() end
   if dataset[i].type == 'imu' then
 --    util.ptable(dataset[i])
     processUpdate(dataset[i].timstamp, dataset[i])
