@@ -8,22 +8,22 @@ local serialization = require 'serialization'
 local util = require 'util'
 local geo = require 'GeographicLib'
 
---local datasetpath = '../data/010213180247/'
-local datasetpath = '../data/'
-local dataset = loadData(datasetpath, 'log')
+local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/'
+--local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
---local dataset = loadData(datasetpath, 'imugps')
+local dataset = loadData(datasetpath, 'imugps')
 --local dataset = loadData(datasetpath, 'imuPruned')
 
 emptyState = torch.DoubleTensor(10, 1):fill(0)
 emptyState[7] = 1
 -- state init Posterior state
 state = torch.DoubleTensor(10, 1):copy(emptyState) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
-state[7] = 0
-state[8] = 1
-state[9] = 0
-state[10] = 0
+--state[7] = 0
+--state[8] = 1
+--state[9] = 0
+--state[10] = 0
 
 -- state Cov, Posterior
 P = torch.DoubleTensor(9, 9):fill(0) -- estimate error covariance
@@ -70,6 +70,7 @@ gInitCountMax = 100
 
 processInit = false
 gravityInit = false
+gpsInit = false
 gravity = 9.80
 imuTstep = 0
 
@@ -94,31 +95,14 @@ function GenerateSigmaPoints()
 end
 
 function processUpdate(tstep, imu)
+  if gpsInit == false then return end
   rawacc[1] = imu.ax - accBiasX
   rawacc[2] = imu.ay - accBiasY
   rawacc[3] = imu.az - accBiasZ
-  -- Rotate Acc to world coordinate
---  print('rawacc')
---  print(rawacc)
---  local qwb = state:narrow(1, 7, 4)
---  local rawaccq = torch.DoubleTensor(4):fill(0)
---  rawaccq:narrow(1, 2, 3):copy(rawacc)
---  print'rawaccq'
---  print(rawaccq)
---  local gaccq = QuaternionMul(QInverse(qwb), rawaccq)
---  gacc:copy(gaccq:narrow(1,2,3))
---  print('gaccq')
---  print(gaccq)
---  print('gacc')
---  print(gacc)
+  local Rconst = rpy2R(torch.DoubleTensor({math.pi, 0, 0}))
   local R = Quaternion2R(state:narrow(1, 7, 4))
---  print('rawacc')
---  print(rawacc)
-  gacc = R:t() * rawacc
---  print('gacc')
---  print(gacc)
+  gacc = Rconst * R:t() * rawacc
 
---  print(gacc)
   if processInit == false then 
     processInit = true
     imuTstep = tstep
@@ -140,10 +124,10 @@ function processUpdate(tstep, imu)
       return
     end
   end
-  print('dstaa')
-  print(state:narrow(1, 1, 6))
-  print('state')
-  print(Quaternion2rpy(state:narrow(1, 7, 4)):mul(180/math.pi))
+--  print('dstaa')
+--  print(state:narrow(1, 1, 6))
+--  print('state')
+--  print(Quaternion2rpy(state:narrow(1, 7, 4)):mul(180/math.pi))
 --  print('rawacc')
 --  print(rawacc)
 --  print('gacc')
@@ -155,6 +139,7 @@ function processUpdate(tstep, imu)
   acc:copy(gacc)
 --  print(acc)
   acc:add(-g)
+--  print('acc')
 --  print(acc)
   acc = acc * gravity
   gyro[1] = imu.wr
@@ -172,7 +157,7 @@ function PrioriEstimate()
   -- priori state = mean(Y)
   state:copy(yMean)
 
-  print('priori estimate '..times)
+--  print('priori estimate '..times)
   times = times + 1
   local PPriori = torch.DoubleTensor(9, 9):fill(0)
   for i = 1, 2 * ns do
@@ -277,19 +262,7 @@ function measurementGravityUpdate()
   local zMean = torch.mean(Z, 2)
   local v = torch.DoubleTensor(3, 1):copy(rawacc)
   v:add(-zMean)
---  print('gyro')
---  print(gyro)
---  print 'rot acc'
---  print(gacc)
---  print(g)
---  print('rawacc')
---  print(rawacc)
---  print('zmean')
---  print(zMean)
---  print('diff')
---  print(v)
-  local R = torch.DoubleTensor(3, 3):fill(0)
-  R:copy(qCovR)
+  local R = qCovR
   KalmanGainUpdate(Z, zMean, v, R)
 end
 
@@ -298,6 +271,7 @@ firstlat = true
 local basepos = {0.0, 0.0, 0.0}
 function measurementGPSUpdate(tstep, gps)
   if gps.latitude == nil or gps.latitude == '' then return end
+  
   local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, 
                                 gps.longtitude, gps.eastwest)
   local gpsposAb = geo.Forward(lat, lnt, 6)
@@ -305,7 +279,9 @@ function measurementGPSUpdate(tstep, gps)
   if firstlat then
       basepos = gpsposAb
       firstlat = false
+      gpsInit = true
   end
+
   local gpspos = torch.DoubleTensor({gpsposAb.x - basepos.x, 
                                       gpsposAb.y - basepos.y, 0})
   local Z = torch.DoubleTensor(3, 2 * ns):fill(0)
@@ -317,6 +293,7 @@ function measurementGPSUpdate(tstep, gps)
   local zMean = torch.mean(Z, 2)
   local zk = torch.DoubleTensor(3, 1):copy(gpspos)
   local v = zk - zMean
+  print(v)
 
   local R = torch.DoubleTensor(3, 3):fill(0)
   R:copy(posCovR)
@@ -332,18 +309,19 @@ end
 
 --for i = 100, #dataset do
 for i = 1, #dataset do
---for i = 1, 10000 do
---for i = 1, 20 do
+--for i = 1, 8800 do
+--for i = 1, 200 do
+--for i = 1, 500 do
 --for i = 300, 421 do
 --for i = 100, 505 do
 --for i = 300, 696 do
 --for i = 100, 3000 do
   if dataset[i].type == 'imu' then
 --    util.ptable(dataset[i])
-    processUpdate(dataset[i].timestamp, dataset[i])
+    processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
---    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
+    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'mag' then
 --    measurementMagUpdate(dataset[i].timstamp, dataset[i])
   end
