@@ -214,7 +214,7 @@ while (1) do
       elseif rawdata[4] == 34 and imuFlag then
         data = extractImu(rawdata, size)
         data.timestamp = timestamp
-        print(data.ax, data.ay, data.az)
+        print(data.wr, data.wy, data.wp)
       elseif rawdata[4] == 35 and magFlag then
         data = extractMag(rawdata, size)
         data.timestamp = timestamp

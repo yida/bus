@@ -8,10 +8,11 @@ local serialization = require 'serialization'
 local util = require 'util'
 local geo = require 'GeographicLib'
 
-local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/'
---local dataset = loadData(datasetpath, 'log')
-local dataset = loadData(datasetpath, 'imuPruned', 10000)
+--local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/'
+local dataset = loadData(datasetpath, 'log')
+--local dataset = loadData(datasetpath, 'imuPruned')
+--local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugps')
 --local dataset = loadData(datasetpath, 'imuPruned')
 
@@ -60,9 +61,10 @@ accBiasY = 0
 accBiasZ = 0
 acc = torch.DoubleTensor(3, 1):fill(0)
 gacc = torch.DoubleTensor(3, 1):fill(0)
+rawacc = torch.DoubleTensor(3, 1):fill(0)
 gyro = torch.DoubleTensor(3, 1):fill(0)
 
-g = 0
+g = torch.DoubleTensor(3, 1):fill(0)
 gInitCount = 0
 gInitCountMax = 100
 
@@ -92,13 +94,31 @@ function GenerateSigmaPoints()
 end
 
 function processUpdate(tstep, imu)
-  local curR = Quaternion2R(state:narrow(1, 7, 4))
-  gacc[1] = imu.ax - accBiasX
-  gacc[2] = imu.ay - accBiasY
-  gacc[3] = imu.az - accBiasZ
+  rawacc[1] = imu.ax - accBiasX
+  rawacc[2] = imu.ay - accBiasY
+  rawacc[3] = imu.az - accBiasZ
   -- Rotate Acc to world coordinate
-  gacc = curR * gacc
+--  print('rawacc')
+--  print(rawacc)
+--  local qwb = state:narrow(1, 7, 4)
+--  local rawaccq = torch.DoubleTensor(4):fill(0)
+--  rawaccq:narrow(1, 2, 3):copy(rawacc)
+--  print'rawaccq'
+--  print(rawaccq)
+--  local gaccq = QuaternionMul(QInverse(qwb), rawaccq)
+--  gacc:copy(gaccq:narrow(1,2,3))
+--  print('gaccq')
+--  print(gaccq)
+--  print('gacc')
+--  print(gacc)
+  local R = Quaternion2R(state:narrow(1, 7, 4))
+--  print('rawacc')
+--  print(rawacc)
+  gacc = R:t() * rawacc
+--  print('gacc')
+--  print(gacc)
 
+--  print(gacc)
   if processInit == false then 
     processInit = true
     imuTstep = tstep
@@ -110,24 +130,32 @@ function processUpdate(tstep, imu)
   imuTstep = tstep
 
   if not gravityInit then
-    g = g + gacc:norm()  
+    g:add(gacc)
     gInitCount = gInitCount + 1
     if gInitCount >= gInitCountMax then
       print('Initiate Gravity')
-      g = g / gInitCount
+      g = g:div(gInitCount)
       gravityInit = true
     else
       return
     end
   end
-
-  local rpy = torch.DoubleTensor({imu.r, imu.p, imu.y})
-  print(rpy)
---  print(R2Quaternion(rpy2R(rpy)))
-
+  print('dstaa')
+  print(state:narrow(1, 1, 6))
+  print('state')
+  print(Quaternion2rpy(state:narrow(1, 7, 4)):mul(180/math.pi))
+--  print('rawacc')
+--  print(rawacc)
+--  print('gacc')
+--  print(gacc)
+-- 
+--  print('GGGG')
+--  print(g)
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc)
-  acc[3] = acc[3] - g
+--  print(acc)
+  acc:add(-g)
+--  print(acc)
   acc = acc * gravity
   gyro[1] = imu.wr
   gyro[2] = imu.wy
@@ -176,8 +204,8 @@ function ProcessModel(dt)
 
     posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
     local q = Chicol:narrow(1, 7, 4)
---    local dq = Vector2Q(gyro, dt)
-    local dq = torch.DoubleTensor({1,0,0,0})
+    local dq = Vector2Q(gyro, dt)
+--    local dq = torch.DoubleTensor({1,0,0,0})
     Ycol:narrow(1, 7, 4):copy(QuaternionMul(q,dq))
   end
  -- Y mean
@@ -231,29 +259,34 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Q(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
-  print(state)
-  print(gyro:t())
---  local Q = state:narrow(1, 7, 4)
---  print 'fafaf'
---  print(R2rpy(Quaternion2R(Q)))
+--  print(state)
+--  print(gyro:t())
 --  print(P)
 end
 
 function measurementGravityUpdate()
   if not gravityInit then return end
-  local gv = torch.DoubleTensor({0,0, gravity * g})
-  local gq = Vector2Q(gv)
+  local gq = torch.DoubleTensor({0,0,0,1})
   local Z = torch.DoubleTensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
     local Chicol = Chi:narrow(2, i , 1)
     local qk = Chicol:narrow(1, 7, 4)
-    Zcol:copy(Q2Vector(QuaternionMul(QuaternionMul(qk, gq), QInverse(qk))))
+    Zcol:copy(QuaternionMul(qk, gq):narrow(1, 2, 3))
   end
   local zMean = torch.mean(Z, 2)
-  local v = torch.DoubleTensor(3, 1):copy(gacc)
+  local v = torch.DoubleTensor(3, 1):copy(rawacc)
   v:add(-zMean)
---  print('vvv')
+--  print('gyro')
+--  print(gyro)
+--  print 'rot acc'
+--  print(gacc)
+--  print(g)
+--  print('rawacc')
+--  print(rawacc)
+--  print('zmean')
+--  print(zMean)
+--  print('diff')
 --  print(v)
   local R = torch.DoubleTensor(3, 3):fill(0)
   R:copy(qCovR)
@@ -297,17 +330,17 @@ end
 
 --local q = torch.DoubleTensor(4):fill(0)
 
---for i = 350, #dataset do
---for i = 1, #dataset do
+--for i = 100, #dataset do
+for i = 1, #dataset do
 --for i = 1, 10000 do
 --for i = 1, 20 do
---for i = 350, 500 do
-for i = 300, 401 do
+--for i = 300, 421 do
+--for i = 100, 505 do
 --for i = 300, 696 do
---for i = 300, 3000 do
+--for i = 100, 3000 do
   if dataset[i].type == 'imu' then
 --    util.ptable(dataset[i])
-    processUpdate(dataset[i].timstamp, dataset[i])
+    processUpdate(dataset[i].timestamp, dataset[i])
     measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timstamp, dataset[i])

@@ -36,6 +36,6 @@ mean(ax)
 mean(ay)
 mean(az)
 
-%figure;plot(x, A(1, :), x, A(2, :), x, A(3, :))
-%figure;plot(x, B(1, :), x, B(2, :), x, B(3, :))
+figure;plot(x, A(1, :), x, A(2, :), x, A(3, :))
+figure;plot(x, B(1, :), x, B(2, :), x, B(3, :))
 figure;plot(x, C(1, :), x, C(2, :), x, C(3, :))
