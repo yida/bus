@@ -146,32 +146,32 @@ end
 function rotX(gamma)
   -- http://planning.cs.uiuc.edu/node102.html
   local R = torch.Tensor(3,3):fill(0)
-  R[2][2] = cos(gamma)
-  R[3][2] = sin(gamma) 
+  R[2][2] = math.cos(gamma)
+  R[3][2] = math.sin(gamma) 
   R[1][1] = 1
-  R[2][3] = -sin(gamma)
-  R[3][3] = cos(gamma)
+  R[2][3] = -math.sin(gamma)
+  R[3][3] = math.cos(gamma)
   return R
 end
 
 function rotY(beta)
   -- http://planning.cs.uiuc.edu/node102.html
   local R = torch.Tensor(3,3):fill(0)
-  R[1][1] = cos(beta)
-  R[1][3] = sin(beta) 
+  R[1][1] = math.cos(beta)
+  R[1][3] = math.sin(beta) 
   R[2][2] = 1
-  R[3][1] = -sin(beta)
-  R[3][3] = cos(beta)
+  R[3][1] = -math.sin(beta)
+  R[3][3] = math.cos(beta)
   return R
 end
 
 function rotZ(alpha)
   -- http://planning.cs.uiuc.edu/node102.html
   local R = torch.Tensor(3,3):fill(0)
-  R[1][1] = cos(alpha)
-  R[2][1] = sin(alpha)
-  R[1][2] = -sin(alpha)
-  R[2][2] = cos(alpha)
+  R[1][1] = math.cos(alpha)
+  R[2][1] = math.sin(alpha)
+  R[1][2] = -math.sin(alpha)
+  R[2][2] = math.cos(alpha)
   R[3][3] = 1
   return R
 end
