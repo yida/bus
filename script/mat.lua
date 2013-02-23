@@ -90,9 +90,9 @@ function typeByteSize(Type)
   elseif Type == 6 then
     return 4
   elseif Type == 7 then
-    return 2
-  elseif Type == 9 then
     return 4
+  elseif Type == 9 then
+    return 8
   elseif Type == 12 then
     return 8
   elseif Type == 13 then
@@ -197,7 +197,7 @@ end
 
 function parsemiUINT16(data, num)
   if num == nil then num = 1 end
-  print(num, #data)
+--  print(num, #data)
   assert(num * 2 == #data)
   local n = {}
   for j = 1, num do
@@ -284,26 +284,79 @@ function parsemiINT32(data, num)
 end
 
 function parsemiDOUBLE(data, num)
+  print('Parsing DOUBLE data')
   if num == nil then num = 1 end
-  assert(num * 4 <= #data)
+  assert(num * 8 <= #data)
   local n = {}
   for j = 1, num do
-    local i = 1 + (j - 1) * 4
-    n[j] = tonumber(ffi.new("double", 
-              bit.bor(bit.lshift(data:byte(i + 3), 24), bit.lshift(data:byte(i + 2), 16), 
-              bit.lshift(data:byte(i + 1), 8), data:byte(i))))
+    local i = 1 + (j - 1) * 8
+    local L = bit.bor(
+              bit.lshift(data:byte(i + 3), 24), bit.lshift(data:byte(i + 2), 16), 
+              bit.lshift(data:byte(i + 1), 8), data:byte(i))
+    local H = bit.bor(
+              bit.lshift(data:byte(i + 7), 24), bit.lshift(data:byte(i + 6), 16), 
+              bit.lshift(data:byte(i + 5), 8), data:byte(i + 4))
+    
+    local value = 0
+    local order = 52
+    for k = 1, 32 do
+      local c = bit.band(1, bit.rshift(L, k - 1))
+      value = value + c * 2^(-order)
+      order = order - 1
+    end
+    for k = 1, 20 do
+      local c = bit.band(1, bit.rshift(H, k - 1))
+      value = value + c * 2^(-order)
+      order = order - 1
+    end
+    local e = 0
+    for k = 21, 31 do
+      local c = bit.band(1, bit.rshift(H, k - 1))
+      e = e + 2^(k - 21) * c
+    end
+    value = value + 1
+    local sign = bit.band(1, bit.rshift(H, 31))
+    value = value * 2^(e-1023)
+    value = value * (-1)^sign
+    n[j] = value
   end
   if num == 1 then return n[1] else return n end
 end
 
 function parsemiSINGLE(data, num)
+  print('Parsing SINGLE data')
   if num == nil then num = 1 end
-  assert(num * 2 == #data)
+  assert(num * 4 <= #data)
   local n = {}
   for j = 1, num do
-    local i = 1 + (j - 1) * 2
-    n[j] = tonumber(ffi.new("float", bit.bor(
-              bit.lshift(data:byte(i + 1), 8), data:byte(i))))
+    local i = 1 + (j - 1) * 4
+    local L = bit.bor(
+              bit.lshift(data:byte(i + 1), 8), data:byte(i))
+    local H = bit.bor(
+              bit.lshift(data:byte(i + 3), 8), data:byte(i + 2))
+    
+    local value = 0
+    local order = 23 
+    for k = 1, 16 do
+      local c = bit.band(1, bit.rshift(L, k - 1))
+      value = value + c * 2^(-order)
+      order = order - 1
+    end
+    for k = 1, 7 do
+      local c = bit.band(1, bit.rshift(H, k - 1))
+      value = value + c * 2^(-order)
+      order = order - 1
+    end
+    local e = 0
+    for k = 8, 15 do
+      local c = bit.band(1, bit.rshift(H, k - 1))
+      e = e + 2^(k - 8) * c
+    end
+    value = value + 1
+    local sign = bit.band(1, bit.rshift(H, 15))
+    value = value * 2^(e-127)
+    value = value * (-1)^sign
+    n[j] = value
   end
   if num == 1 then return n[1] else return n end
 end
@@ -360,9 +413,9 @@ function parsemiMATRIX(data)
     padding = roundint * 8 - ptr - PrDataSize * typeByteSize(PrDataT)
   end
   local PrBody = data:sub(ptr + 1, ptr + PrDataSize * typeByteSize(PrDataT))
-  print('data type:'..matType(PrDataT), 'data size:'..PrDataSize,
+  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize,
         'data name:'..AN)
-  matrix[AN] = _G['parse'..matType(PrDataT)](PrBody, PrDataSize) 
+  matrix[AN] = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
 
   if type(matrix[AN]) == 'string' then print(matrix[AN])
   elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
@@ -383,7 +436,7 @@ function load(filename)
     file:seek('set', ptr)
     local tag = file:read(tagSize)
     local dataT, dataSize, realTagSize = parseTag(tag)
-    print(dataT, dataSize, realTagSize)
+--    print(dataT, dataSize, realTagSize)
     print('data type:'..matType(dataT)..' data size:'..dataSize)
     local data = file:read(tagSize + dataSize)
     -- move ptr to next data
@@ -406,8 +459,11 @@ function load(filename)
 end
   
 --filename = 'curData.mat'
-filename = 'aa.mat'
-filename = 'imuRaw1.mat'
+--filename = 'aa.mat'
+--filename = 'ee.mat'
+filename = 'ff.mat'
+--filename = 'imuRaw1.mat'
+--filename = '20121221route42r2imu.mat'
 --filename = 'dd.mat'
 --filename = 'cc.mat'
 --filename = 'bb.mat'
