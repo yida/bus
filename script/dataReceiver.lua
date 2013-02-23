@@ -6,6 +6,10 @@ package.path = home..'/Util/?.lua;'..package.path
 package.cpath = home..'/Lib/?.so;'..package.cpath
 
 require 'include'
+require 'poseUtils'
+require 'torch-load'
+torch.setdefaulttensortype('torch.DoubleTensor')
+
 
 local ffi = require 'ffi'
 local serialization = require('serialization');
@@ -133,7 +137,7 @@ end
 
 -- Flag to enable and disable certain type of data
 imuFlag = true
-magFlag = false
+magFlag = true 
 gpsFlag = false
 labelFlag = false 
 fileSaveFlag = false
@@ -158,6 +162,8 @@ if labelFlag then
   gpioOpen(114)
 end
 
+gyro = torch.DoubleTensor(3):fill(0)
+acc = torch.DoubleTensor(3):fill(0)
 
 while (1) do
 
@@ -214,9 +220,30 @@ while (1) do
       elseif rawdata[4] == 34 and imuFlag then
         data = extractImu(rawdata, size)
         data.timestamp = timestamp
-        print(data.wr, data.wy, data.wp)
+        gyro[1] = data.r
+        gyro[2] = data.p
+        gyro[3] = data.y
+
+--        print('acc')
+--        print(data.ax, data.ay, data.az)
+        print(data.r, data.p, data.y)
       elseif rawdata[4] == 35 and magFlag then
         data = extractMag(rawdata, size)
+--        print('mag')
+
+        R = rpy2R(gyro)
+        Rx = rotX(math.pi)
+        Rz = rotZ(math.pi/2)
+--        print(R)
+        magv = torch.DoubleTensor({data.x, data.y, data.z})
+--        magv = R * magv
+
+        local declinationAngle = -205.7/ 1000.0
+        local heading = math.atan2(magv[2], magv[3])
+--        print(magv[1], magv[2], magv[3])
+        heading = heading + declinationAngle
+--        print(heading, heading * 180 / math.pi)
+
         data.timestamp = timestamp
       end
       if data and fileSaveFlag then

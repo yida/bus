@@ -28,7 +28,7 @@ function Q2Vector(q)
   if q[1] > 1 then q[1] = 1 end
   local alphaW = math.acos(q[1])
   local v = torch.Tensor(3):fill(0)
-  if alphaW > 0.0001 then
+  if alphaW > 1e-6 then
     v[1] = q[2] / math.sin(alphaW) * alphaW
     v[2] = q[3] / math.sin(alphaW) * alphaW
     v[3] = q[4] / math.sin(alphaW) * alphaW
@@ -242,7 +242,30 @@ function QuaternionMean(QMax, qInit)
     local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
     diff = QCompare(qIterNext, qIter)
     qIter:copy(qIterNext)
-  until diff < 0.0001
+  until diff < 1e-6
   return qIter, e
 end
+
+
+--q1 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({178 * math.pi / 180, 0, 0})))
+--q2 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
+--q3 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({170 * math.pi / 180, 0, 0})))
+--Q = torch.DoubleTensor(3, 4)
+--Q:narrow(1, 1, 1):copy(q1)
+--Q:narrow(1, 2, 1):copy(q2)
+--Q:narrow(1, 3, 1):copy(q3)
+--Q = Q:t()
+--print(q1)
+--print(q2)
+--print(q3)
+--print(Q)
+--ymean = QuaternionMean(Q, q1)
+--print(ymean)
+--print(Quaternion2rpy(ymean):mul(180 / math.pi))
+rpy1 = torch.DoubleTensor({-3.07, -0.16, -0.08})
+q = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
+dq = rpy2Quaternion(rpy1)
+ndq = rpy2Quaternion(-rpy1)
+print(QuaternionMul(q, ndq))
+print(QuaternionMul(q, QInverse(dq)))
 
