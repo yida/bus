@@ -79,9 +79,6 @@ function processUpdate(tstep, imu)
   gyro[2] = imu.wy
   gyro[3] = imu.wp
 
---  local Rconst = rpy2R(torch.Tensor({math.pi, 0, 0}))
---  local R = Quaternion2R(state:narrow(1, 7, 4))
---  gacc = Rconst * R:t() * rawacc
   gacc = rawacc
 
   if processInit == false then 
@@ -208,14 +205,6 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Q(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
---  print(state)
---  local Q = state:narrow(1, 7 ,4)
---  local rpy = Quaternion2rpy(Q)
---  print(rpy)
---  print(rotX(math.pi) * rpy)
---  print(Quaternion2rpy(Q):mul(180 / math.pi))
---  print(gyro:t())
---  print(P)
 end
 
 function measurementGravityUpdate()
@@ -228,18 +217,8 @@ function measurementGravityUpdate()
     local qk = Chicol:narrow(1, 7, 4)
     Zcol:copy(QuaternionMul(QuaternionMul(qk, gq), QInverse(qk)):narrow(1, 2, 3))
   end
---  print('q vector')
---  print(torch.mean(Z, 2))
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
---  print('rawacc')
---  print(rawacc)
---  print(rawacc:norm())
---  print('zMean')
---  print(zMean)
---  print(zMean:norm())
---  print('measure gravity')
---  print(v)
   local R = qCovR
   KalmanGainUpdate(Z, zMean, v, R)
 end
@@ -273,27 +252,41 @@ function measurementGPSUpdate(tstep, gps)
   local zMean = torch.mean(Z, 2)
 
   -- reset Z with zMean since no measurement here
---  print('state pos')
---  print(zMean)
---  print('gps pos')
---  print(gpspos)
   gpspos[3] = zMean[3]
   local v = gpspos - zMean
---  print('error')
---  print(v)
 
---  print('measure gps')
   local R = posCovR
   KalmanGainUpdate(Z, zMean, v, R)
 
 end
 
+firstmat = false
+magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
-  local curq = state:narrow(1, 7, 4)
-  local curR = Quaternion2R(curq)
-  local curRPY = R2rpy(curR)
---  print(curRPY:mul(180/math.pi))
+  if not gravityInit then return end
+  local mvalue = torch.DoubleTensor({mag.y, mag.x, mag.z})
+  if not firstmat then
+    magbase = mvalue
+  end
 --  print(mag.x, mag.y, mag.z)
+  -- mag and imu coordinate x, y reverse
+  local mvalue = torch.DoubleTensor({mag.y, mag.x, mag.z})
+--  local mvector = torch.div(mvalue, mvalue:norm())  
+--  print(mvalue)
+  local mq = torch.DoubleTensor({0, magbase[1], magbase[2], magbase[3]})
+  local Z = torch.Tensor(3, 2 * ns):fill(0)
+  for i = 1, 2 * ns do
+    local Zcol = Z:narrow(2, i, 1)
+    local Chicol = Chi:narrow(2, i , 1)
+    local qk = Chicol:narrow(1, 7, 4)
+    Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
+  end
+  local zMean = torch.mean(Z, 2)
+  local v = mvalue - zMean
+  print(v)
+  local R = qCovR
+  KalmanGainUpdate(Z, zMean, v, R)
+
 end
 
 
@@ -306,25 +299,11 @@ for i = 1, #dataset do
 --    util.ptable(dataset[i])
     processUpdate(dataset[i].timestamp, dataset[i])
     measurementGravityUpdate()
-
-    rpy1[1] = dataset[i].r
-    rpy1[2] = dataset[i].p
-    rpy1[3] = dataset[i].y
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
   end
-  local Q = state:narrow(1, 7 ,4)
-  local rpy = Quaternion2rpy(Q)
---  print(rpy)
---  print(rpy:mul(180/math.pi))
---    print('true')
---  print(rpy1 * 180/math.pi)
---  print(rpy1)
-  print'diff'
-  print(rpy - rpy1)
-
 end
 
 print('done')

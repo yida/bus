@@ -56,7 +56,7 @@ function ReceivePacket()
     packetID = kBPacket.create();
   end
   
-  buf, buftype, bufsize = Serial.read(1000, 20000);
+  buf, buftype, bufsize = Serial.read(1000, 2000);
 
 --  return buf, bufsize
   packet, packetType, packetSize, buf2, buf2type, buf2Size = kBPacket.processBuffer(packetID, buf, bufsize);
@@ -226,10 +226,9 @@ while (1) do
 
 --        print('acc')
 --        print(data.ax, data.ay, data.az)
-        print(data.r, data.p, data.y)
+--        print(data.r, data.p, data.y)
       elseif rawdata[4] == 35 and magFlag then
         data = extractMag(rawdata, size)
---        print('mag')
 
         R = rpy2R(gyro)
         Rx = rotX(math.pi)
@@ -242,26 +241,28 @@ while (1) do
         local heading = math.atan2(magv[2], magv[3])
 --        print(magv[1], magv[2], magv[3])
         heading = heading + declinationAngle
+        print('mag', data.x, data.y, data.z, heading * 180 / math.pi)
+
 --        print(heading, heading * 180 / math.pi)
 
         data.timestamp = timestamp
       end
-      if data and fileSaveFlag then
-        savedata = serialization.serialize(data)
-        file:write(savedata)
-        file:write('\n')
-        print(linecount, savedata)
-        linecount = linecount + 1
-      end
+--      if data and fileSaveFlag then
+--        savedata = serialization.serialize(data)
+--        file:write(savedata)
+--        file:write('\n')
+--        print(linecount, savedata)
+--        linecount = linecount + 1
+--      end
     end
   end
-  if linecount >= maxlinecount and fileSaveFlag then
-    linecount = 0;
-    file:close();
-    filecnt = filecnt + 1;
-    filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
-    file = io.open(filename, "w");
-  end
+--  if linecount >= maxlinecount and fileSaveFlag then
+--    linecount = 0;
+--    file:close();
+--    filecnt = filecnt + 1;
+--    filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
+--    file = io.open(filename, "w");
+--  end
 
 end
 
