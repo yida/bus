@@ -8,6 +8,8 @@ package.cpath = home..'/Lib/?.so;'..package.cpath
 require 'include'
 require 'poseUtils'
 require 'torch-load'
+require 'calibrateMag'
+require 'common'
 torch.setdefaulttensortype('torch.DoubleTensor')
 
 
@@ -16,27 +18,6 @@ local serialization = require('serialization');
 local util = require('util');
 local Serial = require('Serial');
 local kBPacket = require('kBPacket');
-
-ffi.cdef[[
-  typedef long int __time_t;
-  typedef long int __suseconds_t;
-  typedef struct timeval {
-    __time_t tv_sec;    /* Seconds.  */
-    __suseconds_t tv_usec;  /* Microseconds.  */
-  };
-  int gettimeofday(struct timeval *restrict tp, void *restrict tzp);
-  int poll(struct pollfd *fds, unsigned long nfds, int timeout);
-]]
-
-function utime()
-  local t = ffi.new('struct timeval')
-  ffi.C.gettimeofday(t, nil)
-  return t.tv_sec + 1e-6 * t.tv_usec
-end
-
-function usleep(s)
-  ffi.C.poll(nil, 0, s * 1000)
-end
 
 function gpioOpen(port)
   gpioExport = io.open('/sys/class/gpio/export', 'w')
@@ -162,8 +143,8 @@ if labelFlag then
   gpioOpen(114)
 end
 
-gyro = torch.DoubleTensor(3):fill(0)
-acc = torch.DoubleTensor(3):fill(0)
+gyro = torch.DoubleTensor(3, 1):fill(0)
+acc = torch.DoubleTensor(3, 1):fill(0)
 
 while (1) do
 
@@ -222,29 +203,25 @@ while (1) do
         data.timestamp = timestamp
         gyro[1] = data.r
         gyro[2] = data.p
-        gyro[3] = data.y
+        gyro[3] = -data.y
 
---        print('acc')
---        print(data.ax, data.ay, data.az)
---        print(data.r, data.p, data.y)
+        acc[1] = data.ax
+        acc[2] = data.ay
+        acc[3] = -data.az
       elseif rawdata[4] == 35 and magFlag then
         data = extractMag(rawdata, size)
 
-        R = rpy2R(gyro)
-        Rx = rotX(math.pi)
-        Rz = rotZ(math.pi/2)
---        print(R)
-        magv = torch.DoubleTensor({data.x, data.y, data.z})
---        magv = R * magv
-
-        local declinationAngle = -205.7/ 1000.0
-        local heading = math.atan2(magv[2], magv[3])
---        print(magv[1], magv[2], magv[3])
-        heading = heading + declinationAngle
-        print('mag', data.x, data.y, data.z, heading * 180 / math.pi)
-
---        print(heading, heading * 180 / math.pi)
-
+        magv = torch.DoubleTensor({data.y, data.x, -data.z})
+        magval = magCalibrated(magv)
+        print(magv)
+        print(magval)
+        magvalue = magTiltCompensate(magv, acc)
+        print(magvalue)
+--        local heading = Mag2Heading(magvalue)
+        local heading = Mag2Heading(magval)
+        local heading1 = Mag2Heading(magvalue)
+        print('w/o tilt compensation '..heading * 180 / math.pi)
+        print('w tilt compensation '..heading1 * 180 / math.pi)
         data.timestamp = timestamp
       end
 --      if data and fileSaveFlag then

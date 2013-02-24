@@ -1,18 +1,21 @@
 require 'include'
 require 'common'
+require 'poseUtils'
 
 require 'torch-load'
 
-local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/'
---local datasetpath = '../data/dataset9/'
-local magset = loadData(datasetpath, 'magPruned')
+function axisCorrect(mag)
+  local m = torch.DoubleTensor(3):fill(0)
+  m[1] = mag.x
+  m[2] = mag.y
+  m[3] = mag.z
 
---magPruned = pruneTUC(magset)
-
---saveData(magPruned, 'magPruned')
-
---print(#magset)
+  m[1] = mag.y
+  m[2] = mag.x
+  m[3] = -mag.z
+ 
+  return m
+end
 
 function calibrateMagnetometer(magset)
   -- AN4246 AN4248
@@ -23,7 +26,7 @@ function calibrateMagnetometer(magset)
   
   local sampleCnt = 1
   for i = 1, #magset, divider do
-    local mag = torch.DoubleTensor({magset[i].x, magset[i].y, magset[i].z})
+    local mag = axisCorrect(magset[i])
     local magNorm = mag[1]^2 + mag[2]^2 + mag[3]^2
     Y[sampleCnt][1] = magNorm
     X:narrow(1, sampleCnt, 1):narrow(2, 1, 3):copy(mag)
@@ -47,4 +50,61 @@ function calibrateMagnetometer(magset)
   return V, B
 end
 
-calibrateMagnetometer(magset)
+--local datasetpath = '../data/010213180247/'
+----local datasetpath = '../data/'
+----local datasetpath = '../data/dataset9/'
+--local magset = loadData(datasetpath, 'magPruned')
+--calibrateMagnetometer(magset)
+
+-- mag calibration value
+V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
+B = 1076821.092515
+
+V = torch.DoubleTensor({51.7819, 425.4612, 1300.3680})
+B = 1077652.0811881
+
+declinationAngle = -205.7/ 1000.0
+
+
+function Mag2Heading(mag)
+  local declinationAngle = -205.7/ 1000.0
+  local heading = math.atan2(mag[2], mag[1])
+  heading = heading + declinationAngle
+  if heading < 0 then heading = heading + 2 * math.pi end
+--  if heading > 2 * math.pi then heading = heading - 2 * math.pi end
+  return heading
+end
+
+function magCalibrated(mag)
+  local _mag = torch.DoubleTensor(3):fill(0)
+  _mag[1] = mag[1] - V[1]
+  _mag[2] = mag[2] - V[2]
+  _mag[3] = mag[3] - V[3]
+  return _mag
+end
+
+function magTiltCompensate(mag, acc)
+  -- AN4246 AN4247
+  -- need -180 ~ 180
+  local roll = math.atan2(acc[2][1], acc[3][1])
+  -- need -90 ~ 90
+  local tanPitch = -acc[1][1] / (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
+  local pitch = math.atan(tanPitch)
+--  local pitch = math.atan2(-acc[1][1] ,
+--                          (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll)))
+
+  local Ry = rotY(pitch)
+  local Rx = rotX(roll)
+  local Bf = Ry * Rx * magCalibrated(mag)
+  -- heading
+  local yaw = math.atan2(-Bf[2], Bf[1])
+  yaw = yaw + declinationAngle
+  if yaw < 0 then yaw = yaw + 2 * math.pi end
+  if yaw > 2 * math.pi then yaw = yaw - 2 * math.pi end
+
+--  print(roll * 180 / math.pi, pitch * 180 / math.pi, yaw * 180 / math.pi)
+  return yaw
+--  return mag - V
+end
+
+
