@@ -3,6 +3,7 @@ require 'include'
 local ffi = require 'ffi'
 local Z = require 'Z'
 local util = require 'util'
+require 'zlib'
 
 
 local sizeOfDataType = 8
@@ -445,7 +446,9 @@ function load(filename)
     -- process data
     -- decompress data if necessary
     if dataT == miCOMPRESSED then
+--      data = data:sub(9, #data)
       data = Z.uncompress(data, dataSize)
+      --data = uncompress(data, #data)
       print('Decompress data, new data size:'..#data)
       -- read tag and parse for real data type and size
       tag = data:sub(1, tagSize)
@@ -459,9 +462,9 @@ function load(filename)
 end
   
 --filename = 'curData.mat'
---filename = 'aa.mat'
+filename = 'new.mat'
 --filename = 'ee.mat'
-filename = 'ff.mat'
+--filename = 'ff.mat'
 --filename = 'imuRaw1.mat'
 --filename = '20121221route42r2imu.mat'
 --filename = 'dd.mat'
