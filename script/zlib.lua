@@ -25,12 +25,12 @@ function uncompress(comp, n)
   return ffi.string(buf, buflen[0])
 end
 
--- Simple test code.
-local txt = string.rep("abcd", 1000)
-print("Uncompressed size: ", #txt)
-local c = compress(txt)
-print("Compressed size: ", #c)
-local txt2 = uncompress(c, #txt)
-assert(txt2 == txt)
+---- Simple test code.
+--local txt = string.rep("abcd", 1000)
+--print("Uncompressed size: ", #txt)
+--local c = compress(txt)
+--print("Compressed size: ", #c)
+--local txt2 = uncompress(c, #txt)
+--assert(txt2 == txt)
 
 

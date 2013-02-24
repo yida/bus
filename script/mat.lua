@@ -462,7 +462,7 @@ function load(filename)
 end
   
 --filename = 'curData.mat'
-filename = 'new.mat'
+--filename = 'new.mat'
 --filename = 'ee.mat'
 --filename = 'ff.mat'
 --filename = 'imuRaw1.mat'
@@ -470,7 +470,8 @@ filename = 'new.mat'
 --filename = 'dd.mat'
 --filename = 'cc.mat'
 --filename = 'bb.mat'
+if #arg > 0 then
+  filename = arg[1]
+end
+
 load(filename)
-
-
-
