@@ -60,7 +60,7 @@ acc = torch.Tensor(3, 1):fill(0)
 gacc = torch.Tensor(3, 1):fill(0)
 rawacc = torch.Tensor(3, 1):fill(0)
 gyro = torch.Tensor(3, 1):fill(0)
-
+trpy = torch.Tensor(3, 1):fill(0)
 g = torch.Tensor(3, 1):fill(0)
 gInitCount = 0
 gInitCountMax = 100
@@ -68,6 +68,7 @@ gInitCountMax = 100
 processInit = false
 gravityInit = false
 gpsInit = true
+magInit = false
 gravity = 9.80
 imuTstep = 0
 
@@ -78,6 +79,9 @@ function processUpdate(tstep, imu)
   gyro[1] = imu.wr
   gyro[2] = imu.wy
   gyro[3] = imu.wp
+  trpy[1] = imu.r
+  trpy[2] = imu.p
+  trpy[3] = imu.y
 
   gacc = rawacc
 
@@ -260,19 +264,36 @@ function measurementGPSUpdate(tstep, gps)
 
 end
 
+function Mag2Heading(mag)
+  local declinationAngle = -205.7/ 1000.0
+  local heading = math.atan2(mag[2], mag[1])
+  heading = heading + declinationAngle
+  return heading
+end
+
 firstmat = false
 magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
-  if not gravityInit then return end
+  -- mag and imu coordinate x, y reverse
   local mvalue = torch.DoubleTensor({mag.y, mag.x, mag.z})
   if not firstmat then
     magbase = mvalue
+    magInit = true
+    firstmat = true
   end
---  print(mag.x, mag.y, mag.z)
-  -- mag and imu coordinate x, y reverse
-  local mvalue = torch.DoubleTensor({mag.y, mag.x, mag.z})
---  local mvector = torch.div(mvalue, mvalue:norm())  
---  print(mvalue)
+  if not gravityInit then return end
+--  print(magbase)
+  local heading = Mag2Heading(mvalue)
+  local headingDiff = (heading - Mag2Heading(magbase))*180/math.pi
+--  error()
+--  print('mag', heading * 180 / math.pi, headingDiff)
+  local Q = state:narrow(1, 7, 4)
+  local rpy = Quaternion2rpy(Q) * 180 / math.pi
+--  print('tracking', rpy[1], rpy[2], rpy[3])
+--  print('diff', headingDiff - rpy[3])
+--  print('true', trpy[1], trpy[2], trpy[3])
+--  print('true diff', trpy[3] * 180 / math.pi - headingDiff)
+
   local mq = torch.DoubleTensor({0, magbase[1], magbase[2], magbase[3]})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -282,10 +303,13 @@ function measurementMagUpdate(mag)
     Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
   end
   local zMean = torch.mean(Z, 2)
-  local v = mvalue - zMean
+--  print(zMean)
+  print('zMean', Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi)
+  local zMeanHeading = Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi
+  local v = headingDiff - zMeanHeading
   print(v)
-  local R = qCovR
-  KalmanGainUpdate(Z, zMean, v, R)
+--  local R = qCovR
+--  KalmanGainUpdate(Z, zMean, v, R)
 
 end
 
