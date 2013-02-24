@@ -17,6 +17,10 @@ local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imugps', 20000)
 --local dataset = loadData(datasetpath, 'imuPruned')
 
+-- mag calibration value
+V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
+B = 1076821.092515
+
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
 state[7] = 1
@@ -271,45 +275,66 @@ function Mag2Heading(mag)
   return heading
 end
 
+function magCalibrated(mag, acc)
+  -- AN4246 AN4247
+  -- need -180 ~ 180
+  local roll = math.atan2(acc[2][1], acc[3][1])
+  local tanPitch = -acc[1][1] / (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
+  -- need -90 ~ 90
+  local pitch = math.atan(tanPitch)
+  local R = torch.DoubleTensor(3,3):fill(0)
+  R[1][1] = math.cos(pitch)
+  R[3][1] = -math.sin(pitch)
+  R[1][2] = math.sin(pitch) * math.sin(roll)
+  R[2][2] = math.cos(roll)
+  R[3][2] = math.cos(pitch) * math.sin(roll)
+  R[1][3] = math.sin(pitch) * math.cos(roll)
+  R[2][3] = -math.sin(roll)
+  R[3][3] = math.cos(pitch) * math.cos(roll)
+  return R * (mag - V)
+end
+
 firstmat = false
 magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
   -- mag and imu coordinate x, y reverse
-  local mvalue = torch.DoubleTensor({mag.y, mag.x, mag.z})
-  if not firstmat then
-    magbase = mvalue
-    magInit = true
-    firstmat = true
-  end
-  if not gravityInit then return end
---  print(magbase)
-  local heading = Mag2Heading(mvalue)
-  local headingDiff = (heading - Mag2Heading(magbase))*180/math.pi
---  error()
---  print('mag', heading * 180 / math.pi, headingDiff)
-  local Q = state:narrow(1, 7, 4)
-  local rpy = Quaternion2rpy(Q) * 180 / math.pi
---  print('tracking', rpy[1], rpy[2], rpy[3])
---  print('diff', headingDiff - rpy[3])
---  print('true', trpy[1], trpy[2], trpy[3])
---  print('true diff', trpy[3] * 180 / math.pi - headingDiff)
+  local mvalue = magCalibrated(torch.DoubleTensor({mag.x, mag.y, mag.z}), rawacc)
+  print(mvalue)
 
-  local mq = torch.DoubleTensor({0, magbase[1], magbase[2], magbase[3]})
-  local Z = torch.Tensor(3, 2 * ns):fill(0)
-  for i = 1, 2 * ns do
-    local Zcol = Z:narrow(2, i, 1)
-    local Chicol = Chi:narrow(2, i , 1)
-    local qk = Chicol:narrow(1, 7, 4)
-    Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
-  end
-  local zMean = torch.mean(Z, 2)
---  print(zMean)
-  print('zMean', Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi)
-  local zMeanHeading = Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi
-  local v = headingDiff - zMeanHeading
-  print(v)
---  local R = qCovR
---  KalmanGainUpdate(Z, zMean, v, R)
+--  if not firstmat then
+--    magbase = mvalue
+--    magInit = true
+--    firstmat = true
+--  end
+--  if not gravityInit then return end
+----  print(magbase)
+--  local heading = Mag2Heading(mvalue)
+--  local headingDiff = (heading - Mag2Heading(magbase))*180/math.pi
+----  error()
+----  print('mag', heading * 180 / math.pi, headingDiff)
+--  local Q = state:narrow(1, 7, 4)
+--  local rpy = Quaternion2rpy(Q) * 180 / math.pi
+----  print('tracking', rpy[1], rpy[2], rpy[3])
+----  print('diff', headingDiff - rpy[3])
+----  print('true', trpy[1], trpy[2], trpy[3])
+----  print('true diff', trpy[3] * 180 / math.pi - headingDiff)
+--
+--  local mq = torch.DoubleTensor({0, magbase[1], magbase[2], magbase[3]})
+--  local Z = torch.Tensor(3, 2 * ns):fill(0)
+--  for i = 1, 2 * ns do
+--    local Zcol = Z:narrow(2, i, 1)
+--    local Chicol = Chi:narrow(2, i , 1)
+--    local qk = Chicol:narrow(1, 7, 4)
+--    Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
+--  end
+--  local zMean = torch.mean(Z, 2)
+----  print(zMean)
+--  print('zMean', Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi)
+--  local zMeanHeading = Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi
+--  local v = headingDiff - zMeanHeading
+--  print(v)
+----  local R = qCovR
+----  KalmanGainUpdate(Z, zMean, v, R)
 
 end
 

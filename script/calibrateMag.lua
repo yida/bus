@@ -15,6 +15,7 @@ local magset = loadData(datasetpath, 'magPruned')
 --print(#magset)
 
 function calibrateMagnetometer(magset)
+  -- AN4246 AN4248
   local sampleNum = 10000
   local divider = math.ceil(#magset / sampleNum)
   local Y = torch.DoubleTensor(sampleNum, 1):fill(0)
@@ -46,4 +47,4 @@ function calibrateMagnetometer(magset)
   return V, B
 end
 
-
+calibrateMagnetometer(magset)
