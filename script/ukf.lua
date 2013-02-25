@@ -3,23 +3,20 @@ require 'common'
 require 'gpscommon'
 require 'poseUtils'
 require 'torch-load'
+require 'calibrateMag'
 torch.setdefaulttensortype('torch.DoubleTensor')
 
 local serialization = require 'serialization'
 local util = require 'util'
 local geo = require 'GeographicLib'
 
---local datasetpath = '../data/010213180247/'
-local datasetpath = '../data/'
-local dataset = loadData(datasetpath, 'log')
+local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/'
+--local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
---local dataset = loadData(datasetpath, 'imugps', 20000)
+local dataset = loadData(datasetpath, 'imugpsmag', 20000)
 --local dataset = loadData(datasetpath, 'imuPruned')
-
--- mag calibration value
-V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
-B = 1076821.092515
 
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
@@ -76,13 +73,43 @@ magInit = false
 gravity = 9.80
 imuTstep = 0
 
-function processUpdate(tstep, imu)
-  rawacc[1] = imu.ax - accBiasX
-  rawacc[2] = imu.ay - accBiasY
-  rawacc[3] = imu.az - accBiasZ
+function imuCorrent(imu)
+  local acc = torch.Tensor(3, 1):fill(0)
+  acc[1] = -accBiasX
+  acc[2] = -accBiasY
+  acc[3] = -accBiasZ
+
+  acc[1] = acc[1] + imu.ax
+  acc[2] = acc[2] + imu.ay
+  acc[3] = acc[3] - imu.az
+  local gyro = torch.Tensor(3, 1):fill(0)
   gyro[1] = imu.wr
-  gyro[2] = imu.wy
-  gyro[3] = imu.wp
+  gyro[2] = imu.wp
+  gyro[3] = -imu.wy
+
+  return acc, gyro
+end
+
+function accTiltCompensate(acc)
+  -- need -180 ~ 180
+  local roll = math.atan2(acc[2][1], acc[3][1])
+  -- need -90 ~ 90
+  local tanPitch = -acc[1][1] / (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
+  local pitch = math.atan(tanPitch)
+--  local pitch = math.atan2(-acc[1][1] ,
+--                          (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll)))
+
+  local Ry = rotY(pitch)
+  local Rx = rotX(roll)
+  local _acc = Ry * Rx * acc
+  return _acc
+end
+
+function processUpdate(tstep, imu)
+--  print(imu.ax, imu.ay, imu.az)
+  rawacc, gyro = imuCorrent(imu)
+--  print 'tilt compensate'
+--  print(accTiltCompensate(rawacc))
   trpy[1] = imu.r
   trpy[2] = imu.p
   trpy[3] = imu.y
@@ -213,6 +240,10 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Q(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuaternionMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
+  local Q = state:narrow(1, 7, 4)
+  local rpy = Quaternion2rpy(Q)
+  print(rpy:mul(180 / math.pi))
+--  print(state:narrow(1, 1, 6))
 end
 
 function measurementGravityUpdate()
@@ -227,6 +258,7 @@ function measurementGravityUpdate()
   end
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
+--  print(v)
   local R = qCovR
   KalmanGainUpdate(Z, zMean, v, R)
 end
@@ -268,73 +300,39 @@ function measurementGPSUpdate(tstep, gps)
 
 end
 
-function Mag2Heading(mag)
-  local declinationAngle = -205.7/ 1000.0
-  local heading = math.atan2(mag[2], mag[1])
-  heading = heading + declinationAngle
-  return heading
-end
-
-function magCalibrated(mag, acc)
-  -- AN4246 AN4247
-  -- need -180 ~ 180
-  local roll = math.atan2(acc[2][1], acc[3][1])
-  local tanPitch = -acc[1][1] / (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
-  -- need -90 ~ 90
-  local pitch = math.atan(tanPitch)
-  local R = torch.DoubleTensor(3,3):fill(0)
-  R[1][1] = math.cos(pitch)
-  R[3][1] = -math.sin(pitch)
-  R[1][2] = math.sin(pitch) * math.sin(roll)
-  R[2][2] = math.cos(roll)
-  R[3][2] = math.cos(pitch) * math.sin(roll)
-  R[1][3] = math.sin(pitch) * math.cos(roll)
-  R[2][3] = -math.sin(roll)
-  R[3][3] = math.cos(pitch) * math.cos(roll)
-  return R * (mag - V)
-end
-
 firstmat = false
 magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
   -- mag and imu coordinate x, y reverse
-  local mvalue = magCalibrated(torch.DoubleTensor({mag.x, mag.y, mag.z}), rawacc)
-  print(mvalue)
+  local rawmag = torch.DoubleTensor({mag.y, mag.x, -mag.z})
+  -- calibrated & tilt compensated heading 
+  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+  local Bc = magCalibrated(rawmag) -- calibrated raw B
+  -- Normalize the raw measurement
+  Bc:div(Bc:norm())
 
---  if not firstmat then
---    magbase = mvalue
---    magInit = true
---    firstmat = true
---  end
---  if not gravityInit then return end
-----  print(magbase)
---  local heading = Mag2Heading(mvalue)
---  local headingDiff = (heading - Mag2Heading(magbase))*180/math.pi
-----  error()
-----  print('mag', heading * 180 / math.pi, headingDiff)
---  local Q = state:narrow(1, 7, 4)
---  local rpy = Quaternion2rpy(Q) * 180 / math.pi
-----  print('tracking', rpy[1], rpy[2], rpy[3])
-----  print('diff', headingDiff - rpy[3])
-----  print('true', trpy[1], trpy[2], trpy[3])
-----  print('true diff', trpy[3] * 180 / math.pi - headingDiff)
---
---  local mq = torch.DoubleTensor({0, magbase[1], magbase[2], magbase[3]})
---  local Z = torch.Tensor(3, 2 * ns):fill(0)
---  for i = 1, 2 * ns do
---    local Zcol = Z:narrow(2, i, 1)
---    local Chicol = Chi:narrow(2, i , 1)
---    local qk = Chicol:narrow(1, 7, 4)
---    Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
---  end
---  local zMean = torch.mean(Z, 2)
-----  print(zMean)
---  print('zMean', Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi)
---  local zMeanHeading = Mag2Heading(torch.DoubleTensor(3):copy(zMean)) * 180 / math.pi
---  local v = headingDiff - zMeanHeading
---  print(v)
-----  local R = qCovR
-----  KalmanGainUpdate(Z, zMean, v, R)
+  -- set init orientation
+  if not firstmat then
+  --  print(heading)
+    magbase = mvalue
+    magInit = true
+    firstmat = true
+   -- error()
+  end
+
+  if not gravityInit then return end
+  local mq = torch.DoubleTensor({0, 1, 0, 0})
+  local Z = torch.Tensor(3, 2 * ns):fill(0)
+  for i = 1, 2 * ns do
+    local Zcol = Z:narrow(2, i, 1)
+    local Chicol = Chi:narrow(2, i , 1)
+    local qk = Chicol:narrow(1, 7, 4)
+    Zcol:copy(QuaternionMul(QuaternionMul(qk, mq), QInverse(qk)):narrow(1, 2, 3))
+  end
+  local zMean = torch.mean(Z, 2)
+  local v = Bc - zMean
+  local R = qCovR
+  KalmanGainUpdate(Z, zMean, v, R)
 
 end
 
@@ -346,7 +344,7 @@ for i = 1, #dataset do
 --  if i > 327 then error() end
   if dataset[i].type == 'imu' then
 --    util.ptable(dataset[i])
-    processUpdate(dataset[i].timestamp, dataset[i])
+    processUpdate(dataset[i].timstamp, dataset[i])
     measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timstamp, dataset[i])

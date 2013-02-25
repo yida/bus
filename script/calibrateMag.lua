@@ -103,7 +103,7 @@ function magTiltCompensate(mag, acc)
   if yaw > 2 * math.pi then yaw = yaw - 2 * math.pi end
 
 --  print(roll * 180 / math.pi, pitch * 180 / math.pi, yaw * 180 / math.pi)
-  return yaw
+  return yaw, Bf
 --  return mag - V
 end
 
