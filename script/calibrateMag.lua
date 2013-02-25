@@ -83,6 +83,12 @@ function magCalibrated(mag)
   return _mag
 end
 
+function correctRange(angle)
+  if angle < 0 then angle = angle + 2 * math.pi end
+  if angle > 2 * math.pi then angle = angle - 2 * math.pi end
+  return angle
+end
+
 function magTiltCompensate(mag, acc)
   -- AN4246 AN4247
   -- need -180 ~ 180

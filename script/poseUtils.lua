@@ -1,13 +1,13 @@
 require 'torch-load'
 torch.setdefaulttensortype('torch.DoubleTensor')
 
-function QCompare(q1, q2)
-  local e1 = Q2Vector(q1)
-  local e2 = Q2Vector(q2)
+function QuatCompare(q1, q2)
+  local e1 = Quat2Vector(q1)
+  local e2 = Quat2Vector(q2)
   return math.abs(e1:norm() - e2:norm())
 end
 
-function Vector2Q(w, dt)
+function Vector2Quat(w, dt)
   local dq = torch.Tensor(4):fill(0)
   if w:norm() < 1e-6 then
     dq[1] = 1
@@ -24,7 +24,7 @@ function Vector2Q(w, dt)
   return dq
 end
 
-function Q2Vector(q)
+function Quat2Vector(q)
   if q[1] > 1 then q[1] = 1 end
   local alphaW = math.acos(q[1])
   local v = torch.Tensor(3):fill(0)
@@ -36,14 +36,14 @@ function Q2Vector(q)
   return v
 end
 
-function QInverse(Q)
+function QuatInv(Q)
   local q = torch.Tensor(4):copy(Q)
   local rt = q[1]^2 + q[2]^2 + q[3]^2 + q[4]^2
   return torch.Tensor({q[1]/rt, -q[2]/rt,
                             -q[3]/rt, -q[4]/rt})
 end
 
-function Quaternion2R(qin)
+function Quat2R(qin)
   local R = torch.Tensor(3,3):fill(0)
   local q = torch.Tensor(4):copy(qin)
 
@@ -60,7 +60,7 @@ function Quaternion2R(qin)
   return R
 end
 
-function R2Quaternion(R)
+function R2Quat(R)
   local q = torch.Tensor(4)
   local tr = R[1][1] + R[2][2] + R[3][3]
   if tr > 0 then
@@ -91,7 +91,7 @@ function R2Quaternion(R)
   return q
 end
 
-function QuaternionMul2(Q1, Q2)
+function QuatMul2(Q1, Q2)
   local q = torch.Tensor(4)
   local q1 = torch.Tensor(4):copy(Q1)
   local q2 = torch.Tensor(4):copy(Q2)
@@ -102,7 +102,7 @@ function QuaternionMul2(Q1, Q2)
   return q
 end
 
-function QuaternionMul(Q1, Q2)  -- q = q1 x q2
+function QuatMul(Q1, Q2)  -- q = q1 x q2
   local q = torch.Tensor(4)
   local q1 = torch.Tensor(4):copy(Q1)
   local q2 = torch.Tensor(4):copy(Q2)
@@ -130,11 +130,11 @@ function R2rpy(R)
   return rpy
 end
 
-function rpy2Quaternion(rpyin)
-  return R2Quaternion(rpy2R(rpyin))
+function rpy2Quat(rpyin)
+  return R2Quat(rpy2R(rpyin))
 end
 
-function Quaternion2rpy(Qin)
+function Quat2rpy(Qin)
   local q = torch.Tensor(4):copy(Qin)
   local rpy = torch.Tensor(3):fill(0)
   rpy[1] = math.atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]))
@@ -226,7 +226,7 @@ function cholesky(A)
 end
 
 
-function QuaternionMean(QMax, qInit)
+function QuatMean(QMax, qInit)
   local qIter = torch.Tensor(4):copy(qInit)
   local e = torch.Tensor(3, QMax:size(2)):fill(0)
   local iter = 0
@@ -236,21 +236,21 @@ function QuaternionMean(QMax, qInit)
     for i = 1, QMax:size(2) do
       local ei = e:narrow(2, i, 1):fill(0)
       local qi = QMax:narrow(2, i, 1)
-      local eQ = QuaternionMul(qi, QInverse(qIter))
-      ei:copy(Q2Vector(eQ))
+      local eQ = QuatMul(qi, QuatInv(qIter))
+      ei:copy(Quat2Vector(eQ))
     end
     local eMean = torch.mean(e,2)
-    local qIterNext = QuaternionMul(Vector2Q(eMean), qIter)
-    diff = QCompare(qIterNext, qIter)
+    local qIterNext = QuatMul(Vector2Quat(eMean), qIter)
+    diff = QuatCompare(qIterNext, qIter)
     qIter:copy(qIterNext)
   until diff < 1e-6
   return qIter, e
 end
 
 
---q1 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({178 * math.pi / 180, 0, 0})))
---q2 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
---q3 = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({170 * math.pi / 180, 0, 0})))
+--q1 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({178 * math.pi / 180, 0, 0})))
+--q2 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
+--q3 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({170 * math.pi / 180, 0, 0})))
 --Q = torch.DoubleTensor(3, 4)
 --Q:narrow(1, 1, 1):copy(q1)
 --Q:narrow(1, 2, 1):copy(q2)
@@ -260,13 +260,13 @@ end
 --print(q2)
 --print(q3)
 --print(Q)
---ymean = QuaternionMean(Q, q1)
+--ymean = QuatMean(Q, q1)
 --print(ymean)
---print(Quaternion2rpy(ymean):mul(180 / math.pi))
+--print(Quat2rpy(ymean):mul(180 / math.pi))
 --rpy1 = torch.DoubleTensor({-3.07, -0.16, -0.08})
---q = torch.DoubleTensor(rpy2Quaternion(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
---dq = rpy2Quaternion(rpy1)
---ndq = rpy2Quaternion(-rpy1)
---print(QuaternionMul(q, ndq))
---print(QuaternionMul(q, QInverse(dq)))
+--q = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
+--dq = rpy2Quat(rpy1)
+--ndq = rpy2Quat(-rpy1)
+--print(QuatMul(q, ndq))
+--print(QuatMul(q, QInverse(dq)))
 
