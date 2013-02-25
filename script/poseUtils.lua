@@ -199,6 +199,7 @@ function pdcheck(A)
   for i = 1, e:size(1) do
     if math.abs(e[i]) < 1e-6 then e[i] = 0; end
     if e[i] < 0 then
+      print(A)
       error('Not positive definite matrix'.."("..i..","..e[i]..")")
     end
   end

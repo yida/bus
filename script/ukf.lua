@@ -4,18 +4,20 @@ require 'gpscommon'
 require 'poseUtils'
 require 'torch-load'
 require 'calibrateMag'
+
+require 'ucm'
 torch.setdefaulttensortype('torch.DoubleTensor')
 
 local serialization = require 'serialization'
 local util = require 'util'
 local geo = require 'GeographicLib'
 
-local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/'
---local dataset = loadData(datasetpath, 'log')
+--local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/'
+local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
-local dataset = loadData(datasetpath, 'imugpsmag', 20000)
+--local dataset = loadData(datasetpath, 'imugpsmag', 20000)
 --local dataset = loadData(datasetpath, 'imuPruned')
 
 -- state init Posterior state
@@ -42,7 +44,8 @@ Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
 posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
-qCovR   = torch.eye(3, 3):mul((0.1)^2)
+qCovRG  = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
+qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
 
 ns = 9
 Chi = torch.Tensor(state:size(1), 2 * ns):fill(0)
@@ -72,6 +75,8 @@ gpsInit = true
 magInit = false
 gravity = 9.80
 imuTstep = 0
+
+counter = 0
 
 function imuCorrent(imu)
   local acc = torch.Tensor(3, 1):fill(0)
@@ -242,7 +247,11 @@ function KalmanGainUpdate(Z, zMean, v, R)
   P = P - K * Pvv * K:t()
   local Q = state:narrow(1, 7, 4)
   local rpy = Quaternion2rpy(Q)
+  counter = counter + 1
   print(rpy:mul(180 / math.pi))
+  v = vector.new({rpy[1], rpy[2], rpy[3]})
+  ucm.set_ukf_counter(counter)
+  ucm.set_ukf_rpy(v)
 --  print(state:narrow(1, 1, 6))
 end
 
@@ -259,7 +268,7 @@ function measurementGravityUpdate()
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
 --  print(v)
-  local R = qCovR
+  local R = qCovRG
   KalmanGainUpdate(Z, zMean, v, R)
 end
 
@@ -331,7 +340,7 @@ function measurementMagUpdate(mag)
   end
   local zMean = torch.mean(Z, 2)
   local v = Bc - zMean
-  local R = qCovR
+  local R = qCovRM
   KalmanGainUpdate(Z, zMean, v, R)
 
 end
@@ -340,14 +349,14 @@ end
 local rpy1 = torch.DoubleTensor(3):fill(0)
 for i = 1, #dataset do
 --  if i > 11709 then error() end
-  if i > 12709 then error() end
+--  if i > 12709 then error() end
 --  if i > 327 then error() end
   if dataset[i].type == 'imu' then
 --    util.ptable(dataset[i])
-    processUpdate(dataset[i].timstamp, dataset[i])
+    processUpdate(dataset[i].timestamp, dataset[i])
     measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
---    measurementGPSUpdate(dataset[i].timstamp, dataset[i])
+    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
   end
