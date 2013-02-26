@@ -153,11 +153,10 @@ function GenerateSigmaPoints()
 
     -- Sigma points for Quaternion
     local eW = W:narrow(2, i, 1):narrow(1, 7, 3)
-    local neW = -eW:clone()
     local qW = Vector2Quat(eW)
-    local nqW = Vector2Quat(neW)
     Chi:narrow(2, i, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
-    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, nqW))
+    qW = Vector2Quat(-eW)
+    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
   end
 end
 
@@ -175,16 +174,16 @@ function ProcessModel(dt)
     posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
-    print 'gyro'
-    print(gyro)
-    print 'dt'
-    print(dt)
+--    print 'gyro'
+--    print(gyro)
+--    print 'dt'
+--    print(dt)
 --    local dq = Vector2Quat(gyro, dt)
     local dq = Vector2Quat(gyro:mul(dt))
-    print 'dq'
-    print(dq)
-    print 'multi'
-    print(QuatMul(q, dq))
+--    print 'dq'
+--    print(dq)
+--    print 'multi'
+--    print(QuatMul(q, dq))
 
     Ycol:narrow(1, 7, 4):copy(QuatMul(q,dq))
   end
@@ -196,10 +195,10 @@ function ProcessModel(dt)
   print(yMean)
   local Q = yMean:narrow(1, 7, 4)
   local rpy = Quat2rpy(Q)
-  print 'rpy'
-  print(rpy)
-  print 'trpy'
-  print(trpy)
+--  print 'rpy'
+--  print(rpy)
+--  print 'trpy'
+--  print(trpy)
 end
 
 function PrioriEstimate()
@@ -357,8 +356,8 @@ local dataset = loadData(datasetpath, 'logall')
 
 
 for i = 1, #dataset do
---  if i > 218 then error() end
-  if i > 2222 then error() end
+  if i > 218 then error() end
+--  if i > 2222 then error() end
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timestamp, dataset[i])
 --    measurementGravityUpdate()

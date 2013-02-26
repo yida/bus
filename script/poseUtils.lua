@@ -8,7 +8,8 @@ function QuatCompare(q1, q2)
   return (e1-e2):norm()
 end
 
-function Vector2Quat(w, dt)
+function Vector2Quat(W, dt)
+  local w = torch.DoubleTensor(3):copy(W) 
   local dq = torch.Tensor(4):fill(0)
   local wNorm = w:norm()
   if wNorm < 1e-6 then
@@ -65,7 +66,8 @@ function Quat2R(qin)
   return R
 end
 
-function R2Quat(R)
+function R2Quat(Rin)
+  local R = torch.DoubleTensor(3, 3):copy(Rin)
   local q = torch.Tensor(4)
   local tr = R[1][1] + R[2][2] + R[3][3]
   if tr > 0 then
@@ -126,8 +128,9 @@ function QuatMul(Q1, Q2)  -- q = q1 x q2
   return q
 end
 
-function R2rpy(R)
+function R2rpy(Rin)
   -- http://planning.cs.uiuc.edu/node102.html
+  local R = torch.DoubleTensor(3, 3):copy(Rin)
   local y = math.atan2(R[2][1], R[1][1])
   local p = math.atan2(-R[3][1], math.sqrt(R[3][2]^2+R[3][3]^2))
   local r = math.atan2(R[3][2], R[3][3])
@@ -274,7 +277,8 @@ end
 --ndq = rpy2Quat(-rpy1)
 --print(QuatMul(q, ndq))
 --print(QuatMul(q, QInverse(dq)))
---vec = torch.DoubleTensor({0.3595, 0, 0})
+vec = torch.DoubleTensor({{0.3595, 0, 0}})
+print(vec)
 --vecneg = torch.DoubleTensor({-0.3595, 0, 0})
 --q = Vector2Quat(vec)
 --q1 = Vector2Quat(vecneg)
