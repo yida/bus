@@ -20,7 +20,7 @@ state[7] = 1
 P = torch.Tensor(9, 9):fill(0) -- estimate error covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((1 * math.pi / 180)^2)
 P:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 P:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -28,7 +28,7 @@ P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 Q = torch.Tensor(9, 9):fill(0) -- process noise covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((0.1 * math.pi / 180)^2)
 Q:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -36,7 +36,7 @@ Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
 posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
-qCovRG  = torch.eye(3, 3):mul((5 * math.pi / 180)^2)
+qCovRG  = torch.eye(3, 3):mul((0.01)^2)
 qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
 
 ns = 9
@@ -71,20 +71,20 @@ imuTstep = 0
 counter = 0
 
 function imuCorrent(imu)
-  local acc = torch.Tensor(3, 1):fill(0)
-  acc[1] = -accBiasX
-  acc[2] = -accBiasY
-  acc[3] = -accBiasZ
+  local ac = torch.Tensor(3, 1):fill(0)
+  ac[1] = -accBiasX
+  ac[2] = -accBiasY
+  ac[3] = -accBiasZ
 
-  acc[1] = acc[1] + imu.ax
-  acc[2] = acc[2] + imu.ay
-  acc[3] = acc[3] - imu.az
-  local gyro = torch.Tensor(3, 1):fill(0)
-  gyro[1] = imu.wr
-  gyro[2] = imu.wp
-  gyro[3] = -imu.wy
+  ac[1] = ac[1] - imu.ax
+  ac[2] = ac[2] + imu.ay
+  ac[3] = ac[3] - imu.az
+  local gyr = torch.Tensor(3, 1):fill(0)
+  gyr[1] = -imu.wr
+  gyr[2] = imu.wp
+  gyr[3] = -imu.wy
 
-  return acc, gyro
+  return ac, gyr
 end
 
 function accTiltCompensate(acc)
@@ -155,7 +155,8 @@ function GenerateSigmaPoints()
     -- Sigma points for Quaternion
     local qW = Vector2Quat(W:narrow(2, i, 1):narrow(1, 7, 3))
     Chi:narrow(2, i, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
-    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, QuatInv(qW)))
+    qW = Vector2Quat(-W:narrow(2, i, 1):narrow(1, 7, 3))
+    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
   end
 end
 
@@ -195,10 +196,13 @@ function ProcessModel(dt)
     local q = Chicol:narrow(1, 7, 4)
     local dq = Vector2Quat(gyro, dt)
     Ycol:narrow(1, 7, 4):copy(QuatMul(q,dq))
+    --Ycol:narrow(1, 7, 4):copy(q)
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ, e = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
+  print("yMeanQ")
+  print(yMeanQ)
   yMean:narrow(1, 7, 4):copy(yMeanQ)
 end
 
@@ -223,10 +227,13 @@ function KalmanGainUpdate(Z, zMean, v, R)
   end
   Pxz:div(2 * ns)
   Pzz:div(2 * ns)
+--  print('pzz')
+--  print(Pzz)
   local Pvv = Pzz + R
 
   -- K
   local K = Pxz * torch.inverse(Pvv)
+--  print(K:narrow(1, 7, 3))
 
   -- posterior
   local stateadd = K * v
@@ -239,6 +246,7 @@ end
 
 function measurementGravityUpdate()
   if not gravityInit then return end
+--  print('gravity measure')
   local gq = torch.Tensor({0,0,0,1})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -247,9 +255,11 @@ function measurementGravityUpdate()
     local qk = Chicol:narrow(1, 7, 4)
     Zcol:copy(QuatMul(QuatMul(qk, gq), QuatInv(qk)):narrow(1, 2, 3))
   end
+--  print('Z')
+--  print(Z)
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
---  print(v)
+  print(v)
   local R = qCovRG
   KalmanGainUpdate(Z, zMean, v, R)
 end
@@ -328,8 +338,10 @@ end
 
 
 --local datasetpath = '../data/010213180247/'
-local datasetpath = '../data/'
-local dataset = loadData(datasetpath, 'log')
+--local datasetpath = '../data/'
+local datasetpath = '../simulation/'
+--local datasetpath = '../'
+local dataset = loadData(datasetpath, 'logall')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugpsmag', 20000)
@@ -338,35 +350,36 @@ local dataset = loadData(datasetpath, 'log')
 
 
 for i = 1, #dataset do
---  if i > 11709 then error() end
---  if i > 12709 then error() end
---  if i > 327 then error() end
   if dataset[i].type == 'imu' then
---    util.ptable(dataset[i])
     processUpdate(dataset[i].timestamp, dataset[i])
-    measurementGravityUpdate()
+--    measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
   elseif dataset[i].type == 'mag' then
 --    measurementMagUpdate(dataset[i])
   end
 
-  local Q = state:narrow(1, 7, 4)
-  local rpy = Quat2rpy(Q)
-  counter = counter + 1 
---  rpy[1] = correctRange(rpy[1])
---  rpy[2] = correctRange(rpy[2])
---  rpy[3] = correctRange(rpy[3])
-
-  v = vector.new({rpy[1], rpy[2], rpy[3]})
-  print(rpy:mul(180 / math.pi))
-  v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
-  ucm.set_ukf_timestamp(dataset[i].timestamp)
-  ucm.set_ukf_counter(counter)
-  ucm.set_ukf_rpy(v)
-  ucm.set_ukf_trpy(v1)
---  print(state:narrow(1, 1, 6))
-
+  if gravityInit then
+--    print('acc')
+--    print(rawacc)
+--    print('gy')
+--    print(gyro)
+    local Q = state:narrow(1, 7, 4)
+    local rpy = Quat2rpy(Q)
+    counter = counter + 1 
+  --  rpy[1] = correctRange(rpy[1])
+  --  rpy[2] = correctRange(rpy[2])
+  --  rpy[3] = correctRange(rpy[3])
+  
+    v = vector.new({rpy[1], rpy[2], rpy[3]})
+  --  print(rpy:mul(180 / math.pi))
+    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
+    ucm.set_ukf_timestamp(dataset[i].timestamp)
+    ucm.set_ukf_counter(counter)
+    ucm.set_ukf_rpy(v)
+    ucm.set_ukf_trpy(v1)
+  --  print(state:narrow(1, 1, 6))
+  end
 end
 
 print('done')

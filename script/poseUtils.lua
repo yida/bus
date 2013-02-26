@@ -4,7 +4,8 @@ torch.setdefaulttensortype('torch.DoubleTensor')
 function QuatCompare(q1, q2)
   local e1 = Quat2Vector(q1)
   local e2 = Quat2Vector(q2)
-  return math.abs(e1:norm() - e2:norm())
+--  return math.abs(e1:norm() - e2:norm())
+  return (e1-e2):norm()
 end
 
 function Vector2Quat(w, dt)
@@ -26,12 +27,12 @@ end
 
 function Quat2Vector(q)
   if q[1] > 1 then q[1] = 1 end
-  local alphaW = math.acos(q[1])
+  local alphaW = 2*math.acos(q[1])
   local v = torch.Tensor(3):fill(0)
   if alphaW > 1e-6 then
-    v[1] = q[2] / math.sin(alphaW) * alphaW
-    v[2] = q[3] / math.sin(alphaW) * alphaW
-    v[3] = q[4] / math.sin(alphaW) * alphaW
+    v[1] = q[2] / math.sin(alphaW/2) * alphaW
+    v[2] = q[3] / math.sin(alphaW/2) * alphaW
+    v[3] = q[4] / math.sin(alphaW/2) * alphaW
   end
   return v
 end

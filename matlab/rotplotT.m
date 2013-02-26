@@ -24,7 +24,7 @@ itop = [1 2 4 3 1];
 ibottom = [5 6 8 7 5];
 
 plot3(xp(1,itop), xp(2,itop), xp(3,itop), 'k-', ...
-      xp(1,ibottom), xp(2,ibottom), xp(3,ibottom), 'k-');
+      xp(1,ibottom), xp(2,ibottom), xp(3,ibottom), 'y-');
 hold on;
 patch(xp(1,ifront), xp(2,ifront), xp(3,ifront), 'b');
 patch(xp(1,iback), xp(2,iback), xp(3,iback), 'r');
