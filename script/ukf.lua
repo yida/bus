@@ -14,7 +14,7 @@ local geo = require 'GeographicLib'
 --
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
-state[8] = 1
+state[7] = 1
 
 -- state Cov, Posterior
 P = torch.Tensor(9, 9):fill(0) -- estimate error covariance
@@ -174,31 +174,13 @@ function ProcessModel(dt)
     posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
---    print 'gyro'
---    print(gyro)
---    print 'dt'
---    print(dt)
---    local dq = Vector2Quat(gyro, dt)
-    local dq = Vector2Quat(gyro:mul(dt))
---    print 'dq'
---    print(dq)
---    print 'multi'
---    print(QuatMul(q, dq))
-
+    local dq = Vector2Quat(gyro, dt)
     Ycol:narrow(1, 7, 4):copy(QuatMul(q,dq))
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ, e = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
-  print('yMean')
-  print(yMean)
-  local Q = yMean:narrow(1, 7, 4)
-  local rpy = Quat2rpy(Q)
---  print 'rpy'
---  print(rpy)
---  print 'trpy'
---  print(trpy)
 end
 
 function PrioriEstimate()
@@ -356,11 +338,11 @@ local dataset = loadData(datasetpath, 'logall')
 
 
 for i = 1, #dataset do
-  if i > 218 then error() end
+--  if i > 218 then error() end
 --  if i > 2222 then error() end
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timestamp, dataset[i])
---    measurementGravityUpdate()
+    measurementGravityUpdate()
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
   elseif dataset[i].type == 'mag' then
