@@ -1,8 +1,8 @@
 clear all;
 close all;
-
-addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/utils') )
-addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
+%/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util/
+addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
+addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
 
 h = {};
 h.tid = 1;

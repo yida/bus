@@ -10,16 +10,17 @@ end
 
 function Vector2Quat(w, dt)
   local dq = torch.Tensor(4):fill(0)
-  if w:norm() < 1e-6 then
+  local wNorm = w:norm()
+  if wNorm < 1e-6 then
     dq[1] = 1
     return dq
   end
   if dt then
-    dAngle = w:norm() * dt
+    dAngle = wNorm * dt
   else
-    dAngle = w:norm()
+    dAngle = wNorm
   end
-  dAxis = w:div(w:norm()) 
+  dAxis = w:div(wNorm) 
   dq[1] = math.cos(dAngle / 2)
   dq[{{2, 4}}] = dAxis * math.sin(dAngle / 2)
   return dq

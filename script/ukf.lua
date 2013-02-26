@@ -14,7 +14,7 @@ local geo = require 'GeographicLib'
 --
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
-state[7] = 1
+state[8] = 1
 
 -- state Cov, Posterior
 P = torch.Tensor(9, 9):fill(0) -- estimate error covariance
@@ -36,7 +36,7 @@ Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
 posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
-qCovRG  = torch.eye(3, 3):mul((0.01)^2)
+qCovRG  = torch.eye(3, 3):mul((10)^2)
 qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
 
 ns = 9
@@ -146,8 +146,6 @@ function GenerateSigmaPoints()
   -- Sigma points
   local W = cholesky((P+Q):mul(math.sqrt(2*ns)))
   local q = state:narrow(1, 7, 4)
-  print('w')
-  print(W)
   for i = 1, ns do
     -- Sigma points for pos and vel
     Chi:sub(1,6,i,i):copy(state:sub(1,6) + W:sub(1,6,i,i))
@@ -177,14 +175,31 @@ function ProcessModel(dt)
     posvel:copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
-    local dq = Vector2Quat(gyro, dt)
+    print 'gyro'
+    print(gyro)
+    print 'dt'
+    print(dt)
+--    local dq = Vector2Quat(gyro, dt)
+    local dq = Vector2Quat(gyro:mul(dt))
+    print 'dq'
+    print(dq)
+    print 'multi'
+    print(QuatMul(q, dq))
+
     Ycol:narrow(1, 7, 4):copy(QuatMul(q,dq))
---    Ycol:narrow(1, 7, 4):copy(q)
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ, e = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
+  print('yMean')
+  print(yMean)
+  local Q = yMean:narrow(1, 7, 4)
+  local rpy = Quat2rpy(Q)
+  print 'rpy'
+  print(rpy)
+  print 'trpy'
+  print(trpy)
 end
 
 function PrioriEstimate()
@@ -229,7 +244,6 @@ function KalmanGainUpdate(Z, zMean, v, R)
 
   -- K
   local K = Pxz * torch.inverse(Pvv)
---  print(K:narrow(1, 7, 3))
 
   -- posterior
   local stateadd = K * v
@@ -251,11 +265,9 @@ function measurementGravityUpdate()
     local qk = Chicol:narrow(1, 7, 4)
     Zcol:copy(QuatMul(QuatMul(qk, gq), QuatInv(qk)):narrow(1, 2, 3))
   end
---  print('Z')
---  print(Z)
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
-  print(v)
+--  print(v)
   local R = qCovRG
   KalmanGainUpdate(Z, zMean, v, R)
 end
@@ -266,8 +278,7 @@ local basepos = {0.0, 0.0, 0.0}
 function measurementGPSUpdate(tstep, gps)
   if gps.latitude == nil or gps.latitude == '' then return end
   
-  local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, 
-                                gps.longtitude, gps.eastwest)
+  local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
   local gpsposAb = geo.Forward(lat, lnt, 6)
 
   if firstlat then
@@ -276,8 +287,7 @@ function measurementGPSUpdate(tstep, gps)
       gpsInit = true
   end
 
-  local gpspos = torch.Tensor({gpsposAb.x - basepos.x, 
-                                      gpsposAb.y - basepos.y, 0})
+  local gpspos = torch.Tensor({gpsposAb.x - basepos.x, gpsposAb.y - basepos.y, 0})
   gpspos[1] = -gpspos[1]
   gpspos[2] = -gpspos[2]
   local Z = torch.Tensor(3, 2 * ns):fill(0)
@@ -338,6 +348,7 @@ end
 local datasetpath = '../simulation/'
 --local datasetpath = '../'
 local dataset = loadData(datasetpath, 'logall')
+--local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugpsmag', 20000)
@@ -347,7 +358,7 @@ local dataset = loadData(datasetpath, 'logall')
 
 for i = 1, #dataset do
 --  if i > 218 then error() end
---  if i > 322 then error() end
+  if i > 2222 then error() end
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timestamp, dataset[i])
 --    measurementGravityUpdate()
@@ -364,9 +375,10 @@ for i = 1, #dataset do
   --  rpy[1] = correctRange(rpy[1])
   --  rpy[2] = correctRange(rpy[2])
   --  rpy[3] = correctRange(rpy[3])
+  --
+  --  print(rpy:mul(180 / math.pi))
   
     v = vector.new({rpy[1], rpy[2], rpy[3]})
-  --  print(rpy:mul(180 / math.pi))
     v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
     ucm.set_ukf_timestamp(dataset[i].timestamp)
     ucm.set_ukf_counter(counter)
