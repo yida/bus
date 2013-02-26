@@ -28,7 +28,7 @@ P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 Q = torch.Tensor(9, 9):fill(0) -- process noise covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((0.001 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
 Q:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -76,12 +76,12 @@ function imuCorrent(imu)
   ac[2] = -accBiasY
   ac[3] = -accBiasZ
 
-  ac[1] = ac[1] - imu.ax
-  ac[2] = ac[2] + imu.ay
+  ac[1] = ac[1] + imu.ax
+  ac[2] = ac[2] - imu.ay
   ac[3] = ac[3] - imu.az
   local gyr = torch.Tensor(3, 1):fill(0)
-  gyr[1] = -imu.wr
-  gyr[2] = imu.wp
+  gyr[1] = imu.wr
+  gyr[2] = -imu.wp
   gyr[3] = -imu.wy
 
   return ac, gyr

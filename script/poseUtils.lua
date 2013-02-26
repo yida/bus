@@ -278,7 +278,7 @@ end
 --print(QuatMul(q, ndq))
 --print(QuatMul(q, QInverse(dq)))
 vec = torch.DoubleTensor({{0.3595, 0, 0}})
-print(vec)
+--print(vec)
 --vecneg = torch.DoubleTensor({-0.3595, 0, 0})
 --q = Vector2Quat(vec)
 --q1 = Vector2Quat(vecneg)
