@@ -20,7 +20,7 @@ state[7] = 1
 P = torch.Tensor(9, 9):fill(0) -- estimate error covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((1 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
 P:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 P:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -28,7 +28,7 @@ P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 Q = torch.Tensor(9, 9):fill(0) -- process noise covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((0.1 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((0.001 * math.pi / 180)^2)
 Q:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -40,10 +40,10 @@ qCovRG  = torch.eye(3, 3):mul((0.01)^2)
 qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
 
 ns = 9
-Chi = torch.Tensor(state:size(1), 2 * ns):fill(0)
+Chi = torch.Tensor(10, 2 * ns):fill(0)
 ChiMean = torch.Tensor(10, 1):fill(0)
-e = torch.Tensor(3, 2 * ns + 1):fill(0)
-Y = torch.Tensor(state:size(1), 2 * ns):fill(0)
+e = torch.Tensor(3, 2 * ns):fill(0)
+Y = torch.Tensor(10, 2 * ns):fill(0)
 yMean = torch.Tensor(10, 1):fill(0)
 e = torch.Tensor(3, 2 * ns):fill(0)
 
@@ -101,7 +101,6 @@ function accTiltCompensate(acc)
 end
 
 function processUpdate(tstep, imu)
---  print(imu.ax, imu.ay, imu.az)
   rawacc, gyro = imuCorrent(imu)
 --  print 'tilt compensate'
 --  print(accTiltCompensate(rawacc))
@@ -147,37 +146,21 @@ function GenerateSigmaPoints()
   -- Sigma points
   local W = cholesky((P+Q):mul(math.sqrt(2*ns)))
   local q = state:narrow(1, 7, 4)
-  for i = 1, ns  do
+  print('w')
+  print(W)
+  for i = 1, ns do
     -- Sigma points for pos and vel
     Chi:sub(1,6,i,i):copy(state:sub(1,6) + W:sub(1,6,i,i))
     Chi:sub(1,6,i+ns,i+ns):copy(state:sub(1,6) - W:sub(1,6,i,i))
 
     -- Sigma points for Quaternion
-    local qW = Vector2Quat(W:narrow(2, i, 1):narrow(1, 7, 3))
+    local eW = W:narrow(2, i, 1):narrow(1, 7, 3)
+    local neW = -eW:clone()
+    local qW = Vector2Quat(eW)
+    local nqW = Vector2Quat(neW)
     Chi:narrow(2, i, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
-    qW = Vector2Quat(-W:narrow(2, i, 1):narrow(1, 7, 3))
-    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
+    Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, nqW))
   end
-end
-
-function PrioriEstimate()
-  -- Generate priori estimate state and covariance
-  -- priori state = mean(Y)
-  state:copy(yMean)
-
-  local PPriori = torch.Tensor(9, 9):fill(0)
-  for i = 1, 2 * ns do
-    local Ycol = Y:narrow(2, i, 1)
-    local WDiff = torch.Tensor(9, 1):fill(0)
-    -- Pos & Vel
-    WDiff:narrow(1, 1, 6):copy(Ycol:narrow(1, 1, 6) - yMean:narrow(1, 1, 6))
-    -- Rotation
-    local YqDiff = QuatMul(Ycol:narrow(1, 7, 4), QuatInv(yMean:narrow(1, 7, 4)))
-    WDiff:narrow(1, 7, 3):copy(Quat2Vector(YqDiff))
-    PPriori:add(WDiff * WDiff:t())
-  end
-  PPriori:div(2.0 * ns)
-  P:copy(PPriori)
 end
 
 function ProcessModel(dt)
@@ -196,17 +179,32 @@ function ProcessModel(dt)
     local q = Chicol:narrow(1, 7, 4)
     local dq = Vector2Quat(gyro, dt)
     Ycol:narrow(1, 7, 4):copy(QuatMul(q,dq))
-    --Ycol:narrow(1, 7, 4):copy(q)
+--    Ycol:narrow(1, 7, 4):copy(q)
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ, e = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
-  print("yMeanQ")
-  print(yMeanQ)
   yMean:narrow(1, 7, 4):copy(yMeanQ)
 end
 
-
+function PrioriEstimate()
+  -- Generate priori estimate state and covariance
+  -- priori state = mean(Y)
+  state:copy(yMean)
+  local PPriori = torch.Tensor(9, 9):fill(0)
+  for i = 1, 2 * ns do
+    local Ycol = Y:narrow(2, i, 1)
+    local WDiff = torch.Tensor(9, 1):fill(0)
+    -- Pos & Vel
+    WDiff:narrow(1, 1, 6):copy(Ycol:narrow(1, 1, 6) - yMean:narrow(1, 1, 6))
+    -- Rotation
+    local YqDiff = QuatMul(Ycol:narrow(1, 7, 4), QuatInv(yMean:narrow(1, 7, 4)))
+    WDiff:narrow(1, 7, 3):copy(Quat2Vector(YqDiff))
+    PPriori:add(WDiff * WDiff:t())
+  end
+  PPriori:div(2.0 * ns)
+  P:copy(PPriori)
+end
 
 function KalmanGainUpdate(Z, zMean, v, R)
   -- Pxz Pzz Pvv
@@ -227,8 +225,6 @@ function KalmanGainUpdate(Z, zMean, v, R)
   end
   Pxz:div(2 * ns)
   Pzz:div(2 * ns)
---  print('pzz')
---  print(Pzz)
   local Pvv = Pzz + R
 
   -- K
@@ -350,6 +346,8 @@ local dataset = loadData(datasetpath, 'logall')
 
 
 for i = 1, #dataset do
+--  if i > 218 then error() end
+--  if i > 322 then error() end
   if dataset[i].type == 'imu' then
     processUpdate(dataset[i].timestamp, dataset[i])
 --    measurementGravityUpdate()
@@ -360,10 +358,6 @@ for i = 1, #dataset do
   end
 
   if gravityInit then
---    print('acc')
---    print(rawacc)
---    print('gy')
---    print(gyro)
     local Q = state:narrow(1, 7, 4)
     local rpy = Quat2rpy(Q)
     counter = counter + 1 

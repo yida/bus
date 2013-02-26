@@ -25,10 +25,13 @@ function Vector2Quat(w, dt)
   return dq
 end
 
-function Quat2Vector(q)
-  if q[1] > 1 then q[1] = 1 end
+function Quat2Vector(Q)
+  local q = torch.Tensor(4):copy(Q)
+--  if q[1] > 1 then q[1] = 1 end
   local alphaW = 2*math.acos(q[1])
   local v = torch.Tensor(3):fill(0)
+--  print('q', math.sin(alphaW/2) * alphaW)
+--  print(q)
   if alphaW > 1e-6 then
     v[1] = q[2] / math.sin(alphaW/2) * alphaW
     v[2] = q[3] / math.sin(alphaW/2) * alphaW
@@ -270,4 +273,12 @@ end
 --ndq = rpy2Quat(-rpy1)
 --print(QuatMul(q, ndq))
 --print(QuatMul(q, QInverse(dq)))
-
+--vec = torch.DoubleTensor({0.3595, 0, 0})
+--vecneg = torch.DoubleTensor({-0.3595, 0, 0})
+--q = Vector2Quat(vec)
+--q1 = Vector2Quat(vecneg)
+--print(q)
+--print(q1)
+--print(Quat2Vector(q))
+--print(Quat2Vector(q1))
+----
