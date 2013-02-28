@@ -67,7 +67,7 @@ function saveData(dataset, dtype)
 end
 
 function getFileName(path, dtype)
-  local file = assert(io.popen('/bin/ls '..path..dtype..'-*', 'r'))
+  local file = assert(io.popen('/bin/ls '..path..dtype..'*', 'r'))
   local filename = file:read();
   return filename
 end

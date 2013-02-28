@@ -28,7 +28,7 @@ P:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 Q = torch.Tensor(9, 9):fill(0) -- process noise covariance
 posCov = torch.eye(3, 3):mul(0.005^2)
 velCov = torch.eye(3, 3):mul(0.01^2)
-qCov   = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
+qCov   = torch.eye(3, 3):mul((0.1 * math.pi / 180)^2)
 Q:narrow(1, 1, 3):narrow(2, 1, 3):copy(posCov)
 Q:narrow(1, 4, 3):narrow(2, 4, 3):copy(velCov)
 Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
@@ -36,7 +36,7 @@ Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
 posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
-qCovRG  = torch.eye(3, 3):mul((10)^2)
+qCovRG  = torch.eye(3, 3):mul((1 * math.pi / 180)^2)
 qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
 
 ns = 9
@@ -113,11 +113,15 @@ function processUpdate(tstep, imu)
   if processInit == false then 
     processInit = true
     imuTstep = tstep
-    return
+    return false
   end
 
-  local dt = tstep - imuTstep
-  if dt == 0 then return end 
+  local dtime = tstep - imuTstep
+  if dtime > 0.05 then 
+    print(string.format('before %15f %15f %15f',imuTstep, tstep,  imuTstep - tstep))
+    print(dtime)
+  end
+  if dtime == 0 then return false end 
   imuTstep = tstep
 
   if not gravityInit then
@@ -128,21 +132,23 @@ function processUpdate(tstep, imu)
       g = g:div(gInitCount)
       gravityInit = true
     else
-      return
+      return false
     end
   end
 
-  if gpsInit == false then return end
+  if gpsInit == false then return false end
 
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
-  GenerateSigmaPoints()
-  ProcessModel(dt)
-  PrioriEstimate()
+  GenerateSigmaPoints(dtime)
+  ProcessModel(dtime)
+  PrioriEstimate(dtime)
+  
+  return true
 end
 
-function GenerateSigmaPoints()
+function GenerateSigmaPoints(dt)
   -- Sigma points
   local W = cholesky((P+Q):mul(math.sqrt(2*ns)))
   local q = state:narrow(1, 7, 4)
@@ -166,6 +172,9 @@ function ProcessModel(dt)
                           {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
   local G = torch.Tensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
                           {dt,0,0}, {0,dt,0}, {0,0,dt}})
+
+  ucm.set_ukf_timestamp(dt)
+
   -- Y
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
@@ -183,7 +192,7 @@ function ProcessModel(dt)
   yMean:narrow(1, 7, 4):copy(yMeanQ)
 end
 
-function PrioriEstimate()
+function PrioriEstimate(dt)
   -- Generate priori estimate state and covariance
   -- priori state = mean(Y)
   state:copy(yMean)
@@ -233,6 +242,20 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Quat(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuatMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
+
+  if gravityInit then
+    local Q = state:narrow(1, 7, 4)
+    counter = counter + 1 
+  
+    q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
+    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
+    ucm.set_ukf_counter(counter)
+    ucm.set_ukf_quat(q)
+    ucm.set_ukf_trpy(v1)
+  --  print(state:narrow(1, 1, 6))
+  end
+
+
 end
 
 function measurementGravityUpdate()
@@ -325,11 +348,12 @@ end
 
 
 --local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/'
-local datasetpath = '../simulation/'
+local datasetpath = '../data/rawdata/'
+--local datasetpath = '../simulation/'
 --local datasetpath = '../'
-local dataset = loadData(datasetpath, 'logall')
+--local dataset = loadData(datasetpath, 'logall')
 --local dataset = loadData(datasetpath, 'log')
+local dataset = loadData(datasetpath, 'log-946684834.63068')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugpsmag', 20000)
@@ -340,33 +364,16 @@ local dataset = loadData(datasetpath, 'logall')
 for i = 1, #dataset do
 --  if i > 218 then error() end
 --  if i > 2222 then error() end
+--  if i > 10010 then error() end
   if dataset[i].type == 'imu' then
-    processUpdate(dataset[i].timestamp, dataset[i])
-    measurementGravityUpdate()
+    local ret = processUpdate(dataset[i].timestamp, dataset[i])
+    if ret == true then measurementGravityUpdate() end
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
   elseif dataset[i].type == 'mag' then
 --    measurementMagUpdate(dataset[i])
   end
 
-  if gravityInit then
-    local Q = state:narrow(1, 7, 4)
-    local rpy = Quat2rpy(Q)
-    counter = counter + 1 
-  --  rpy[1] = correctRange(rpy[1])
-  --  rpy[2] = correctRange(rpy[2])
-  --  rpy[3] = correctRange(rpy[3])
-  --
-  --  print(rpy:mul(180 / math.pi))
-  
-    v = vector.new({rpy[1], rpy[2], rpy[3]})
-    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
-    ucm.set_ukf_timestamp(dataset[i].timestamp)
-    ucm.set_ukf_counter(counter)
-    ucm.set_ukf_rpy(v)
-    ucm.set_ukf_trpy(v1)
-  --  print(state:narrow(1, 1, 6))
-  end
 end
 
 print('done')

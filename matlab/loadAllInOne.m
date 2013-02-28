@@ -1,16 +1,19 @@
+clear all;
 
-filename = '../data/010213180247/imuPruned-02.08.2013.09.56.04-0'
+filename = '../simulation/logall-'
 fid = fopen(filename, 'r')
 
 imucounter = 1
 
 tline = fgetl(fid);
 while ischar(tline)
-%  fprintf(1, '\r%s\n\n', tline);
+  fprintf(1, '\r%s\n\n', tline);
   st = lua2mat(tline);
-  time = st.timstamp;
+  if strcmp(st.type, 'imu')
+  time = st.timestamp;
   imu(imucounter, :) = [st.r, st.p, st.y, st.wr, st.wp, st.wy, st.ax, st.ay, st.az];
   imucounter = imucounter + 1;
+  end
   tline = fgetl(fid);
 end
 fclose(fid)
