@@ -348,18 +348,23 @@ end
 
 
 --local datasetpath = '../data/010213180247/'
-local datasetpath = '../data/rawdata/'
+--local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
+local datasetpath = '../data/'
 --local datasetpath = '../'
 --local dataset = loadData(datasetpath, 'logall')
 --local dataset = loadData(datasetpath, 'log')
-local dataset = loadData(datasetpath, 'log-946684834.63068')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugpsmag', 20000)
 --local dataset = loadData(datasetpath, 'imugpsmag')
 --local dataset = loadData(datasetpath, 'imuPruned')
-
+local dataset = loadData(datasetpath, 'log-946684824.42841')
+--local dataset = loadData(datasetpath, 'log-946684824.46683')
+----local dataset = loadData(datasetpath, 'log-946684824.57635')
+--local dataset = loadData(datasetpath, 'log-946684824.66965')
+--local dataset = loadData(datasetpath, 'log-946684834.63068')
+--local dataset = loadData(datasetpath, 'log-946684836.76822')
 
 for i = 1, #dataset do
 --  if i > 218 then error() end
