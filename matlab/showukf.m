@@ -1,10 +1,10 @@
 clear all;
 close all;
 %/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util/
-%addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
-%addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
-addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
-addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
+addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
+addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
+%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
+%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
 
 
 h = {};
@@ -27,9 +27,12 @@ dcounter = 0;
         [yaw pitch roll] = quat2angle(Q);
         trpy = h.ukf.get_trpy();
         tstep = h.ukf.get_timestamp();
+        magheading = h.ukf.get_magheading();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
 %         subplot(1,2,1)
+        coord(R(1:3, 1:3), magheading);
+        hold on;
         rotplotT(R(1:3, 1:3), tstep);
 %         subplot(1,2,2)
 %         rotplotT(tR(1:3, 1:3), tstep);
