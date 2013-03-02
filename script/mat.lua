@@ -1,7 +1,7 @@
 require 'include'
 
 local ffi = require 'ffi'
-local Z = require 'Z'
+--local Z = require 'Z'
 local util = require 'util'
 require 'zlib'
 
@@ -437,18 +437,18 @@ function load(filename)
     file:seek('set', ptr)
     local tag = file:read(tagSize)
     local dataT, dataSize, realTagSize = parseTag(tag)
+    ptr = ptr + realTagSize
+    file:seek('set', ptr)
 --    print(dataT, dataSize, realTagSize)
     print('data type:'..matType(dataT)..' data size:'..dataSize)
-    local data = file:read(tagSize + dataSize)
+    local data = file:read(dataSize)
     -- move ptr to next data
-    ptr = ptr + tagSize + dataSize
+    ptr = ptr + dataSize
 
     -- process data
     -- decompress data if necessary
     if dataT == miCOMPRESSED then
---      data = data:sub(9, #data)
-      data = Z.uncompress(data, dataSize)
-      --data = uncompress(data, #data)
+      data = uncompress(data, 3 * #data)
       print('Decompress data, new data size:'..#data)
       -- read tag and parse for real data type and size
       tag = data:sub(1, tagSize)
