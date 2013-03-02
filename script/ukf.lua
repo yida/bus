@@ -37,7 +37,7 @@ Q:narrow(1, 7, 3):narrow(2, 7, 3):copy(qCov)
 posCovR = torch.eye(3, 3):mul(0.5^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
 qCovRG  = torch.eye(3, 3):mul((1 * math.pi / 180)^2)
-qCovRM  = torch.eye(3, 3):mul((20 * math.pi / 180)^2)
+qCovRM  = torch.eye(3, 3):mul((1)^2)
 
 ns = 9
 Chi = torch.Tensor(10, 2 * ns):fill(0)
@@ -76,12 +76,12 @@ function imuCorrent(imu)
   ac[2] = -accBiasY
   ac[3] = -accBiasZ
 
-  ac[1] = ac[1] + imu.ax
-  ac[2] = ac[2] - imu.ay
+  ac[1] = ac[1] - imu.ax
+  ac[2] = ac[2] + imu.ay
   ac[3] = ac[3] - imu.az
   local gyr = torch.Tensor(3, 1):fill(0)
-  gyr[1] = imu.wr
-  gyr[2] = -imu.wp
+  gyr[1] = -imu.wr
+  gyr[2] = imu.wp
   gyr[3] = -imu.wy
 
   return ac, gyr
@@ -315,13 +315,19 @@ firstmat = false
 magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
   -- mag and imu coordinate x, y reverse
-  local rawmag = torch.DoubleTensor({mag.y, mag.x, -mag.z})
-  -- calibrated & tilt compensated heading 
-  local heading, Bf = magTiltCompensate(rawmag, rawacc)
-  local Bc = magCalibrated(rawmag) -- calibrated raw B
-  -- Normalize the raw measurement
-  Bc:div(Bc:norm())
+  local rawmag = torch.DoubleTensor({mag.y, -mag.y, -mag.z})
+--  -- calibrated & tilt compensated heading 
+--  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+--  local Bc = magCalibrated(rawmag) -- calibrated raw B
+--  -- Normalize the raw measurement
+--  Bc:div(Bc:norm())
 
+  local calibratedMag = magCalibrated(rawmag)
+  -- just use the first too
+  calibratedMag[3] = 0
+  calibratedMag:div(calibratedMag:norm())
+  print(calibratedMag)
+  
   -- set init orientation
   if not firstmat then
   --  print(heading)
@@ -341,7 +347,11 @@ function measurementMagUpdate(mag)
     Zcol:copy(QuatMul(QuatMul(qk, mq), QuatInv(qk)):narrow(1, 2, 3))
   end
   local zMean = torch.mean(Z, 2)
-  local v = Bc - zMean
+  print('zMean')
+  print(zMean)
+  local v = calibratedMag - zMean
+  print('diff')
+  print(v)
   local R = qCovRM
   KalmanGainUpdate(Z, zMean, v, R)
 end
@@ -349,17 +359,17 @@ end
 
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/rawdata/'
---local datasetpath = '../simulation/'
-local datasetpath = '../data/'
+local datasetpath = '../simulation/'
+--local datasetpath = '../data/'
 --local datasetpath = '../'
---local dataset = loadData(datasetpath, 'logall')
+local dataset = loadData(datasetpath, 'logall')
 --local dataset = loadData(datasetpath, 'log')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'imuPruned', 10000)
 --local dataset = loadData(datasetpath, 'imugpsmag', 20000)
 --local dataset = loadData(datasetpath, 'imugpsmag')
 --local dataset = loadData(datasetpath, 'imuPruned')
-local dataset = loadData(datasetpath, 'log-946684824.42841')
+--local dataset = loadData(datasetpath, 'log-946684824.42841')
 --local dataset = loadData(datasetpath, 'log-946684824.46683')
 ----local dataset = loadData(datasetpath, 'log-946684824.57635')
 --local dataset = loadData(datasetpath, 'log-946684824.66965')
@@ -376,7 +386,7 @@ for i = 1, #dataset do
   elseif dataset[i].type == 'gps' then
 --    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
   elseif dataset[i].type == 'mag' then
---    measurementMagUpdate(dataset[i])
+    measurementMagUpdate(dataset[i])
   end
 
 end
