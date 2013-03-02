@@ -198,8 +198,7 @@ end
 
 function parsemiUINT16(data, num)
   if num == nil then num = 1 end
---  print(num, #data)
-  assert(num * 2 == #data)
+  assert(num * 2 <= #data)
   local n = {}
   for j = 1, num do
     local i = 1 + (j - 1) * 2
@@ -211,7 +210,7 @@ end
 
 function parsemiINT16(data, num)
   if num == nil then num = 1 end
-  assert(num * 2 == #data)
+  assert(num * 2 <= #data)
   local n = {}
   for j = 1, num do
     local i = 1 + (j - 1) * 2
@@ -419,12 +418,14 @@ function parsemiMATRIX(data)
   matrix[AN] = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
 
   if type(matrix[AN]) == 'string' then print(matrix[AN])
-  elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
+--  elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
   end
 
+  return matrix
 end
 
 function load(filename)
+  local content = {}
   file = assert(io.open(filename, 'rb'))
   local filesize = fsize(file)
   print('filesize:'..filesize)
@@ -456,9 +457,11 @@ function load(filename)
       print('data type:'..matType(dataT)..' data size:'..dataSize)
     end
     -- process data based on type
-    _G['parse'..matType(dataT)](data)
+     content[#content + 1] = _G['parse'..matType(dataT)](data)
+--     print(content[#content])
   end
   file:close()
+  return content
 end
   
 --filename = 'curData.mat'
@@ -474,4 +477,9 @@ if #arg > 0 then
   filename = arg[1]
 end
 
-load(filename)
+local content = load(filename)
+
+print(type(content))
+for i = 1, #content do
+  util.ptable(content[i])
+end
