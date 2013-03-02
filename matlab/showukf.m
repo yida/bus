@@ -29,10 +29,10 @@ dcounter = 0;
         tstep = h.ukf.get_timestamp();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
-        subplot(1,2,1)
+%         subplot(1,2,1)
         rotplotT(R(1:3, 1:3), tstep);
-        subplot(1,2,2)
-        rotplotT(tR(1:3, 1:3), tstep);
+%         subplot(1,2,2)
+%         rotplotT(tR(1:3, 1:3), tstep);
      end
  end
 
