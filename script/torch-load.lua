@@ -10,3 +10,5 @@ function include(file, depth)
 end
 
 require 'torch-env'
+torch.setdefaulttensortype('torch.DoubleTensor')
+

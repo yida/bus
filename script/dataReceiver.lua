@@ -8,7 +8,7 @@ package.cpath = home..'/Lib/?.so;'..package.cpath
 require 'include'
 require 'poseUtils'
 require 'torch-load'
-require 'calibrateMag'
+require 'magUtils'
 require 'common'
 torch.setdefaulttensortype('torch.DoubleTensor')
 

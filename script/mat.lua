@@ -449,7 +449,7 @@ function load(filename)
     -- process data
     -- decompress data if necessary
     if dataT == miCOMPRESSED then
-      data = uncompress(data, 3 * #data)
+      data = uncompress(data, 40 * #data)
       print('Decompress data, new data size:'..#data)
       -- read tag and parse for real data type and size
       tag = data:sub(1, tagSize)
@@ -464,15 +464,6 @@ function load(filename)
   return content
 end
   
---filename = 'curData.mat'
---filename = 'new.mat'
---filename = 'ee.mat'
---filename = 'ff.mat'
---filename = 'imuRaw1.mat'
---filename = '20121221route42r2imu.mat'
---filename = 'dd.mat'
---filename = 'cc.mat'
---filename = 'bb.mat'
 if #arg > 0 then
   filename = arg[1]
 end

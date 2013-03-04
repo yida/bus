@@ -1,6 +1,7 @@
 require 'include'
 require 'common'
 require 'gpscommon'
+require 'ucm'
 
 require 'torch-load'
 
@@ -29,17 +30,20 @@ for i = 1, #gpsset do
       relativeCount = relativeCount + 1
       relativePosX[relativeCount] = pos.x - basepos.x
       relativePosY[relativeCount] = pos.y - basepos.y
+      ucm.set_gps_counter(relativeCount)
+      ucm.set_gps_pos(vector.new({relativePosX[relativeCount],
+                                  relativePosY[relativeCount], 0}))
       print(relativePosX[relativeCount], relativePosY[relativeCount])
     end
   end
 end
 
-x = torch.Tensor(#relativePosX)
-y = torch.Tensor(#relativePosY)
-for i = 1, #relativePosX do 
-  x[i] = relativePosX[i]
-  y[i] = relativePosY[i]
-end
-
---gnuplot.figure(2)
-gnuplot.plot(x, y, '.')
+--x = torch.Tensor(#relativePosX)
+--y = torch.Tensor(#relativePosY)
+--for i = 1, #relativePosX do 
+--  x[i] = relativePosX[i]
+--  y[i] = relativePosY[i]
+--end
+--
+----gnuplot.figure(2)
+--gnuplot.plot(x, y, '.')

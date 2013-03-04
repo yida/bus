@@ -1,9 +1,6 @@
-function coord(R, heading)
+function coord(x, y, z, R, heading)
 
   origin = [0 0 0];
-  x = 0;
-  y = 0;
-  z = 0;
   
   % Rz = rotz(pi/3);
   % Ry = roty(pi/4);
@@ -29,5 +26,5 @@ function coord(R, heading)
   quiver3(x,y,z, vm(1), vm(2), vm(3), 'k'); % mag
   hold off;
   grid on;
-  % axis([-2 2 -2 2 -2 2]);
-  
+  axis([-2 2 -2 2 -100 50]);
+  drawnow 
