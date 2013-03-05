@@ -6,6 +6,7 @@ require 'GPSUtils'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
+util = require 'util'
 
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
@@ -62,8 +63,7 @@ function imuInitiate(step, accin)
       g = g:div(gInitCount)
       print('Initiated Gravity')
       return true
-    else return false
-    end
+    else return false end
   end
 end
 
@@ -73,9 +73,15 @@ function processUpdate(tstep, imu)
   local dtime = tstep - imuTstep
   imuTstep = tstep
 
-  if not imuInit then imuInit = imuInitiate(tstep, rawacc) return false end
-
+  if not imuInit then
+    imuInit = imuInitiate(tstep, gacc)
+    return false
+  end
+  
   if not magInit or not gpsInit then return false end
+--  if not processInit then return false
+--  end
+
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
@@ -85,6 +91,7 @@ function processUpdate(tstep, imu)
   if res == false then return false end
   res = PrioriEstimate(dtime)
   if res == false then return false end
+
   processInit = true
   return true
 end
@@ -117,11 +124,11 @@ function ProcessModel(dt)
   -- Y
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
-    Y:sub(1, 6, i, i):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
     local dq = Vector2Quat(gyro, dt)
-    Y:sub(7, 10, i, i):copy(QuatMul(q,dq))
+    Y:narrow(2, i, 1):narrow(1, 7, 4):copy(QuatMul(q,dq))
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
@@ -187,7 +194,6 @@ end
 function measurementGravityUpdate()
   if not processInit then return false end
 
---  print 'Gravity Measurement'
   local gq = torch.Tensor({0,0,0,1})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -213,7 +219,7 @@ function gpsInitiate(gps)
   local gpspos = global2metric(gps)
   -- set init pos
   state:sub(1, 3, 1, 1):copy(gpspos)
-  print 'initiate GPS'
+  print('initiate GPS') 
   return true
 end
 
@@ -235,7 +241,7 @@ function measurementGPSUpdate(gps)
   local gpspos = global2metric(gps)
 
   if not processInit then return false end
---  print 'GPS measurement'
+
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
@@ -267,8 +273,13 @@ function magInitiate(mag)
 end
 
 function measurementMagUpdate(mag)
-  -- Must first init gravity
   if not imuInit then return false end
+
+  -- mag and imu coordinate x, y reverse
+  local rawmag = magCorrect(mag)
+  -- calibrated & tilt compensated heading 
+  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+
   -- set init orientation
   if not magInit then
     magInit = magInitiate(mag)
@@ -276,12 +287,6 @@ function measurementMagUpdate(mag)
   end
 
   if not processInit then return false end
-  --print 'magnetometer Measurement'
-  -- mag and imu coordinate x, y reverse
-  local rawmag = magCorrect(mag)
-  -- calibrated & tilt compensated heading 
-  local heading, Bf = magTiltCompensate(rawmag, rawacc)
-
 
   local calibratedMag = magCalibrated(rawmag)
   -- just use the first too

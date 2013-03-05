@@ -25,24 +25,27 @@ counter = 0
 for i = 1, #dataset do
   if dataset[i].type == 'imu' then
     local ret = processUpdate(dataset[i].timstamp, dataset[i])
-    if ret == true then 
-      measurementGravityUpdate() 
-    end
+    if ret == true then measurementGravityUpdate() end
   elseif dataset[i].type == 'gps' then
     measurementGPSUpdate(dataset[i])
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
   end
 
+  processInit = imuInit and magInit and gpsInit
   if processInit then 
+--    print(state)
+--    error('stop for debugging') 
     local Q = state:narrow(1, 7, 4)
     counter = counter + 1 
   
     q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
     pos = vector.new({state[1][1], state[2][1], state[3][1]})
+--    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
     ucm.set_ukf_counter(counter)
     ucm.set_ukf_quat(q)
     ucm.set_ukf_pos(pos)
+  --  print(state:narrow(1, 1, 6))
   end
 
 end
