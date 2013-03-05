@@ -31,14 +31,14 @@ dcounter = 0;
         pos = h.ukf.get_pos();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
-%         plot3(pos(1), pos(2), pos(3), '*');
-%         hold on;
-%         grid on;
-%         drawnow
+         plot3(pos(1), pos(2), pos(3), '*');
+        hold on;
+        grid on;
+        drawnow
 %         subplot(1,2,1)
 %        coord(pos(1), pos(2), pos(3), R(1:3, 1:3), magheading);
 %        hold on;
-       rotplotT(R(1:3, 1:3), tstep);
+%       rotplotT(R(1:3, 1:3), tstep);
 %         subplot(1,2,2)jkk
 %         rotplotT(tR(1:3, 1:3), tstep);
      end

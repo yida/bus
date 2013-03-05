@@ -6,6 +6,7 @@ require 'GPSUtils'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
+util = require 'util'
 
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
@@ -77,6 +78,9 @@ function processUpdate(tstep, imu)
   if not imuInit then
     imuInit = imuInitiate(tstep, imu)
     return false
+  end
+  
+  if not processInit then return false
   end
 
   -- substract gravity from z axis and convert from g to m/s^2
@@ -188,6 +192,8 @@ function KalmanGainUpdate(Z, zMean, v, R)
 end
 
 function measurementGravityUpdate()
+  if not processInit then return false end
+
   local gq = torch.Tensor({0,0,0,1})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -204,32 +210,36 @@ end
 
 -- Geo Init
 function gpsInitiate(gps)
-  if gps.latitude == nil or gps.longtitude == nil 
-                            or gps.height == nil then
+  if gps.latitude == nil or gps.longtitude == nil or gps.height == nil then
     return false
   end
-  if gps.latitude == '' or gps.longtitude == '' 
-                            or gps.height == '' then
+  if gps.latitude == '' or gps.longtitude == '' or gps.height == '' then
     return false
   end
   local gpspos = global2metric(gps)
   -- set init pos
-  state[1] = gpspos[1]
-  state[2] = gpspos[2]
-  state[3] = gps.height
+  state:sub(1, 3, 1, 1):copy(gpspos)
   print('initiate GPS') 
   return true
 end
 
-firstlat = true
 function measurementGPSUpdate(gps)
-  if gps.latitude == nil or gps.latitude == '' then return end
-  local gpspos = global2metric(gps)
 
   if not gpsInit then
     gpsInit = gpsInitiate(gps)
     return false
   end
+
+  if gps.latitude == nil or gps.longtitude == nil or gps.height == nil then
+    return false
+  end
+  if gps.latitude == '' or gps.longtitude == '' or gps.height == '' then
+    return false
+  end
+
+  local gpspos = global2metric(gps)
+
+  if not processInit then return false end
 
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -240,7 +250,13 @@ function measurementGPSUpdate(gps)
   local zMean = torch.mean(Z, 2)
 
   -- reset Z with zMean since no measurement here
+  print 'gpspos'
+  print(gpspos)
+  print 'zMean'
+  print(zMean)
   local v = gpspos - zMean
+  print('diff')
+  print(v)
 
   local R = posCovR
   return KalmanGainUpdate(Z, zMean, v, R)
@@ -261,8 +277,6 @@ function magInitiate(mag)
   return true  
 end
 
-firstmat = false
-magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
   -- mag and imu coordinate x, y reverse
   local rawmag = magCorrect(mag)
@@ -274,6 +288,8 @@ function measurementMagUpdate(mag)
     magInit = magInitiate(mag)
     return false
   end
+
+  if not processInit then return false end
 
   local calibratedMag = magCalibrated(rawmag)
   -- just use the first too
@@ -291,5 +307,5 @@ function measurementMagUpdate(mag)
   local zMean = torch.mean(Z, 2)
   local v = calibratedMag - zMean
   local R = qCovRM
-  return = KalmanGainUpdate(Z, zMean, v, R)
+  return KalmanGainUpdate(Z, zMean, v, R)
 end
