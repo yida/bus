@@ -4,16 +4,12 @@ require 'poseUtils'
 
 require 'torch-load'
 
-function axisCorrect(mag)
+function magCorrect(mag)
   local m = torch.DoubleTensor(3):fill(0)
-  m[1] = mag.x
-  m[2] = mag.y
-  m[3] = mag.z
-
   m[1] = mag.y
-  m[2] = mag.x
+  m[2] = -mag.x
   m[3] = -mag.z
- 
+
   return m
 end
 
@@ -26,7 +22,7 @@ function calibrateMagnetometer(magset)
   
   local sampleCnt = 1
   for i = 1, #magset, divider do
-    local mag = axisCorrect(magset[i])
+    local mag = magCorrect(magset[i])
     local magNorm = mag[1]^2 + mag[2]^2 + mag[3]^2
     Y[sampleCnt][1] = magNorm
     X:narrow(1, sampleCnt, 1):narrow(2, 1, 3):copy(mag)

@@ -7,9 +7,6 @@ require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
 
-
-local geo = require 'GeographicLib'
---
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
 state[7] = 1
@@ -50,48 +47,48 @@ gInitCount = 0
 gInitCountMax = 100
 
 processInit = false
-gravityInit = false
-gpsInit = true
+imuInit = false
+gpsInit = false 
 magInit = false
 gravity = 9.80
 imuTstep = 0
 
-function processUpdate(tstep, imu)
-  rawacc, gyro = imuCorrent(imu, accBias)
 
-  gacc = accTiltCompensate(rawacc)
-
-  if processInit == false then 
-    processInit = true
-    imuTstep = tstep
-    return false
-  end
-
-  local dtime = tstep - imuTstep
-  if dtime == 0 then return false end 
-  imuTstep = tstep
-
-  if not gravityInit then
+function imuInitiate(step, imu)
+  if not imuInit then
     g:add(gacc)
     gInitCount = gInitCount + 1
     if gInitCount >= gInitCountMax then
-      print('Initiate Gravity')
       g = g:div(gInitCount)
-      gravityInit = true
+      print('Initiated Gravity')
+      return true
     else
       return false
     end
   end
+end
 
-  if gpsInit == false then return false end
+function processUpdate(tstep, imu)
+  rawacc, gyro = imuCorrent(imu, accBias)
+  gacc = accTiltCompensate(rawacc)
+  local dtime = tstep - imuTstep
+  imuTstep = tstep
+
+  if not imuInit then
+    imuInit = imuInitiate(tstep, imu)
+    return false
+  end
 
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
-  GenerateSigmaPoints(dtime)
-  ProcessModel(dtime)
-  PrioriEstimate(dtime)
-  
+  local res = GenerateSigmaPoints(dtime)
+  if res == false then return false end
+  res = ProcessModel(dtime)
+  if res == false then return false end
+  res = PrioriEstimate(dtime)
+  if res == false then return false end
+
   return true
 end
 
@@ -111,6 +108,7 @@ function GenerateSigmaPoints(dt)
     qW = Vector2Quat(-eW)
     Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
   end
+  return true
 end
 
 function ProcessModel(dt)
@@ -132,6 +130,7 @@ function ProcessModel(dt)
   yMean:copy(torch.mean(Y, 2))
   yMeanQ = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
+  return true
 end
 
 function PrioriEstimate(dt)
@@ -151,6 +150,7 @@ function PrioriEstimate(dt)
   end
   PPriori:div(2.0 * ns)
   P:copy(PPriori)
+  return true
 end
 
 function KalmanGainUpdate(Z, zMean, v, R)
@@ -184,11 +184,10 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Quat(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuatMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
+  return true
 end
 
 function measurementGravityUpdate()
-  if not gravityInit then return end
---  print('gravity measure')
   local gq = torch.Tensor({0,0,0,1})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -199,27 +198,39 @@ function measurementGravityUpdate()
   end
   local zMean = torch.mean(Z, 2)
   local v = rawacc - zMean
---  print(v)
   local R = qCovRG
-  KalmanGainUpdate(Z, zMean, v, R)
+  return KalmanGainUpdate(Z, zMean, v, R)
 end
 
 -- Geo Init
-firstlat = true
-local basepos = {0.0, 0.0, 0.0}
-function measurementGPSUpdate(tstep, gps)
-  if gps.latitude == nil or gps.latitude == '' then return end
-  local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
-  local gpsposAb = geo.Forward(lat, lnt, 6)
-
-  if firstlat then
-      basepos = gpsposAb
-      firstlat = false
-      gpsInit = true
+function gpsInitiate(gps)
+  if gps.latitude == nil or gps.longtitude == nil 
+                            or gps.height == nil then
+    return false
   end
-  local gpspos = torch.Tensor({gpsposAb.x - basepos.x, gpsposAb.y - basepos.y, 0})
-  gpspos[1] = -gpspos[1]
-  gpspos[2] = -gpspos[2]
+  if gps.latitude == '' or gps.longtitude == '' 
+                            or gps.height == '' then
+    return false
+  end
+  local gpspos = global2metric(gps)
+  -- set init pos
+  state[1] = gpspos[1]
+  state[2] = gpspos[2]
+  state[3] = gps.height
+  print('initiate GPS') 
+  return true
+end
+
+firstlat = true
+function measurementGPSUpdate(gps)
+  if gps.latitude == nil or gps.latitude == '' then return end
+  local gpspos = global2metric(gps)
+
+  if not gpsInit then
+    gpsInit = gpsInitiate(gps)
+    return false
+  end
+
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
@@ -229,42 +240,46 @@ function measurementGPSUpdate(tstep, gps)
   local zMean = torch.mean(Z, 2)
 
   -- reset Z with zMean since no measurement here
-  gpspos[3] = zMean[3]
   local v = gpspos - zMean
 
   local R = posCovR
-  KalmanGainUpdate(Z, zMean, v, R)
+  return KalmanGainUpdate(Z, zMean, v, R)
 
+end
+
+function magInitiate(mag)
+  -- mag and imu coordinate x, y reverse
+  local rawmag = magCorrect(mag)
+  -- calibrated & tilt compensated heading 
+  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+
+  -- HACK here as set mag heading always as init yaw value
+  local initRPY = torch.Tensor({0,0,heading}) 
+  local initQ = torch.Tensor(rpy2Quat(initRPY))
+  state:sub(7, 10, 1, 1):copy(initQ)
+  print('initiated mag')
+  return true  
 end
 
 firstmat = false
 magbase = torch.DoubleTensor(3):fill(0)
 function measurementMagUpdate(mag)
   -- mag and imu coordinate x, y reverse
-  local rawmag = torch.DoubleTensor({mag.y, -mag.y, -mag.z})
---  -- calibrated & tilt compensated heading 
+  local rawmag = magCorrect(mag)
+  -- calibrated & tilt compensated heading 
   local heading, Bf = magTiltCompensate(rawmag, rawacc)
---  ucm.set_ukf_magheading(heading)
---  local Bc = magCalibrated(rawmag) -- calibrated raw B
---  -- Normalize the raw measurement
---  Bc:div(Bc:norm())
+
+  -- set init orientation
+  if not magInit then
+    magInit = magInitiate(mag)
+    return false
+  end
 
   local calibratedMag = magCalibrated(rawmag)
   -- just use the first too
   calibratedMag[3] = 0
   calibratedMag:div(calibratedMag:norm())
---  print(calibratedMag)
   
-  -- set init orientation
-  if not firstmat then
-  --  print(heading)
-    magbase = mvalue
-    magInit = true
-    firstmat = true
-   -- error()
-  end
-
-  if not gravityInit then return end
   local mq = torch.DoubleTensor({0, 1, 0, 0})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -276,5 +291,5 @@ function measurementMagUpdate(mag)
   local zMean = torch.mean(Z, 2)
   local v = calibratedMag - zMean
   local R = qCovRM
-  KalmanGainUpdate(Z, zMean, v, R)
+  return = KalmanGainUpdate(Z, zMean, v, R)
 end

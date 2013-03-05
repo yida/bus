@@ -30,7 +30,7 @@ for i = 1, #dataset do
     local ret = processUpdate(dataset[i].timestamp, dataset[i])
     if ret == true then measurementGravityUpdate() end
   elseif dataset[i].type == 'gps' then
---    measurementGPSUpdate(dataset[i].timestamp, dataset[i])
+--    measurementGPSUpdate(dataset[i])
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
   end

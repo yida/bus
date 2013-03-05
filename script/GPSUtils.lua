@@ -1,5 +1,7 @@
 require 'include'
 
+local geo = require 'GeographicLib'
+
 function nmea2degree(lat, latD, lnt, lntD)
   -- NMEA Latitude DDDMM.MMM to DDD.DDD
   local nmea2deg = function(value, dir)
@@ -29,4 +31,8 @@ function findDateFromGPS(gps)
   return date
 end
 
-
+function global2metric(gps)
+  local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
+  local gpsposAb = geo.Forward(lat, lnt, 6)
+  return gpsposAb
+end
