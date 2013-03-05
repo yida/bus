@@ -54,23 +54,21 @@ end
 --calibrateMagnetometer(magset)
 
 ---- mag calibration value
---V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
---B = 1076821.092515
+V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
+B = 1076821.092515
 --
---V = torch.DoubleTensor({51.7819, 425.4612, 1300.3680})
---B = 1077652.0811881
+V = torch.DoubleTensor({51.7819, 425.4612, 1300.3680})
+B = 1077652.0811881
 
 
---local datasetpath = '../data/010213192135/'
---local magset = loadData(datasetpath, 'magPruned')
-V = torch.DoubleTensor({-273.0220, -183.1293, 403.2035})
-B = 5725.4947845329
+----local datasetpath = '../data/010213192135/'
+----local magset = loadData(datasetpath, 'magPruned')
+--V = torch.DoubleTensor({-273.0220, -183.1293, 403.2035})
+--B = 5725.4947845329
 
-
-declinationAngle = -205.7/ 1000.0
+local declinationAngle = -205.7/ 1000.0
 
 function Mag2Heading(mag)
-  local declinationAngle = -205.7/ 1000.0
   local heading = math.atan2(mag[2], mag[1])
   heading = heading + declinationAngle
   if heading < 0 then heading = heading + 2 * math.pi end

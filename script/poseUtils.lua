@@ -251,5 +251,5 @@ function QuatMean(QMax, qInit)
     diff = QuatCompare(qIterNext, qIter)
     qIter:copy(qIterNext)
   until diff < 1e-6
-  return qIter
+  return qIter, e
 end
