@@ -27,14 +27,11 @@ for i = 1, #dataset do
     local ret = processUpdate(dataset[i].timstamp, dataset[i])
     if ret == true then 
       measurementGravityUpdate() 
-  --  print 'gravity update'
     end
   elseif dataset[i].type == 'gps' then
     measurementGPSUpdate(dataset[i])
-  --  print 'gps update'
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
-  --  print 'mag update'
   end
 
   if processInit then 

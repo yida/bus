@@ -54,16 +54,15 @@ gravity = 9.80
 imuTstep = 0
 
 
-function imuInitiate(step, imu)
+function imuInitiate(step, accin)
   if not imuInit then
-    g:add(rawacc)
+    g:add(accin)
     gInitCount = gInitCount + 1
     if gInitCount >= gInitCountMax then
       g = g:div(gInitCount)
       print('Initiated Gravity')
       return true
-    else
-      return false
+    else return false
     end
   end
 end
@@ -74,14 +73,9 @@ function processUpdate(tstep, imu)
   local dtime = tstep - imuTstep
   imuTstep = tstep
 
-  if not imuInit then
-    imuInit = imuInitiate(tstep, rawacc)
-    return false
-  end
+  if not imuInit then imuInit = imuInitiate(tstep, rawacc) return false end
 
-  if not magInit or not gpsInit then return false
-  end
-
+  if not magInit or not gpsInit then return false end
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
@@ -123,11 +117,11 @@ function ProcessModel(dt)
   -- Y
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
-    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+    Y:sub(1, 6, i, i):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
     local dq = Vector2Quat(gyro, dt)
-    Y:narrow(2, i, 1):narrow(1, 7, 4):copy(QuatMul(q,dq))
+    Y:sub(7, 10, i, i):copy(QuatMul(q,dq))
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
