@@ -2,8 +2,8 @@ require 'ukfBase'
 
 require 'ucm'
 
---local datasetpath = '../data/010213180247/'
-local datasetpath = '../data/010213192135/'
+local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
 --local datasetpath = '../data/'

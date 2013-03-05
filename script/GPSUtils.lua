@@ -1,7 +1,7 @@
 require 'include'
 require 'torch-load'
 
-local geo = require 'GeographicLib'
+require 'GeographicLib'
 
 function nmea2degree(lat, latD, lnt, lntD)
 --  print(lat, latD, lnt, lntD)
@@ -26,7 +26,6 @@ function findDateFromGPS(gps)
   for i = 1, #gps do
     if gps[i].datastamp ~= nil and gps[i].datastamp ~= "" then
       date = gps[i].datastamp..gps[i].utctime
-  --    print('\r'..gps[i].datastamp, gps[i].utctime)
       break;
     end
   end
@@ -34,9 +33,8 @@ function findDateFromGPS(gps)
 end
 
 function global2metric(gps)
-
   local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
-  local gpspos = geo.Forward(lat, lnt, gps.height)
+  local gpspos = GeographicLib.Forward(lat, lnt, gps.height)
   local pos = torch.Tensor({gpspos.x, gpspos.y, gpspos.z})
   return pos
 end
