@@ -2,8 +2,8 @@ require 'ukfBase'
 
 require 'ucm'
 
-local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/010213192135/'
+--local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
 --local datasetpath = '../data/'
@@ -23,32 +23,29 @@ local dataset = loadData(datasetpath, 'imugpsmag')
 
 counter = 0
 for i = 1, #dataset do
---  if i > 218 then error() end
---  if i > 2222 then error() end
---  if i > 10010 then error() end
   if dataset[i].type == 'imu' then
     local ret = processUpdate(dataset[i].timstamp, dataset[i])
-    if ret == true then measurementGravityUpdate() end
+    if ret == true then 
+      measurementGravityUpdate() 
+  --  print 'gravity update'
+    end
   elseif dataset[i].type == 'gps' then
     measurementGPSUpdate(dataset[i])
+  --  print 'gps update'
   elseif dataset[i].type == 'mag' then
     measurementMagUpdate(dataset[i])
+  --  print 'mag update'
   end
 
-  processInit = imuInit and magInit and gpsInit
   if processInit then 
---    print(state)
---    error('stop for debugging') 
     local Q = state:narrow(1, 7, 4)
     counter = counter + 1 
   
     q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
     pos = vector.new({state[1][1], state[2][1], state[3][1]})
---    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
     ucm.set_ukf_counter(counter)
     ucm.set_ukf_quat(q)
     ucm.set_ukf_pos(pos)
-  --  print(state:narrow(1, 1, 6))
   end
 
 end

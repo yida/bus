@@ -47,20 +47,27 @@ function calibrateMagnetometer(magset)
 end
 
 --local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/010213192135/'
 ----local datasetpath = '../data/'
 ----local datasetpath = '../data/dataset9/'
 --local magset = loadData(datasetpath, 'magPruned')
 --calibrateMagnetometer(magset)
 
--- mag calibration value
-V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
-B = 1076821.092515
+---- mag calibration value
+--V = torch.DoubleTensor({425.2790, 51.8208, -1299.8381})
+--B = 1076821.092515
+--
+--V = torch.DoubleTensor({51.7819, 425.4612, 1300.3680})
+--B = 1077652.0811881
 
-V = torch.DoubleTensor({51.7819, 425.4612, 1300.3680})
-B = 1077652.0811881
+
+--local datasetpath = '../data/010213192135/'
+--local magset = loadData(datasetpath, 'magPruned')
+V = torch.DoubleTensor({-273.0220, -183.1293, 403.2035})
+B = 5725.4947845329
+
 
 declinationAngle = -205.7/ 1000.0
-
 
 function Mag2Heading(mag)
   local declinationAngle = -205.7/ 1000.0
@@ -86,14 +93,17 @@ function correctRange(angle)
 end
 
 function magTiltCompensate(mag, acc)
+--  print('mag', mag)
+--  print('acc', acc)
   -- AN4246 AN4247
   -- need -180 ~ 180
   local roll = math.atan2(acc[2][1], acc[3][1])
   -- need -90 ~ 90
-  local tanPitch = -acc[1][1] / (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
+  local tanPitch = -acc[1][1] / 
+                  (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll))
   local pitch = math.atan(tanPitch)
 --  local pitch = math.atan2(-acc[1][1] ,
---                          (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll)))
+--        (acc[2][1]*math.sin(roll)+acc[3][1]*math.cos(roll)))
 
   local Ry = rotY(pitch)
   local Rx = rotX(roll)
@@ -104,7 +114,6 @@ function magTiltCompensate(mag, acc)
   if yaw < 0 then yaw = yaw + 2 * math.pi end
   if yaw > 2 * math.pi then yaw = yaw - 2 * math.pi end
 
---  print(roll * 180 / math.pi, pitch * 180 / math.pi, yaw * 180 / math.pi)
   return yaw, Bf
 --  return mag - V
 end

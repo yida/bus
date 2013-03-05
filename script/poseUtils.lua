@@ -233,7 +233,6 @@ function cholesky(A)
   return L
 end
 
-
 function QuatMean(QMax, qInit)
   local qIter = torch.Tensor(4):copy(qInit)
   local e = torch.Tensor(3, QMax:size(2)):fill(0)
@@ -252,38 +251,5 @@ function QuatMean(QMax, qInit)
     diff = QuatCompare(qIterNext, qIter)
     qIter:copy(qIterNext)
   until diff < 1e-6
-  return qIter, e
+  return qIter
 end
-
-
---q1 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({178 * math.pi / 180, 0, 0})))
---q2 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
---q3 = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({170 * math.pi / 180, 0, 0})))
---Q = torch.DoubleTensor(3, 4)
---Q:narrow(1, 1, 1):copy(q1)
---Q:narrow(1, 2, 1):copy(q2)
---Q:narrow(1, 3, 1):copy(q3)
---Q = Q:t()
---print(q1)
---print(q2)
---print(q3)
---print(Q)
---ymean = QuatMean(Q, q1)
---print(ymean)
---print(Quat2rpy(ymean):mul(180 / math.pi))
---rpy1 = torch.DoubleTensor({-3.07, -0.16, -0.08})
---q = torch.DoubleTensor(rpy2Quat(torch.DoubleTensor({180 * math.pi / 180, 0, 0})))
---dq = rpy2Quat(rpy1)
---ndq = rpy2Quat(-rpy1)
---print(QuatMul(q, ndq))
---print(QuatMul(q, QInverse(dq)))
-vec = torch.DoubleTensor({{0.3595, 0, 0}})
---print(vec)
---vecneg = torch.DoubleTensor({-0.3595, 0, 0})
---q = Vector2Quat(vec)
---q1 = Vector2Quat(vecneg)
---print(q)
---print(q1)
---print(Quat2Vector(q))
---print(Quat2Vector(q1))
-----

@@ -4,7 +4,7 @@ require 'torch-load'
 local geo = require 'GeographicLib'
 
 function nmea2degree(lat, latD, lnt, lntD)
-  print(lat, latD, lnt, lntD)
+--  print(lat, latD, lnt, lntD)
   -- NMEA Latitude DDDMM.MMM to DDD.DDD
   local nmea2deg = function(value, dir)
 --    print(value, dir)

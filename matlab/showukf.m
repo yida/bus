@@ -31,7 +31,8 @@ dcounter = 0;
         pos = h.ukf.get_pos();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
-         plot3(pos(1), pos(2), pos(3), '*');
+%         plot3(pos(1), pos(2), pos(3), '*');
+        plot(pos(1), pos(2), '.');
         hold on;
         grid on;
         drawnow

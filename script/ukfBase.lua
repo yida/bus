@@ -6,7 +6,6 @@ require 'GPSUtils'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
-util = require 'util'
 
 -- state init Posterior state
 state = torch.Tensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
@@ -57,7 +56,7 @@ imuTstep = 0
 
 function imuInitiate(step, imu)
   if not imuInit then
-    g:add(gacc)
+    g:add(rawacc)
     gInitCount = gInitCount + 1
     if gInitCount >= gInitCountMax then
       g = g:div(gInitCount)
@@ -76,11 +75,11 @@ function processUpdate(tstep, imu)
   imuTstep = tstep
 
   if not imuInit then
-    imuInit = imuInitiate(tstep, imu)
+    imuInit = imuInitiate(tstep, rawacc)
     return false
   end
-  
-  if not processInit then return false
+
+  if not magInit or not gpsInit then return false
   end
 
   -- substract gravity from z axis and convert from g to m/s^2
@@ -92,7 +91,7 @@ function processUpdate(tstep, imu)
   if res == false then return false end
   res = PrioriEstimate(dtime)
   if res == false then return false end
-
+  processInit = true
   return true
 end
 
@@ -194,6 +193,7 @@ end
 function measurementGravityUpdate()
   if not processInit then return false end
 
+--  print 'Gravity Measurement'
   local gq = torch.Tensor({0,0,0,1})
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
@@ -219,11 +219,12 @@ function gpsInitiate(gps)
   local gpspos = global2metric(gps)
   -- set init pos
   state:sub(1, 3, 1, 1):copy(gpspos)
-  print('initiate GPS') 
+  print 'initiate GPS'
   return true
 end
 
 function measurementGPSUpdate(gps)
+  if not imuInit then return false end
 
   if not gpsInit then
     gpsInit = gpsInitiate(gps)
@@ -240,7 +241,7 @@ function measurementGPSUpdate(gps)
   local gpspos = global2metric(gps)
 
   if not processInit then return false end
-
+--  print 'GPS measurement'
   local Z = torch.Tensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)
@@ -250,13 +251,7 @@ function measurementGPSUpdate(gps)
   local zMean = torch.mean(Z, 2)
 
   -- reset Z with zMean since no measurement here
-  print 'gpspos'
-  print(gpspos)
-  print 'zMean'
-  print(zMean)
   local v = gpspos - zMean
-  print('diff')
-  print(v)
 
   local R = posCovR
   return KalmanGainUpdate(Z, zMean, v, R)
@@ -278,11 +273,8 @@ function magInitiate(mag)
 end
 
 function measurementMagUpdate(mag)
-  -- mag and imu coordinate x, y reverse
-  local rawmag = magCorrect(mag)
-  -- calibrated & tilt compensated heading 
-  local heading, Bf = magTiltCompensate(rawmag, rawacc)
-
+  -- Must first init gravity
+  if not imuInit then return false end
   -- set init orientation
   if not magInit then
     magInit = magInitiate(mag)
@@ -290,6 +282,12 @@ function measurementMagUpdate(mag)
   end
 
   if not processInit then return false end
+  --print 'magnetometer Measurement'
+  -- mag and imu coordinate x, y reverse
+  local rawmag = magCorrect(mag)
+  -- calibrated & tilt compensated heading 
+  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+
 
   local calibratedMag = magCalibrated(rawmag)
   -- just use the first too

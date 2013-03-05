@@ -44,16 +44,16 @@ function syncData(data, set1, set2)
   return data
 end
 
-local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/010213192135/'
 
-imu = loadData(datasetpath, 'imuPruned')
---mag = loadData(datasetpath, 'mag')
-gps = loadData(datasetpath, 'gps')
+imu = loadData(datasetpath, 'imugps')
+mag = loadData(datasetpath, 'magPruned')
+--gps = loadData(datasetpath, 'gps')
 --label = loadData(datasetpath, 'label')
 
-data = syncData(_, gps, imu)
+data = syncData(_, mag, imu)
 
-print(#gps, #imu, #data)
+print(#mag, #imu, #data)
 ----saveData(data, 'syncdlabelgps')
 --
 --LabelwGPS = {}
@@ -92,7 +92,8 @@ print(#gps, #imu, #data)
 --end
 --
 --saveData(LabelwGPS, 'labelgps')
-saveData(data, 'imugps')
+--saveData(data, 'imugps')
+saveData(data, 'imugpsmag')
 
 --while true do
 --end
