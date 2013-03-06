@@ -2,17 +2,16 @@ require 'ukfBase'
 
 require 'ucm'
 
-local datasetpath = '../data/010213180247/'
+--local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
+--local datasetpath = '../data/191212190259/'
+--local datasetpath = '../data/211212164337/'
+local datasetpath = '../data/211212165622/'
 --local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
 --local datasetpath = '../data/'
 --local datasetpath = '../'
 --local dataset = loadData(datasetpath, 'logall')
---local dataset = loadData(datasetpath, 'log')
---local dataset = loadData(datasetpath, 'imuPruned')
---local dataset = loadData(datasetpath, 'imuPruned', 10000)
---local dataset = loadData(datasetpath, 'imugpsmag', 20000)
 local dataset = loadData(datasetpath, 'imugpsmag')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'log-946684824.42841')
@@ -41,7 +40,6 @@ for i = 1, #dataset do
   
     q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
     pos = vector.new({state[1][1], state[2][1], state[3][1]})
---    v1 = vector.new({trpy[1][1], trpy[2][1], trpy[3][1]})
     ucm.set_ukf_counter(counter)
     ucm.set_ukf_quat(q)
     ucm.set_ukf_pos(pos)
