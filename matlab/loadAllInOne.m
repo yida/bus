@@ -1,9 +1,9 @@
 clear all;
 
-filename = '../simulation/logall-'
-fid = fopen(filename, 'r')
+filename = '../simulation/logall-';
+fid = fopen(filename, 'r');
 
-imucounter = 1
+imucounter = 1;
 
 tline = fgetl(fid);
 while ischar(tline)
@@ -16,4 +16,4 @@ while ischar(tline)
   end
   tline = fgetl(fid);
 end
-fclose(fid)
+fclose(fid);
