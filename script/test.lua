@@ -18,6 +18,7 @@ local d = ffi.cast('double*', x:pointer())
 
 print(d[0])
 print(type(tble))
+x:string()
 --torch.Tensor = torch.DoubleTensor
 --y = torch.rand(5,4)
 --z = torch.DoubleTensor(5,5):ones(5,5)

@@ -16,7 +16,9 @@ function syncData(data, set1, set2)
   -- select early time stamp and push to data
   while set1counter <= #set1 and set2counter <= #set2 do 
     datacounter = datacounter + 1
-    if (set1[set1counter].timstamp < set2[set2counter].timstamp) then
+    time1 = set1[set1counter].timstamp or set1[set1counter].timestamp
+    time2 = set2[set2counter].timstamp or set2[set2counter].timestamp
+    if (time1 < time2) then
       data[datacounter] = set1[set1counter]
       set1counter = set1counter + 1
     else
@@ -29,7 +31,7 @@ function syncData(data, set1, set2)
   if set1counter < #set1 then
     for cnt = set1counter, #set1 do
       datacounter = datacounter + 1
-      data[datacounter] = set1[set1counter]
+      data[datacounter] = set1[cnt]
     end
   end
   
@@ -37,28 +39,28 @@ function syncData(data, set1, set2)
   if set2counter < #set2 then
     for cnt = set2counter, #set2 do
       datacounter = datacounter + 1
-      data[datacounter] = set2[set2counter]
+      data[datacounter] = set2[cnt]
     end
   end
 
   return data
 end
 
-local datasetpath = '../data/211212164337/'
-
-set1 = loadData(datasetpath, 'imuPruned')
---mag = loadData(datasetpath, 'magPruned')
-set2 = loadData(datasetpath, 'magPruned')
-set3 = loadData(datasetpath, 'gps')
---label = loadData(datasetpath, 'label')
-
-data = syncData(_, set1, set2)
-data = syncData(_, data, set3)
+--local datasetpath = '../data/211212164337/'
+--
+--set1 = loadData(datasetpath, 'imuPruned')
+----mag = loadData(datasetpath, 'magPruned')
+--set2 = loadData(datasetpath, 'magPruned')
+--set3 = loadData(datasetpath, 'gps')
+----label = loadData(datasetpath, 'label')
+--
+--data = syncData(_, set1, set2)
+--data = syncData(_, data, set3)
 
 --print(#mag, #imu, #data)
 --saveData(LabelwGPS, 'labelgps')
 --saveData(data, 'imugps')
-saveData(data, 'imugpsmag')
+--saveData(data, 'imugpsmag')
 
 
 ----saveData(data, 'syncdlabelgps')

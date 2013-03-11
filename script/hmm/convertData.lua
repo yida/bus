@@ -70,7 +70,7 @@ for dir = 1, #dirSet do
       imu[i]['type'] = 'imu'
     end
   
-    saveData(imu, 'gesture'..nfile, dataPath)
+    saveData(imu, 'gesture'..string.format('%02d', nfile), dataPath)
   
   end
 end

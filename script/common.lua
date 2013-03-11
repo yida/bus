@@ -75,7 +75,7 @@ end
 
 function loadData(path, dtype, maxlines)
   local filename = getFileName(path, dtype)
-  local file = assert(io.open(filename, 'r+'))
+  local file = assert(io.open(filename, 'r'))
   local line = file:read();
   local datacounter = 0
   local data = {}
@@ -90,7 +90,7 @@ function loadData(path, dtype, maxlines)
     if maxlines and datacounter >= maxlines then break end
   end
   io.write('\n')
-  print(filename)
+  print(filename..' '..datacounter)
   return data
 end
 

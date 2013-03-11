@@ -1,10 +1,10 @@
 clear all;
 close all;
 %/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util/
-addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
-addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
-%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
-%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
+%addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
+%addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
+addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
+addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
 
 
 h = {};
@@ -31,15 +31,15 @@ dcounter = 0;
         pos = h.ukf.get_pos();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
-         plot3(pos(1), pos(2), pos(3), '*');
+%         plot3(pos(1), pos(2), pos(3), '*');
 %        plot(pos(1), pos(2), '.');
-        hold on;
-        grid on;
-        drawnow
+%        hold on;
+%        grid on;
+%       drawnow
 %         subplot(1,2,1)
 %        coord(pos(1), pos(2), pos(3), R(1:3, 1:3), magheading);
 %        hold on;
-%       rotplotT(R(1:3, 1:3), tstep);
+       rotplotT(R(1:3, 1:3), tstep);
 %         subplot(1,2,2)jkk
 %         rotplotT(tR(1:3, 1:3), tstep);
      end
