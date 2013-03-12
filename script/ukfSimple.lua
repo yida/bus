@@ -43,9 +43,11 @@ for dir = 1, #dirSet do
       processInit = imuInit
       if processInit then 
     --    print(state)
+        local Q = state:narrow(1, 7, 4)
+        local vec = Quat2Vector(Q)
         st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
               ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
-              ['q0'] = state[7][1], ['q1'] = state[8][1], ['q2'] = state[9][1], ['q3'] = state[10][1]}
+              ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3]}
         st['type'] = 'state'
         st['timestamp'] = tstep
         sdata[#sdata + 1] = st
