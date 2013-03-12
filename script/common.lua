@@ -47,12 +47,12 @@ function loadRawData(path, stamp, datatype)
 end
 
 function saveData(dataset, dtype, path)
-  local Path = path or ''
+  local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
-  local file = io.open(path..filename, "w")
+  local file = io.open(Path..filename, "w")
   
   print(#dataset)
   for i = 1, #dataset do
