@@ -22,8 +22,8 @@ function convertImuTime(dataPath)
   local fileNum = (imuFileNum + timeFileNum) / 2
   for nfile = 1, fileNum do
     print('Gesture Set: '..nfile)
-    imuFile = assert(io.open(dataPath..'imu_'..string.format('%02d', nfile), 'r'))
-    timeFile = assert(io.open(dataPath..'time_'..string.format('%02d', nfile), 'r'))
+    imuFile = assert(io.open(dataPath..'imu'..string.format('%02d', nfile), 'r'))
+    timeFile = assert(io.open(dataPath..'time'..string.format('%02d', nfile), 'r'))
     -- read imu file
     local imu = {}
     local imucounter = 0
@@ -80,6 +80,6 @@ end
 --  convertImuTime(dataPath)
 --end
 --
-local dataPath = '../test/'
+local dataPath = '../test_loop/'
 convertImuTime(dataPath)
 

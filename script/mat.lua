@@ -5,6 +5,7 @@ local ffi = require 'ffi'
 local util = require 'util'
 require 'zlib'
 
+local debug = false
 
 local sizeOfDataType = 8
 local headerSize = 128
@@ -158,10 +159,10 @@ function parseHeader(header)
   print(destext)
   local version = tonumber(ffi.new('int16_t', 
                   bit.bor(bit.lshift(header:byte(126), 8), header:byte(125))))
-  print('Version '..bit.tohex(version))
+  if debug then print('Version '..bit.tohex(version)) end
   -- TODO byte-swapping
   endian = header:sub(127, 128)
-  print('Endian '..endian)
+  if debug then print('Endian '..endian) end
   return #header
 end
 
@@ -284,7 +285,7 @@ function parsemiINT32(data, num)
 end
 
 function parsemiDOUBLE(data, num)
-  print('Parsing DOUBLE data')
+  if debug then print('Parsing DOUBLE data') end
   if num == nil then num = 1 end
   assert(num * 8 <= #data)
   local n = {}
@@ -324,7 +325,7 @@ function parsemiDOUBLE(data, num)
 end
 
 function parsemiSINGLE(data, num)
-  print('Parsing SINGLE data')
+  if debug then print('Parsing SINGLE data') end
   if num == nil then num = 1 end
   assert(num * 4 <= #data)
   local n = {}
@@ -365,7 +366,7 @@ function parsemiMATRIX(data)
   local matrix = {}
   local tag = data:sub(1, tagSize)
   local dataT, dataSize, realTagSize = parseTag(tag)
-  print('Matrix data type:'..matType(dataT)..' data size:'..dataSize)
+  if debug then  print('Matrix data type:'..matType(dataT)..' data size:'..dataSize) end
   local ptr = realTagSize
   -- Array flags
   local AFSize = 2 * sizeOfDataType
@@ -376,7 +377,7 @@ function parsemiMATRIX(data)
   local AFBody = AF:sub(realTagSize + 1, realTagSize + AFDataSize)
 --  print(AFBody:byte(1, #AFBody))
   local ArrayClass = AFBody:byte(1)
-  print('Matrix Class:'..matType(ArrayClass))
+  if debug then  print('Matrix Class:'..matType(ArrayClass)) end
   -- TODO parse flags for complex, global, logical
   -- Dimension array
   local DimTag = data:sub(ptr + 1, ptr + tagSize) 
@@ -413,8 +414,7 @@ function parsemiMATRIX(data)
     padding = roundint * 8 - ptr - PrDataSize * typeByteSize(PrDataT)
   end
   local PrBody = data:sub(ptr + 1, ptr + PrDataSize * typeByteSize(PrDataT))
-  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize,
-        'data name:'..AN)
+  if debug then  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize, 'data name:'..AN) end
   matrix[AN] = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
 
   if type(matrix[AN]) == 'string' then print(matrix[AN])
@@ -428,7 +428,7 @@ function load(filename)
   local content = {}
   file = assert(io.open(filename, 'rb'))
   local filesize = fsize(file)
-  print('filesize:'..filesize)
+  if debug then  print('filesize:'..filesize) end
   -- Read Header
   local header = file:read(headerSize)
   local ptr = parseHeader(header)
@@ -441,7 +441,7 @@ function load(filename)
     ptr = ptr + realTagSize
     file:seek('set', ptr)
 --    print(dataT, dataSize, realTagSize)
-    print('data type:'..matType(dataT)..' data size:'..dataSize)
+    if debug then print('data type:'..matType(dataT)..' data size:'..dataSize) end
     local data = file:read(dataSize)
     -- move ptr to next data
     ptr = ptr + dataSize
@@ -450,11 +450,11 @@ function load(filename)
     -- decompress data if necessary
     if dataT == miCOMPRESSED then
       data = uncompress(data, 40 * #data)
-      print('Decompress data, new data size:'..#data)
+      if debug then print('Decompress data, new data size:'..#data) end
       -- read tag and parse for real data type and size
       tag = data:sub(1, tagSize)
       dataT, dataSize = parseTag(tag)
-      print('data type:'..matType(dataT)..' data size:'..dataSize)
+      if debug then print('data type:'..matType(dataT)..' data size:'..dataSize) end
     end
     -- process data based on type
      content[#content + 1] = _G['parse'..matType(dataT)](data)

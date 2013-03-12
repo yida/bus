@@ -21,7 +21,7 @@ function uncompress(comp, n)
   local buf = ffi.new("uint8_t[?]", n)
   local buflen = ffi.new("unsigned long[1]", n)
   local res = zlib.uncompress(buf, buflen, comp, #comp)
-  print('Compression '..res)
+--  print('Compression '..res)
   assert(res == 0)
   return ffi.string(buf, buflen[0])
 end

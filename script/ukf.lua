@@ -2,11 +2,11 @@ require 'ukfBase'
 
 require 'ucm'
 
---local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
-local datasetpath = '../data/211212165622/'
+--local datasetpath = '../data/211212165622/'
 --local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
 --local datasetpath = '../data/'
@@ -20,6 +20,7 @@ local dataset = loadData(datasetpath, 'imugpsmag')
 --local dataset = loadData(datasetpath, 'log-946684834.63068')
 --local dataset = loadData(datasetpath, 'log-946684836.76822')
 
+sdata = {}
 counter = 0
 for i = 1, #dataset do
   if dataset[i].type == 'imu' then
@@ -33,17 +34,27 @@ for i = 1, #dataset do
 
   processInit = imuInit and magInit and gpsInit
   if processInit then 
---    print(state)
---    error('stop for debugging') 
     local Q = state:narrow(1, 7, 4)
-    counter = counter + 1 
-  
-    q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
-    pos = vector.new({state[1][1], state[2][1], state[3][1]})
-    ucm.set_ukf_counter(counter)
-    ucm.set_ukf_quat(q)
-    ucm.set_ukf_pos(pos)
+    local vec = Quat2Vector(Q)
+    st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
+          ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
+          ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3]}
+    st['type'] = 'state'
+    st['timestamp'] = tstep
+    sdata[#sdata + 1] = st
+ 
+--    error('stop for debugging') 
+--    local Q = state:narrow(1, 7, 4)
+--    counter = counter + 1 
+--  
+--    q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
+--    pos = vector.new({state[1][1], state[2][1], state[3][1]})
+--    ucm.set_ukf_counter(counter)
+--    ucm.set_ukf_quat(q)
+--    ucm.set_ukf_pos(pos)
   --  print(state:narrow(1, 1, 6))
   end
-
 end
+
+saveData(sdata, 'state', dataPath)
+
