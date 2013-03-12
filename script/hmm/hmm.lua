@@ -2,6 +2,7 @@ require 'include'
 require 'common'
 require 'torch-load'
 
+require 'matrixUtils'
 
 function trainHMM(trainSet, stateSet)
   local stateNum = #stateSet
@@ -74,26 +75,31 @@ function trainHMM(trainSet, stateSet)
   return hmm
 end
 
-function GaussianPDF(x, mean, cov)
-  local vectorSize = x:size(1)
-  local Diff = torch.Tensor(vectorSize,1):copy(x - mean)
-  local Cov = torch.Tensor(vectorSize, vectorSize):copy(cov)
-  print(Diff:t() * torch.inverse(Cov) * Diff)
-  print(torch.exp((Diff:t() * torch.inverse(Cov) * Diff):mul(-0.5)))
-  local exp = torch.exp((Diff:t() * torch.inverse(Cov) * Diff):mul(-0.5))
-  print(Cov)
-  print(Cov:norm())
-  local const = (2 * math.pi)^(-vectorSize/2) / torch.sqrt(Cov:norm())
-  print(const)
-  
+function ForwardBackward(hmm, testSet, stateSet)
+--  local alpha 
+  local stateNum = #stateSet
+  local pobs = torch.Tensor(stateNum, 1):fill(0)
+--  for i = 1, #testSet do
+  for i = 1, 1 do
+    local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
+    for j = 1, stateNum do
+      pobs[j][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, j, 1), 
+                                  hmm.pobsCov:narrow(1, j, 1))
+    end
+    print(pobs)
+  end
 end
 
 local stateSet = {'circle', 'figure8', 'hammer', 'slash', 'toss', 'wave'}
 
 local dataPath = '../project3/'
 local trainSet = loadData(dataPath, 'observation')
+local dataPath = '../test/'
+local testSet = loadData(dataPath, 'state01')
 
 hmm = trainHMM(trainSet, stateSet)
+ForwardBackward(hmm, testSet, stateSet)
 
-x = torch.Tensor({-1.1299, -0.8433, 1.0718})
-GaussianPDF(x, hmm.pobsMean:narrow(2, 1, 1), hmm.pobsCov:narrow(1, 1, 1))
+--x = torch.Tensor({-1.1299, -0.8433, 1.0718})
+--print(GaussianPDF(x, hmm.pobsMean:narrow(2, 1, 1), hmm.pobsCov:narrow(1, 1, 1)))
+

@@ -1,5 +1,4 @@
 require 'torch-load'
-torch.setdefaulttensortype('torch.DoubleTensor')
 
 function QuatCompare(q1, q2)
   local e1 = Quat2Vector(q1)
@@ -231,6 +230,16 @@ function cholesky(A)
     end
   end
   return L
+end
+
+function det(A)
+  local A = torch.lu(A)
+  local dim = A:size(1)
+  local d = 1
+  for i = 1, dim do
+    d = d * A[i][i]
+  end
+  return d
 end
 
 function QuatMean(QMax, qInit)

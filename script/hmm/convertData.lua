@@ -2,9 +2,7 @@ require 'include'
 require 'common'
 local serialization = require('serialization');
 
-local dirSet = {'circle', 'figure8', 'hammer', 'slash', 'toss', 'wave'}
-for dir = 1, #dirSet do
-  local dataPath = '../project3/'..dirSet[dir]..'/'
+function convertImuTime(dataPath)
   local imuFileList = assert(io.popen('/bin/ls '..dataPath..'imu*'))
   local timeFileList = assert(io.popen('/bin/ls '..dataPath..'time*'))
   local imuFileNum = 0
@@ -24,8 +22,8 @@ for dir = 1, #dirSet do
   local fileNum = (imuFileNum + timeFileNum) / 2
   for nfile = 1, fileNum do
     print('Gesture Set: '..nfile)
-    imuFile = assert(io.open(dataPath..'imu'..string.format('%02d', nfile), 'r'))
-    timeFile = assert(io.open(dataPath..'time'..string.format('%02d', nfile), 'r'))
+    imuFile = assert(io.open(dataPath..'imu_'..string.format('%02d', nfile), 'r'))
+    timeFile = assert(io.open(dataPath..'time_'..string.format('%02d', nfile), 'r'))
     -- read imu file
     local imu = {}
     local imucounter = 0
@@ -71,6 +69,17 @@ for dir = 1, #dirSet do
     end
   
     saveData(imu, 'gesture'..string.format('%02d', nfile), dataPath)
-  
   end
+
+
 end
+
+--local dirSet = {'circle', 'figure8', 'hammer', 'slash', 'toss', 'wave'}
+--for dir = 1, #dirSet do
+--  local dataPath = '../project3/'..dirSet[dir]..'/'
+--  convertImuTime(dataPath)
+--end
+--
+local dataPath = '../test/'
+convertImuTime(dataPath)
+

@@ -6,6 +6,7 @@ require 'GPSUtils'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
+require 'matrixUtils'
 util = require 'util'
 
 -- state init Posterior state

@@ -4,6 +4,7 @@ require 'torch-load'
 
 require 'poseUtils'
 require 'imuUtils'
+require 'matrixUtils'
 util = require 'util'
 
 -- state init Posterior state

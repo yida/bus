@@ -32,7 +32,24 @@ function mergeAll()
   saveData(data, 'observationAll', './')
 end
 
-mergeAll()
+function merge()
+  local set1 = {}
+  local dataPath = '../test/'
+  local gestureFileList = assert(io.popen('/bin/ls '..dataPath..'state*'))
+  local gestureFileNum = 0
+  for line in gestureFileList:lines() do
+    gestureFileNum = gestureFileNum + 1
+  end
+  
+  for nfile = 1, gestureFileNum do 
+    set2 = loadData(dataPath, 'state'..string.format('%02d', nfile))
+    data = syncData(_, set1, set2)
+    set1 = data
+  end
+  saveData(data, 'observationAll', './')
+end
+
+merge()
 
 dataset = loadData('./', 'observationAll')
 dataset[1].prelabel = -1
