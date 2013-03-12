@@ -55,6 +55,7 @@ magInit = false
 gravity = 9.80
 imuTstep = 0
 
+KGainCount = 0
 
 function imuInitiate(step, accin)
   if not imuInit then
@@ -189,6 +190,7 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Quat(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuatMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
+  KGainCount = KGainCount + 1
   return true
 end
 
