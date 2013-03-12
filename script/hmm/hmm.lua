@@ -76,30 +76,79 @@ function trainHMM(trainSet, stateSet)
 end
 
 function ForwardBackward(hmm, testSet, stateSet)
---  local alpha 
   local stateNum = #stateSet
+  local alpha = torch.Tensor(stateNum, 1):fill(0)
   local pobs = torch.Tensor(stateNum, 1):fill(0)
---  for i = 1, #testSet do
-  for i = 1, 1 do
+  for i = 1, #testSet do
     local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
-    for j = 1, stateNum do
-      pobs[j][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, j, 1), 
-                                  hmm.pobsCov:narrow(1, j, 1))
+    for st = 1, stateNum do
+      pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
+                                  hmm.pobsCov:narrow(1, st, 1))
+      if i == 1 then
+        alpha[st][1] = hmm.pinit[st][1] * pobs[st][1]
+      else
+        local transP = 0
+        for preSt = 1, stateNum do
+          transP = transP + alpha[preSt][1] * hmm.ptrans[preSt][st]
+        end
+        alpha[st][1] = transP * pobs[st][1]
+      end
     end
-    print(pobs)
+    alpha:div(alpha:norm())
+    print(alpha)
   end
+  local pObsGamma = 0
+  for st = 1, stateNum do
+    pObsGamma = pObsGamma + alpha[st][1]
+  end
+end
+
+function viterbi(hmm, testSet, stateSet)
+  local stateNum = #stateSet
+  local delta = torch.Tensor(stateNum, 1):fill(0)
+  local psi = torch.Tensor(stateNum, 1):fill(0)
+  local pobs = torch.Tensor(stateNum, 1):fill(0)
+  for i = 1, #testSet do
+    local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
+    for st = 1, stateNum do
+      pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
+                                  hmm.pobsCov:narrow(1, st, 1))
+      if i == 1 then
+        delta[st][1] = hmm.pinit[st][1] * pobs[st][1]
+      else
+        local newDelta = torch.Tensor(stateNum, 1):fill(0)
+        for preSt = 1, stateNum do
+          newDelta[preSt][1] = delta[st][1] * hmm.ptrans[preSt][st]
+        end
+        maxDelta, i = torch.max(newDelta, 1)
+        delta[st][1] = maxDelta * pobs[st][1]
+        psi[st][1] = i
+      end
+    end
+    delta:div(delta:norm())
+  end
+  local maxDelta, q = torch.max(delta, 1)
+  return maxDelta, q[1][1]
+--  local pObsGamma = 0
+--  for st = 1, stateNum do
+--    pObsGamma = pObsGamma + alpha[st][1]
+--  end
 end
 
 local stateSet = {'circle', 'figure8', 'hammer', 'slash', 'toss', 'wave'}
 
 local dataPath = '../project3/'
 local trainSet = loadData(dataPath, 'observation')
-local dataPath = '../test/'
-local testSet = loadData(dataPath, 'state01')
-
 hmm = trainHMM(trainSet, stateSet)
-ForwardBackward(hmm, testSet, stateSet)
+--ForwardBackward(hmm, testSet, stateSet)
 
+
+local dataPath = '../test/'
+for i = 1, 7 do
+  local testSet = loadData(dataPath, 'state'..string.format('%02d', i))
+  p, st = viterbi(hmm, testSet, stateSet)
+  print(stateSet[st], p)
+end
 --x = torch.Tensor({-1.1299, -0.8433, 1.0718})
 --print(GaussianPDF(x, hmm.pobsMean:narrow(2, 1, 1), hmm.pobsCov:narrow(1, 1, 1)))
 

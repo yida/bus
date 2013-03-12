@@ -73,24 +73,29 @@ function getFileName(path, dtype)
   return filename
 end
 
-function loadData(path, dtype, maxlines)
+function loadData(path, dtype, maxlines, Debug)
   local filename = getFileName(path, dtype)
   local file = assert(io.open(filename, 'r'))
-  local line = file:read();
+  local line = file:read()
   local datacounter = 0
   local data = {}
+  local debug = Debug or 0
   while line ~= nil do
 --    print(line)
     datacounter = datacounter + 1
-    io.write('\r', dtype, datacounter)
+    if debug == 1 then
+      io.write('\r', dtype, datacounter)
+    end
     dataPoint = serialization.deserialize(line)
     data[datacounter] = dataPoint
 --    util.ptable(dataPoint)
     line = file:read();
     if maxlines and datacounter >= maxlines then break end
   end
-  io.write('\n')
-  print(filename..' '..datacounter)
+  if debug == 1 then
+    io.write('\n')
+    print(filename..' '..datacounter)
+  end
   return data
 end
 
