@@ -30,9 +30,9 @@ function readGPSLine(str, len)
   gps.type = 'gps'
   gps.timstamp = tonumber(string.sub(str, 1, 16))
   local startpt = 17
-  if str[17] ~= '$' then  
-    startpt = 19
-  end
+--  if str[17] ~= '$' then  
+--    startpt = 19
+--  end
   local line = string.sub(str, startpt)
 --  print(line)
   local stype = string.sub(str, startpt, startpt+5)
@@ -45,7 +45,7 @@ function readGPSLine(str, len)
     gps.longtitude = value[4]
     gps.eastwest = value[5]
     gps.satellites = value[7]
---    gps.HDOP = value[8]
+    gps.HDOP = value[8]
     gps.height = value[9]
     gps.wgs84height = value[11]
 
@@ -61,9 +61,9 @@ function readGPSLine(str, len)
   elseif stype == '$GPGSA' then 
 --  print('GPGSA') 
     value = split(line)
---    gps.PDOP = value[15]
---    gps.HDOP = value[16]
---    gps.VDOP = value[17]
+    gps.PDOP = value[15]
+    gps.HDOP = value[16]
+    gps.VDOP = value[17]
 
   elseif stype == '$GPGSV' then
 --  print('GPGSV') 
@@ -91,36 +91,25 @@ function readGPSLine(str, len)
   else
   end
 
-  
   return gps;
 end
 
 function iterateGPS(data, xmlroot)
   local gpsset = {}
   local gpscounter = 0
---  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
-    print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*all");
     local lfpos = string.find(line, '\n', 1)
     local lastlfpos = 0;
     while lfpos ~= nil do
       local substr = string.sub(line, lastlfpos + 1, lfpos)
-      --print(substr)
-      --print(string.byte(substr, 1, lfpos - lastlfpos)) 
       local len = lfpos - lastlfpos - 1 
---      print(substr)
       gps = readGPSLine(substr, len)
---      util.ptable(gps)
---      print(util.tablesize(gps))
       local datacheck = checkData(gps)
- --     datacheck = true
- --     print(util.tablesize(gps))
-      if datacheck and util.tablesize(gps) > 2 then
---      local tdata = os.date('*t', gps.timestamp)
---      print(gps.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
+      datacheck = true
+      if datacheck and util.tablesize(gps) > 3 then
         gpscounter = gpscounter + 1
         gpsset[gpscounter] = gps
       else
@@ -128,8 +117,6 @@ function iterateGPS(data, xmlroot)
       end
       lastlfpos = lfpos
       lfpos = string.find(line, '\n', lfpos + 1)
---      break
-
     end
     file:close();
   end
@@ -138,6 +125,7 @@ end
 
 function parseGPS()
   local data = loadRawData(dataPath, dataStamp, 'gps')
+
   gpsset = iterateGPS(data)
 
   return gpsset

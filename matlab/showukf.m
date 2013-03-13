@@ -13,13 +13,15 @@ h.pid = 1;
 h.user = getenv('USER');
 
 h.ukf  = shm(sprintf('ucmUkf%d%d%s',  h.tid, h.pid, h.user));
+h.label  = shm(sprintf('ucmLabel%d%d%s',  h.tid, h.pid, h.user));
 
 rpy = zeros(1, 3);
 counter = 0;
+labelcounter = 0;
 dcounter = 0;
  while (1)
      cnt = h.ukf.get_counter();
-
+     labelcnt = h.label.get_counter(); 
      if cnt ~= counter
         counter = cnt;
         dcounter = dcounter + 1;
@@ -32,17 +34,21 @@ dcounter = 0;
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
 %         plot3(pos(1), pos(2), pos(3), '*');
-%        plot(pos(1), pos(2), '.');
-%        hold on;
-%        grid on;
-%       drawnow
+        plot(pos(1), pos(2), '.');
+        hold on;
+        grid on;
 %         subplot(1,2,1)
 %        coord(pos(1), pos(2), pos(3), R(1:3, 1:3), magheading);
 %        hold on;
-       rotplotT(R(1:3, 1:3), tstep);
+%       rotplotT(R(1:3, 1:3), tstep);
 %         subplot(1,2,2)jkk
 %         rotplotT(tR(1:3, 1:3), tstep);
      end
+     if labelcnt ~= labelcounter
+        plot(pos(1), pos(2), 'ro');
+        labelcounter = labelcnt;
+     end
+     drawnow
  end
 
 % for i = 1 : size(rpy, 1)

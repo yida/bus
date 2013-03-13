@@ -28,3 +28,6 @@
 
 # Binary
 ReceivePackets
+
+# log files
+log-*

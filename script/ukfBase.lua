@@ -25,10 +25,10 @@ Q:sub(4, 6, 4, 6):copy(torch.eye(3, 3):mul(0.01^2))
 Q:sub(7, 9, 7, 9):copy(torch.eye(3, 3):mul((0.1 * math.pi / 180)^2))
 
 --R = torch.Tensor(12, 12):fill(0) -- measurement noise covariance
-posCovR = torch.eye(3, 3):mul(0.5^2)
+posCovR = torch.eye(3, 3):mul(0.01^2)
 velCovR = torch.eye(3, 3):mul(0.1^2)
 qCovRG  = torch.eye(3, 3):mul((1 * math.pi / 180)^2)
-qCovRM  = torch.eye(3, 3):mul((1)^2)
+qCovRM  = torch.eye(3, 3):mul((10 * math.pi / 180)^2)
 
 ns = 9
 Chi = torch.Tensor(10, 2 * ns):fill(0)
@@ -241,7 +241,8 @@ function measurementGPSUpdate(gps)
     return false
   end
 
-  local gpspos = global2metric(gps)
+  gpspos = global2metric(gps)
+  -- local gpspos = global2metric(gps)
 
   if not processInit then return false end
 
@@ -256,8 +257,18 @@ function measurementGPSUpdate(gps)
   -- reset Z with zMean since no measurement here
   local v = gpspos - zMean
 
-  local R = posCovR
-  return KalmanGainUpdate(Z, zMean, v, R)
+  local R = torch.eye(3, 3):mul(0.005^2)
+  -- linear measurement update
+  local C = torch.Tensor(3, 9):fill(0)
+  C:narrow(1, 1, 3):narrow(2, 1, 3):copy(torch.eye(3, 3))
+  local K = P * C:t() * torch.inverse(C * P * C:t() + R)
+  state:narrow(1, 1, 3):copy(state:narrow(1, 1, 3) + K:narrow(1,1,3):narrow(2,1,3) * v)
+  P = (torch.eye(9,9) - K * C) * P
+
+
+  KGainCount = KGainCount + 1
+--  return KalmanGainUpdate(Z, zMean, v, R)
+  return true
 
 end
 
