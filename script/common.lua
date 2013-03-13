@@ -84,7 +84,7 @@ function loadData(path, dtype, maxlines, Debug)
 --    print(line)
     datacounter = datacounter + 1
     if debug == 1 then
-      io.write('\r', dtype, datacounter)
+      io.write('\r', dtype..' '..datacounter)
     end
     dataPoint = serialization.deserialize(line)
     data[datacounter] = dataPoint

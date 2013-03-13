@@ -262,14 +262,13 @@ function measurementGPSUpdate(gps)
   -- reset Z with zMean since no measurement here
   local v = gpspos - zMean
 
-  local R = torch.eye(3, 3):mul(0.005^2)
+  local R = torch.eye(3, 3):mul(0.10^2)
   -- linear measurement update
   local C = torch.Tensor(3, 9):fill(0)
   C:narrow(1, 1, 3):narrow(2, 1, 3):copy(torch.eye(3, 3))
   local K = P * C:t() * torch.inverse(C * P * C:t() + R)
   state:narrow(1, 1, 3):copy(state:narrow(1, 1, 3) + K:narrow(1,1,3):narrow(2,1,3) * v)
   P = (torch.eye(9,9) - K * C) * P
-
 
   KGainCount = KGainCount + 1
 --  return KalmanGainUpdate(Z, zMean, v, R)
