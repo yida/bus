@@ -7,7 +7,6 @@ extern "C" {
 #include <exception>
 #include <GeographicLib/Constants.hpp>
 
-
 using namespace std;
 using namespace GeographicLib;
 
@@ -17,7 +16,7 @@ static int lua_Constants_WGS84_a(lua_State *L) {
     double a = Constants::WGS84_a();
     lua_pushnumber(L, a);
   }
-  catch (exception& e) {
+  catch (const exception& e) {
     luaL_error(L, "Caught exception");
   }
   return 1;
@@ -25,10 +24,10 @@ static int lua_Constants_WGS84_a(lua_State *L) {
 
 static int lua_Constants_WGS84_f(lua_State *L) {
   try {
-    double f = Constants::WGS84_f();
-    lua_pushnumber(L, f);
+    double a = Constants::WGS84_f();
+    lua_pushnumber(L, a);
   }
-  catch (exception& e) {
+  catch (const exception& e) {
     luaL_error(L, "Caught exception");
   }
   return 1;
@@ -45,6 +44,7 @@ static const struct luaL_reg Constants_Functions [] = {
 };
 
 extern "C" int luaopen_Constants(lua_State *L) {
+  luaL_newmetatable(L, "Constants");
   luaL_register(L, NULL, Constants_Methods);
   luaL_register(L, "Constants", Constants_Functions);
   return 1;
