@@ -3,6 +3,7 @@ include Makefile.inc
 
 SOURCES= \
 				 lua_Geocentric.cpp  \
+				 lua_Constants.cpp  \
 				 lua_LocalCartesian.cpp  \
 				 lua_GeographicLib.cpp
 

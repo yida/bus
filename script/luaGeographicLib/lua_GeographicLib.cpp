@@ -4,10 +4,12 @@ extern "C" {
   #include "lauxlib.h"
 }
 
+#include "lua_Constants.hpp"
 #include "lua_Geocentric.hpp"
 #include "lua_LocalCartesian.hpp"
 
 extern "C" int luaopen_GeographicLib (lua_State *L) {
+  luaopen_Constants(L);
   luaopen_LocalCartesian(L);
   luaopen_Geocentric(L);
   return 1;
