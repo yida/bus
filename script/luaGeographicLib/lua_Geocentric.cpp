@@ -12,12 +12,28 @@ extern "C" {
 using namespace std;
 using namespace GeographicLib;
 
+static int lua_Geocentric_index(lua_State *L) {
+  // Get index through metatable:
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
+  lua_pushvalue(L, 2); // copy key
+  lua_rawget(L, -2); // get metatable function
+  lua_remove(L, -2); // delete metatable
+  return 1;
+}
+
+static Geocentric * lua_checkGeocentric(lua_State *L, int narg) {
+  void *earth = luaL_checkudata(L, narg, "Geocentric_mt");
+  luaL_argcheck(L, *(Geocentric **)earth != NULL, narg, "invalid Geocentric");
+  return (Geocentric *)earth;
+}
+
 
 static int lua_Geocentric_new(lua_State *L) {
   double a = luaL_checknumber(L, 1);
   double f = luaL_checknumber(L, 2);
-  Geocentric *earth = (Geocentric *)lua_newuserdata(L, sizeof(Geocentric)); 
+//  Geocentric *earth = (Geocentric *)lua_newuserdata(L, sizeof(Geocentric)); 
   try {
+    Geocentric *earth = new (lua_newuserdata(L, sizeof(Geocentric))) Geocentric(a, f);
   }
   catch (exception& e) {
     luaL_error(L, "Caught exception");
@@ -29,8 +45,29 @@ static int lua_Geocentric_new(lua_State *L) {
 }
 
 static int lua_Geocentric_Forward(lua_State *L) {
+  Geocentric *earch = lua_checkGeocentric(L, 1);
+
+  double lat = luaL_checknumber(L, 2);
+  double lon = luaL_checknumber(L, 3);
+  double h = luaL_checknumber(L, 4);
+
   try {
-    cout << "Forward" << endl;
+  //  cout << "Forward" << endl;
+    double x, y, z;
+    earch->Forward(lat, lon, h, x, y, z);
+    lua_createtable(L, 0, 1);
+    lua_pushstring(L, "x");
+    lua_pushinteger(L, x);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "y");
+    lua_pushinteger(L, y);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "z");
+    lua_pushinteger(L, z);
+    lua_settable(L, -3);
+
   }
   catch (exception& e) {
     luaL_error(L, "Caught exception");
@@ -45,15 +82,6 @@ static int lua_Geocentric_Reverse(lua_State *L) {
   catch (exception& e) {
     luaL_error(L, "Caught exception");
   }
-  return 1;
-}
-
-static int lua_Geocentric_index(lua_State *L) {
-  // Get index through metatable:
-  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
-  lua_pushvalue(L, 2); // copy key
-  lua_rawget(L, -2); // get metatable function
-  lua_remove(L, -2); // delete metatable
   return 1;
 }
 
