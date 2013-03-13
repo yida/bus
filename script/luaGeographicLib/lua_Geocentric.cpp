@@ -52,7 +52,6 @@ static int lua_Geocentric_Forward(lua_State *L) {
   double h = luaL_checknumber(L, 4);
 
   try {
-  //  cout << "Forward" << endl;
     double x, y, z;
     earch->Forward(lat, lon, h, x, y, z);
     lua_createtable(L, 0, 1);
@@ -76,12 +75,33 @@ static int lua_Geocentric_Forward(lua_State *L) {
 }
 
 static int lua_Geocentric_Reverse(lua_State *L) {
+  Geocentric *earch = lua_checkGeocentric(L, 1);
+
+  double x = luaL_checknumber(L, 2);
+  double y = luaL_checknumber(L, 3);
+  double z = luaL_checknumber(L, 4);
+
   try {
-    cout << "Reverse" << endl;
+    double lat, lon, h;
+    earch->Reverse(x, y, z, lat, lon, h);
+    lua_createtable(L, 0, 1);
+    lua_pushstring(L, "lat");
+    lua_pushinteger(L, lat);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "lon");
+    lua_pushinteger(L, lon);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "h");
+    lua_pushinteger(L, h);
+    lua_settable(L, -3);
+
   }
   catch (exception& e) {
     luaL_error(L, "Caught exception");
   }
+
   return 1;
 }
 
