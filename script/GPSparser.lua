@@ -64,6 +64,7 @@ function readGPSLine(str, len, startptr)
     gps.PDOP = value[15]
     gps.HDOP = value[16]
     gps.VDOP = value[17]
+--    print(gps.PDOP, gps.HDOP, gps.VDOP)
 
   elseif stype == '$GPGSV' then
 --  print('GPGSV') 
@@ -89,6 +90,7 @@ function readGPSLine(str, len, startptr)
     gps.nspeed = value[5]
     gps.kspeed = value[7]
   else
+    print(line)
   end
 
   return gps;

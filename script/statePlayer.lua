@@ -10,8 +10,8 @@ local serialization = require('serialization');
 
 local datasetpath = '../data/010213180247/'
 local datasetpath = './'
---local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'state3', _, 1)
+local dataset = loadData(datasetpath, 'observation', _, 1)
+--local dataset = loadData(datasetpath, 'state3', _, 1)
 
 local counter = 0
 local labelcounter = 0

@@ -29,5 +29,11 @@
 # Binary
 ReceivePackets
 
+# visualization
+*.pdf
+*.fig
+*.zip
+
 # log files
 log-*
+*-0

@@ -48,6 +48,8 @@ end
 
 --local datasetpath = '../data/211212164337/'
 local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/010213180247/'
+local datasetpath = '../data/150213185940/'
 
 
 --
@@ -60,7 +62,7 @@ local datasetpath = '../data/010213180247/'
 --data = syncData(_, imu, gps)
 --data = syncData(_, data, mag)
 --saveData(data, 'imugpsmag')
-state = loadData(datasetpath, 'state', _, 1)
+state = loadData(datasetpath, 'state3', _, 1)
 label = loadData(datasetpath, 'label', _, 1)
 data = syncData(_, state, label)
 --print(#mag, #imu, #data)

@@ -1,17 +1,19 @@
 require 'include'
 require 'common'
-require 'gpscommon'
+require 'GPSUtils'
 require 'ucm'
 
 require 'torch-load'
 
 local datasetpath = '../data/010213180247/'
+local datasetpath = './'
 local gpsset = loadData(datasetpath, 'gps')
 
 gps = {}
 gpscount = 0
 
---print(findDateFromGPS(gpsset))
+print(findDateFromGPS(gpsset))
+--[[
 local geo = require 'GeographicLib'
 local firstlat = true
 local basepos = {0.0, 0.0, 0.0}
@@ -37,6 +39,7 @@ for i = 1, #gpsset do
     end
   end
 end
+--]]
 
 --x = torch.Tensor(#relativePosX)
 --y = torch.Tensor(#relativePosY)

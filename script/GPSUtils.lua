@@ -39,5 +39,19 @@ function global2metric(gps)
   return pos
 end
 
+function gpsChecksum(line)
+  local trueline = line:sub(2, line:find('*')-1)
+  local checksum = line:sub(line:find('*')+1, #line)
+  local sum = 0
+  for i = 1, #trueline do
+    sum = bit.bxor(sum, trueline:byte(i,i))
+  end
+  sum = bit.tohex(sum)
+  sumstr = string.format('%s', sum)
+  sumstr = string.upper(sumstr:sub(#sumstr-1, #sumstr))
+--  print(sumstr, sumstr == checksum)
+  return sumstr == checksum
+end
+
 --pos = geo.Forward(27.99, 86.93, 8820)
 
