@@ -10,7 +10,7 @@ extern "C" {
 }
 #endif
 
-#include "lua_Geocentric.h"
+#include "lua_Geocentric.hpp"
 
 #include <iostream>
 #include <exception>
@@ -18,7 +18,7 @@ extern "C" {
 
 using namespace GeographicLib;
 
-int lua_Geocentric_Forward(lua_State *L) {
+static int lua_Geocentric_Forward(lua_State *L) {
   double lat = luaL_checknumber(L, 1);
   double lon = luaL_checknumber(L, 2);
   double h = luaL_checknumber(L, 3);
@@ -46,7 +46,19 @@ int lua_Geocentric_Forward(lua_State *L) {
   }
 }
 
-int lua_Geocentric_Reverse(lua_State *L) {
+static int lua_Geocentric_Reverse(lua_State *L) {
+  return 1;
 }
 
+
+static const struct luaL_reg Geocentric_lib [] = {
+  {"Forward", lua_Geocentric_Forward},
+  {"Reverse", lua_Geocentric_Reverse},
+  {NULL, NULL}
+};
+
+extern "C" int luaopen_Geocentric(lua_State *L) {
+  luaL_register(L, "Geocentric", Geocentric_lib);
+  return 1;
+}
 
