@@ -11,18 +11,18 @@ local serialization = require('serialization');
 --local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
-local datasetpath = '../data/211212165622/'
+--local datasetpath = '../data/211212165622/'
 --local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
---local datasetpath = '../data/'
+local datasetpath = '../data/'
 --local datasetpath = '../'
 --local dataset = loadData(datasetpath, 'logall')
-local dataset = loadData(datasetpath, 'imugpsmag')
+--local dataset = loadData(datasetpath, 'imugpsmag')
 --local dataset = loadData(datasetpath, 'imuPruned')
 --local dataset = loadData(datasetpath, 'log-946684824.42841')
 --local dataset = loadData(datasetpath, 'log-946684824.46683')
 --local dataset = loadData(datasetpath, 'log-946684824.66965')
---local dataset = loadData(datasetpath, 'log-946684834.63068')
+local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
 --local dataset = loadData(datasetpath, 'log-946684836.76822')
 
 

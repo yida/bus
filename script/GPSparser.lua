@@ -25,11 +25,11 @@ function split(str)
   return value
 end
 
-function readGPSLine(str, len)
+function readGPSLine(str, len, startptr)
   local gps = {}
   gps.type = 'gps'
   gps.timstamp = tonumber(string.sub(str, 1, 16))
-  local startpt = 17
+  local startpt = startptr or 17
 --  if str[17] ~= '$' then  
 --    startpt = 19
 --  end

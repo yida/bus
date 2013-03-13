@@ -3,6 +3,7 @@ require 'common'
 require 'torch-load'
 
 require 'GPSUtils'
+require 'GPSparser'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
@@ -227,6 +228,10 @@ function gpsInitiate(gps)
 end
 
 function measurementGPSUpdate(gps)
+  if gps.line ~= nil then 
+    gps = readGPSLine(gps.line, #gps.line, 1)
+  end
+
   if not imuInit then return false end
 
   if not gpsInit then
