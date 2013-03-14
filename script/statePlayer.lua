@@ -11,7 +11,8 @@ local serialization = require('serialization');
 local datasetpath = '../data/010213180247/'
 local datasetpath = './'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'state3', _, 1)
+local dataset = loadData(datasetpath, 'obs', _, 1)
+--local dataset = loadData(datasetpath, 'state3', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -29,9 +30,10 @@ for i = 1, #dataset do
     ucm.set_ukf_counter(counter)
     ucm.set_ukf_quat(q)
     ucm.set_ukf_pos(pos)
-  elseif dataset[i].type == 'label' then
+--  elseif dataset[i].type == 'label' then
     labelcounter = labelcounter + 1
     ucm.set_label_counter(labelcounter)
+    ucm.set_label_value(dataset[i].label)
   end
   usleep(0.004)
   

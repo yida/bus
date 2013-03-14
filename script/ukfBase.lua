@@ -243,7 +243,7 @@ function measurementGPSUpdate(gps)
   -- reset Z with zMean since no measurement here
   local v = gpspos - zMean
 
-  local R = torch.eye(3, 3):mul(0.10^2)
+  local R = torch.eye(3, 3):mul(0.07^2)
   -- linear measurement update
   local C = torch.Tensor(3, 9):fill(0)
   C:narrow(1, 1, 3):narrow(2, 1, 3):copy(torch.eye(3, 3))

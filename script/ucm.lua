@@ -23,5 +23,6 @@ shared.gps.pos = vector.zeros(3)
 
 shared.label = {}
 shared.label.counter = vector.zeros(1)
+shared.label.value = vector.zeros(1)
 
 util.init_shm_segment(getfenv(), 'ucm', shared, shsize, 1, 1);

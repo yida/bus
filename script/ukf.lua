@@ -13,29 +13,22 @@ local serialization = require('serialization');
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
 local datasetpath = '../data/150213185940/'
---local datasetpath = '../data/rawdata/'
---local datasetpath = '../simulation/'
 --local datasetpath = '../data/'
 --local datasetpath = '../'
---local dataset = loadData(datasetpath, 'logall')
---local dataset = loadData(datasetpath, 'imugpsmag')
---local dataset = loadData(datasetpath, 'imuPruned')
 local dataset = loadData(datasetpath, 'measurement')
---local dataset = loadData(datasetpath, 'log-946684824.42841')
---local dataset = loadData(datasetpath, 'log-946684824.46683')
---local dataset = loadData(datasetpath, 'log-946684824.66965')
---local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
---local dataset = loadData(datasetpath, 'log-946684836.76822')
 
+local sendState = false
+local saveState = true
+if saveState then
+  local Path = path or './'
+  local dtype = 'state150213185940'
+  local filecnt = 0
+  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
+  
+  file = io.open(Path..filename, "w")
+end 
 
-local Path = path or './'
-local dtype = 'state3'
-local filecnt = 0
-local filetime = os.date('%m.%d.%Y.%H.%M.%S')
-local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
-
-local file = io.open(Path..filename, "w")
- 
 
 local sdata = {}
 local counter = 0
@@ -55,40 +48,40 @@ for i = 1, #dataset do
 --  processInit = imuInit and magInit and gpsInit
   processInit = imuInit and gpsInit
   if processInit then 
-    if kCount ~= KGainCount then
+--    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
-      t1 = utime()
-      io.write('\r'..KGainCount)
-      kCount = KGainCount
-      local Q = state:narrow(1, 7, 4)
-      local vec = Quat2Vector(Q)
-      st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
-            ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
-            ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
-            ['type'] = 'state', ['timestamp'] = tstep}
-      saveData = serialization.serialize(st)
-      print(saveData)
-      file:write(saveData)
-      file:write('\n')
+--      t1 = utime()
+        print(KGainCount)
+        kCount = KGainCount      
+      if saveState then
+        local Q = state:narrow(1, 7, 4)
+        local vec = Quat2Vector(Q)
+        st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
+              ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
+              ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
+              ['type'] = 'state', ['timestamp'] = tstep}
+        saveData = serialization.serialize(st)
+        print(saveData)
+        file:write(saveData)
+        file:write('\n')
   --    sdata[#sdata + 1] = st
+      end
    
-  --    error('stop for debugging') 
---      local Q = state:narrow(1, 7, 4)
---      counter = counter + 1 
---    
---      q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
---      pos = vector.new({state[1][1], state[2][1], state[3][1]})
---      --if gpspos ~= nil then
---      --  pos = vector.new({gpspos[1], gpspos[2], gpspos[3]})
---        ucm.set_ukf_counter(counter)
---        ucm.set_ukf_quat(q)
---        ucm.set_ukf_pos(pos)
---      --end
---    --  print(state:narrow(1, 1, 6))
+    if sendState then
+      local Q = state:narrow(1, 7, 4)
+      counter = counter + 1 
+    
+      q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
+      pos = vector.new({state[1][1], state[2][1], state[3][1]})
+      ucm.set_ukf_counter(counter)
+      ucm.set_ukf_quat(q)
+      ucm.set_ukf_pos(pos)
     end
   end
 end
 
-file:close()
+if saveState then
+  file:close()
+end
 --saveData(sdata, 'state', dataPath)
 

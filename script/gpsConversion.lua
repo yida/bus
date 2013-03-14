@@ -46,7 +46,7 @@ for i = 1, #dataset do
         counter = counter + 1         
         gpsLocal[#gpsLocal+1] = lgps
 --        pos = vector.new({ret.x, ret.y, ret.z})
---      pos = vector.new({gpspos[1], gpspos[2], gpspos[3]})
+--        pos = vector.new({gpspos[1], gpspos[2], gpspos[3]})
 --        ucm.set_ukf_counter(counter)
 --        ucm.set_ukf_pos(pos)
       end

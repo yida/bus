@@ -47,26 +47,25 @@ function syncData(data, set1, set2)
 end
 
 --local datasetpath = '../data/010213192135/'
---local datasetpath = '../data/150213185940/'
+local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/191212190259/'
-local datasetpath = '../data/211212164337/'
-local datasetpath = '../data/211212165622/'
-local datasetpath = '../data/010213180247/'
---
+--local datasetpath = '../data/211212164337/'
+--local datasetpath = '../data/211212165622/'
+--local datasetpath = '../data/010213180247/'
+--[[
 imu = loadData(datasetpath, 'imuPruned', _, 1)
 mag = loadData(datasetpath, 'magPruned', _, 1)
---set2 = loadData(datasetpath, 'magPruned')
 gps = loadData(datasetpath, 'gpsLocal', _, 1)
 label = loadData(datasetpath, 'label')
---
 data = syncData(_, imu, gps)
 data = syncData(_, data, mag)
 saveData(data, 'measurement', datasetpath)
-----state = loadData(datasetpath, 'state3', _, 1)
---label = loadData(datasetpath, 'label', _, 1)
---data = syncData(_, state, label)
+--]]
+state = loadData(datasetpath, 'state150213185940', _, 1)
+label = loadData(datasetpath, 'label', _, 1)
+data = syncData(_, state, label)
 ----print(#mag, #imu, #data)
---saveData(data, 'observation')
+saveData(data, 'observation')
 
 
 ----saveData(data, 'syncdlabelgps')
