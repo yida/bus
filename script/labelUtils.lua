@@ -87,14 +87,20 @@ function splitObservation(obs, Debug)
   end
   for i = 1, #obsSeq do
     local prelabel = 0 
-    if i == 1 then prelabel = -1 
-    else prelabel = obsSeq[i-1].label end
     if debug then print('label '..obsSeq[i].label, obsSeq[i].sidx, 
             obsSeq[i].eidx, obsSeq[i].sts, obsSeq[i].ets) end
     for j = obsSeq[i].sidx, obsSeq[i].eidx do
       local idx = j - obsSeq[i].sidx + 1
       obsSeq[i][idx] = obs[j]
-      obsSeq[i][idx].prelabel = prelabel
+      if j == obsSeq[i].sidx then
+        if i == 1 then 
+          obsSeq[i][idx].prelabel = -1
+        else
+          obsSeq[i][idx].prelabel = obsSeq[i-1][#obsSeq[i-1]].label
+        end
+      else
+        obsSeq[i][idx].prelabel = obsSeq[i][idx-1].label
+      end
     end
     assert((obsSeq[i].eidx - obsSeq[i].sidx + 1) == #obsSeq[i])
   end
