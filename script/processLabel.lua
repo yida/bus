@@ -59,7 +59,8 @@ function applyLabel(state, lstamps)
   return state
 end
 
-function splitObservation(obs)
+function splitObservation(obs, Debug)
+  local debug = Debug or false
   local obsSeq = {}
   local lastLabel = obs[1].label
   local lastLabelstart = 1
@@ -82,11 +83,13 @@ function splitObservation(obs)
   end
   obsSeq[#obsSeq].eidx = #obs
   obsSeq[#obsSeq].ets = obs[#obs].timestamp
-  print(lastLabel, lastLabelstart, #obs)
-  print('\n')
+  if debug then 
+    print(lastLabel, lastLabelstart, #obs)
+    print('\n')
+  end
   for i = 1, #obsSeq do
-    print('label '..obsSeq[i].label, obsSeq[i].sidx, 
-            obsSeq[i].eidx, obsSeq[i].sts, obsSeq[i].ets)
+    if debug then print('label '..obsSeq[i].label, obsSeq[i].sidx, 
+            obsSeq[i].eidx, obsSeq[i].sts, obsSeq[i].ets) end
     for j = obsSeq[i].sidx, obsSeq[i].eidx do
       local idx = j - obsSeq[i].sidx + 1
       obsSeq[i][idx] = obs[j]
@@ -101,6 +104,6 @@ local state = loadData(datasetpath, 'state150213185940', _, 1)
 
 labelstamps = extractLabel(label)
 obs = applyLabel(state, labelstamps)
-splitObservation(obs)
+obsSeq = splitObservation(obs)
 
 --saveData(obs, 'obs', './')
