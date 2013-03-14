@@ -46,13 +46,12 @@ function syncData(data, set1, set2)
   return data
 end
 
---local datasetpath = '../data/211212164337/'
---local datasetpath = '../data/211212165622/'
---local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/150213185940/'
-local datasetpath = '../data/191212190259/'
-
+--local datasetpath = '../data/191212190259/'
+local datasetpath = '../data/211212164337/'
+local datasetpath = '../data/211212165622/'
+local datasetpath = '../data/010213180247/'
 --
 imu = loadData(datasetpath, 'imuPruned', _, 1)
 mag = loadData(datasetpath, 'magPruned', _, 1)

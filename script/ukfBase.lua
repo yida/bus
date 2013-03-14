@@ -3,7 +3,6 @@ require 'common'
 require 'torch-load'
 
 require 'GPSUtils'
-require 'GPSparser'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'
@@ -214,13 +213,7 @@ end
 
 -- Geo Init
 function gpsInitiate(gps)
-  if gps.latitude == nil or gps.longtitude == nil or gps.height == nil then
-    return false
-  end
-  if gps.latitude == '' or gps.longtitude == '' or gps.height == '' then
-    return false
-  end
-  local gpspos = global2metric(gps)
+  local gpspos = torch.Tensor({gps.x, gps.y, gps.z})
   -- set init pos
   state:sub(1, 3, 1, 1):copy(gpspos)
   print('initiate GPS') 
@@ -228,9 +221,6 @@ function gpsInitiate(gps)
 end
 
 function measurementGPSUpdate(gps)
-  if gps.line ~= nil then 
-    gps = readGPSLine(gps.line, #gps.line, 1)
-  end
 
   if not imuInit then return false end
 
@@ -239,16 +229,7 @@ function measurementGPSUpdate(gps)
     return false
   end
 
-  if gps.latitude == nil or gps.longtitude == nil or gps.height == nil then
-    return false
-  end
-  if gps.latitude == '' or gps.longtitude == '' or gps.height == '' then
-    return false
-  end
-
-  gpspos = global2metric(gps)
-  -- local gpspos = global2metric(gps)
-
+  gpspos =torch.Tensor({gps.x, gps.y, gps.z})
   if not processInit then return false end
 
   local Z = torch.Tensor(3, 2 * ns):fill(0)
