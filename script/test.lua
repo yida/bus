@@ -1,14 +1,17 @@
-require 'torch-load'
+--require 'torch-load'
 --require 'gnuplot-load'
 --
---require 'torch'
+require 'torch'
 --local ffi = require 'ffi'
 --require 'poseUtils'
 
 state = torch.DoubleTensor(13, 1):fill(0)
 print(state)
-P = torch.eye(12):mul(1000)
-Q = torch.eye(12):mul(90)
+P = torch.DoubleTensor(12,12):eye(12):mul(1000)
+print(torch.typename(P))
+print(tostring(P))
+
+--Q = torch.eye(12):mul(90)
 ----print(torch.sqrt((P + Q):mul(2*12)))
 --x = P:storage()
 --for i = 1, x:size() do

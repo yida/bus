@@ -32,7 +32,8 @@ function trainHMM(trainSet, stateSet)
   end
   
   print'Train Observation Probability'
-  local obsDim = 9
+  local obsDim = 3
+--  local obsDim = 9
   local pobsMean = torch.Tensor(obsDim, stateNum):fill(0)
   local pobsMeanCount = torch.Tensor(1, stateNum):fill(0)
   local pobsCov = torch.Tensor(stateNum, obsDim, obsDim):fill(0)
@@ -40,9 +41,11 @@ function trainHMM(trainSet, stateSet)
   
   -- observation Mean
   for i = 1, #trainSet do 
-    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
-                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
-                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+--    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+--                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
+--                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+
     local label = trainSet[i].label
     local prevLabel = trainSet[i].prelabel
     pobsMean:narrow(2, label, 1):add(obs)
@@ -56,9 +59,11 @@ function trainHMM(trainSet, stateSet)
   
   -- observation Cov
   for i = 1, #trainSet do
-    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
-                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
-                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+
+--    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+--                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
+--                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
     obs:resize(obs:size(1), 1)
     local label = trainSet[i].label
     local prevLabel = trainSet[i].prelabel 
@@ -85,9 +90,10 @@ function ForwardBackward(hmm, testSet, stateSet)
   local alpha = torch.Tensor(stateNum, 1):fill(0)
   local pobs = torch.Tensor(stateNum, 1):fill(0)
   for i = 1, #testSet do
-    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
-                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
-                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+--    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+--                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
+--                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
     for st = 1, stateNum do
       pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
                                   hmm.pobsCov:narrow(1, st, 1))
@@ -116,12 +122,11 @@ function viterbi(hmm, testSet, stateSet)
   local psi = torch.Tensor(stateNum, 1):fill(0)
   local pobs = torch.Tensor(stateNum, 1):fill(0)
   for i = 1, #testSet do
-    local obs = torch.Tensor({testSet[i].x, testSet[i].y, testSet[i].z,
-                              testSet[i].vx, testSet[i].vy, testSet[i].vz,
-                              testSet[i].e1, testSet[i].e2, testSet[i].e3})
+    local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
+--    local obs = torch.Tensor({testSet[i].x, testSet[i].y, testSet[i].z,
+--                              testSet[i].vx, testSet[i].vy, testSet[i].vz,
+--                              testSet[i].e1, testSet[i].e2, testSet[i].e3})
     for st = 1, stateNum do
-      print(hmm.pobsMean:narrow(2, st, 1))
-      print(hmm.pobsCov:narrow(1, st, 1))
       pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
                                   hmm.pobsCov:narrow(1, st, 1))
       if i == 1 then
@@ -131,19 +136,18 @@ function viterbi(hmm, testSet, stateSet)
         for preSt = 1, stateNum do
           newDelta[preSt][1] = delta[st][1] * hmm.ptrans[preSt][st]
         end
-        maxDelta, i = torch.max(newDelta, 1)
+        local maxDelta, i = torch.max(newDelta, 1)
         delta[st][1] = maxDelta * pobs[st][1]
         psi[st][1] = i
       end
+--      print(delta[st][1], psi[st][1])
+--      print(delta)
     end
+--    print(delta)
     delta:div(delta:norm())
   end
-  local maxDelta, q = torch.max(delta, 1)
-  return maxDelta, q[1][1]
---  local pObsGamma = 0
---  for st = 1, stateNum do
---    pObsGamma = pObsGamma + alpha[st][1]
---  end
+  local maxD, q = torch.max(delta, 1)
+  return maxD, q[1][1]
 end
 
 --local stateSet = {'circle', 'figure8', 'hammer', 'slash', 'toss', 'wave'}

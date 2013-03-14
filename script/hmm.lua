@@ -22,7 +22,8 @@ obsSeq = splitObservation(obs)
 --
 ObsSetNum = #obsSeq
 print('num of training sets '..#obsSeq)
-ObsSetIdx = torch.randperm(ObsSetNum)
+--ObsSetIdx = torch.randperm(ObsSetNum)
+ObsSetIdx = torch.Tensor({9, 10, 30, 19, 36, 34,  4, 28, 15, 12, 26, 1, 33, 27, 32, 29, 17, 23, 18, 22, 20, 7, 5, 35, 24, 25, 13, 14, 3, 2, 31,  6, 21, 37, 16, 11,  8})
 trainSetRatio = 0.7
 trainSetNum = math.floor(trainSetRatio * ObsSetNum)
 testSetNum = ObsSetNum - trainSetNum
@@ -31,25 +32,28 @@ print('train set '..trainSetNum, 'test set '..testSetNum)
 local trainSet = {}
 local nTrain = 0
 for i = 1, trainSetNum do
-  print(ObsSetIdx[i], #obsSeq[ObsSetIdx[i]])
+  print(i, ObsSetIdx[i], #obsSeq[ObsSetIdx[i]], obsSeq[ObsSetIdx[i]].label)
   nTrain = nTrain + #obsSeq[ObsSetIdx[i]]
   for j = 1, #obsSeq[ObsSetIdx[i]] do
     trainSet[#trainSet+1] = obsSeq[ObsSetIdx[i]][j]
   end
 end
 print(#trainSet, nTrain)
-
--- training
-hmm = trainHMM(trainSet, stateSet)
-print(hmm)
-print(hmm.ptrans)
-----ForwardBackward(hmm, testSet, stateSet)
 --
--- testing
-for i = 1, testSetNum do
-  print(ObsSetIdx[i+trainSetNum], #obsSeq[ObsSetIdx[i+trainSetNum]])
+---- training
+hmm = trainHMM(trainSet, stateSet)
+--print(hmm)
+--print(hmm.ptrans)
+------ForwardBackward(hmm, testSet, stateSet)
+----
+---- testing
+--for i = 1, testSetNum do
+for i = 1, 1 do
+  print(i + trainSetNum, ObsSetIdx[i+trainSetNum], #obsSeq[ObsSetIdx[i+trainSetNum]], obsSeq[ObsSetIdx[i+trainSetNum]].label)
   testSet = obsSeq[ObsSetIdx[i+trainSetNum]]
   p, st = viterbi(hmm, testSet, stateSet)
+  print(st)
+--  print(obsSeq[ObsSetIdx[i+trainSetNum]].label)
 end
 
 

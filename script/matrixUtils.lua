@@ -42,6 +42,9 @@ end
 --end
 
 function GaussianPDF(x, mean, cov)
+--  print(x)
+--  print(mean)
+--  print(cov)
   local vectorSize = x:size(1)
   local Diff = torch.Tensor(vectorSize,1):copy(x - mean)
   local Cov = torch.Tensor(vectorSize, vectorSize):copy(cov)
