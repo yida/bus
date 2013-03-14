@@ -34,7 +34,7 @@ dcounter = 0;
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
  %       plot3(pos(1), pos(2), pos(3), '*');
-        plot(pos(1), pos(2), '.');
+        plot(pos(1), pos(2), 'y.');
         hold on;
         grid on;
         axis equal;
@@ -46,7 +46,12 @@ dcounter = 0;
 %         rotplotT(tR(1:3, 1:3), tstep);
      end
      if labelcnt ~= labelcounter
-        plot(pos(1), pos(2), 'ro');
+        value = h.label.get_value();
+        if value == 1
+            plot(pos(1), pos(2), 'b^');
+        elseif value == 2
+            plot(pos(1), pos(2), 'bv');
+        end
         labelcounter = labelcnt;
      end
      drawnow

@@ -22,8 +22,8 @@ obsSeq = splitObservation(obs)
 --
 ObsSetNum = #obsSeq
 print('num of training sets '..#obsSeq)
---ObsSetIdx = torch.randperm(ObsSetNum)
-ObsSetIdx = torch.Tensor({9, 10, 30, 19, 36, 34,  4, 28, 15, 12, 26, 1, 33, 27, 32, 29, 17, 23, 18, 22, 20, 7, 5, 35, 24, 25, 13, 14, 3, 2, 31,  6, 21, 37, 16, 11,  8})
+ObsSetIdx = torch.randperm(ObsSetNum)
+--ObsSetIdx = torch.Tensor({9, 10, 30, 19, 36, 34,  4, 28, 15, 12, 26, 1, 33, 27, 32, 29, 17, 23, 18, 22, 20, 7, 5, 35, 24, 25, 13, 14, 3, 2, 31,  6, 21, 37, 16, 11,  8})
 trainSetRatio = 0.7
 trainSetNum = math.floor(trainSetRatio * ObsSetNum)
 testSetNum = ObsSetNum - trainSetNum
@@ -43,16 +43,17 @@ print(#trainSet, nTrain)
 ---- training
 hmm = trainHMM(trainSet, stateSet)
 --print(hmm)
---print(hmm.ptrans)
+print(hmm.ptrans)
 ------ForwardBackward(hmm, testSet, stateSet)
 ----
 ---- testing
---for i = 1, testSetNum do
-for i = 1, 1 do
-  print(i + trainSetNum, ObsSetIdx[i+trainSetNum], #obsSeq[ObsSetIdx[i+trainSetNum]], obsSeq[ObsSetIdx[i+trainSetNum]].label)
+for i = 1, testSetNum do
+--for i = 1, 1 do
+  print('test set id:'..i + trainSetNum, 'Samples: '..#obsSeq[ObsSetIdx[i+trainSetNum]], 
+         'label state: '..obsSeq[ObsSetIdx[i+trainSetNum]].label)
   testSet = obsSeq[ObsSetIdx[i+trainSetNum]]
   p, st = viterbi(hmm, testSet, stateSet)
-  print(st)
+  print('detected state: '..st)
 --  print(obsSeq[ObsSetIdx[i+trainSetNum]].label)
 end
 

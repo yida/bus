@@ -126,6 +126,7 @@ function viterbi(hmm, testSet, stateSet)
 --    local obs = torch.Tensor({testSet[i].x, testSet[i].y, testSet[i].z,
 --                              testSet[i].vx, testSet[i].vy, testSet[i].vz,
 --                              testSet[i].e1, testSet[i].e2, testSet[i].e3})
+--  print 'state'
     for st = 1, stateNum do
       pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
                                   hmm.pobsCov:narrow(1, st, 1))
@@ -136,11 +137,12 @@ function viterbi(hmm, testSet, stateSet)
         for preSt = 1, stateNum do
           newDelta[preSt][1] = delta[st][1] * hmm.ptrans[preSt][st]
         end
-        local maxDelta, i = torch.max(newDelta, 1)
+--      print(newDelta)
+        local maxDelta, idx = torch.max(newDelta, 1)
         delta[st][1] = maxDelta * pobs[st][1]
-        psi[st][1] = i
+        psi[st][1] = idx
       end
---      print(delta[st][1], psi[st][1])
+--    print(st, delta[st][1], psi[st][1])
 --      print(delta)
     end
 --    print(delta)
