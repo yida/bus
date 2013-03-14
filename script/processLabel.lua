@@ -87,6 +87,11 @@ function splitObservation(obs)
   for i = 1, #obsSeq do
     print('label '..obsSeq[i].label, obsSeq[i].sidx, 
             obsSeq[i].eidx, obsSeq[i].sts, obsSeq[i].ets)
+    for j = obsSeq[i].sidx, obsSeq[i].eidx do
+      local idx = j - obsSeq[i].sidx + 1
+      obsSeq[i][idx] = obs[j]
+    end
+    assert((obsSeq[i].eidx - obsSeq[i].sidx + 1) == #obsSeq[i])
   end
 end
 
