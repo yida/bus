@@ -3,8 +3,6 @@ require 'common'
 require 'poseUtils'
 require 'torch-load'
 
-local util = require 'util'
-
 function extractLabel(dataset, Debug)
   local debug = Debug or false
   local state = {}
@@ -96,6 +94,7 @@ function splitObservation(obs, Debug)
     end
     assert((obsSeq[i].eidx - obsSeq[i].sidx + 1) == #obsSeq[i])
   end
+  return obsSeq
 end
 
 --local datasetpath = '../data/150213185940/'

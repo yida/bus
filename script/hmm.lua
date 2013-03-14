@@ -3,13 +3,22 @@ require 'common'
 require 'torch-load'
 
 require 'matrixUtils'
+require 'labelUtils'
+require 'hmmBase'
 
 local stateSet = {'leftTurn', 'rightTurn', 'Straight'}
 
---
---local dataPath = './'
---local trainSet = loadData(dataPath, 'obs')
---hmm = trainHMM(trainSet, stateSet)
+local datasetpath = '../data/150213185940/'
+local label = loadData(datasetpath, 'label', _, 1)
+local state = loadData(datasetpath, 'state150213185940', _, 1)
+
+labelstamps = extractLabel(label)
+obs = applyLabel(state, labelstamps)
+obsSeq = splitObservation(obs)
+
+trainSet = obsSeq[1]
+
+hmm = trainHMM(trainSet, stateSet)
 --ForwardBackward(hmm, testSet, stateSet)
 
 
