@@ -32,7 +32,7 @@ function trainHMM(trainSet, stateSet)
   end
   
   print'Train Observation Probability'
-  local obsDim = 3
+  local obsDim = 9
   local pobsMean = torch.Tensor(obsDim, stateNum):fill(0)
   local pobsMeanCount = torch.Tensor(1, stateNum):fill(0)
   local pobsCov = torch.Tensor(stateNum, obsDim, obsDim):fill(0)
@@ -59,9 +59,10 @@ function trainHMM(trainSet, stateSet)
     local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
                               trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
                               trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    obs:resize(obs:size(1), 1)
     local label = trainSet[i].label
     local prevLabel = trainSet[i].prelabel 
-    local obsCov = (obs - pobsMean:narrow(2, label, 1)):t() * (obs - pobsMean:narrow(2, label, 1))
+    local obsCov = (obs - pobsMean:narrow(2, label, 1)) * (obs - pobsMean:narrow(2, label, 1)):t()
     pobsCov:narrow(1, label, 1):add(obsCov)
     pobsCovCount[1][label] = pobsCovCount[1][label] + 1
   end
@@ -115,8 +116,12 @@ function viterbi(hmm, testSet, stateSet)
   local psi = torch.Tensor(stateNum, 1):fill(0)
   local pobs = torch.Tensor(stateNum, 1):fill(0)
   for i = 1, #testSet do
-    local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
+    local obs = torch.Tensor({testSet[i].x, testSet[i].y, testSet[i].z,
+                              testSet[i].vx, testSet[i].vy, testSet[i].vz,
+                              testSet[i].e1, testSet[i].e2, testSet[i].e3})
     for st = 1, stateNum do
+      print(hmm.pobsMean:narrow(2, st, 1))
+      print(hmm.pobsCov:narrow(1, st, 1))
       pobs[st][1] = GaussianPDF(obs, hmm.pobsMean:narrow(2, st, 1), 
                                   hmm.pobsCov:narrow(1, st, 1))
       if i == 1 then

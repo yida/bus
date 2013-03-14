@@ -16,11 +16,39 @@ labelstamps = extractLabel(label)
 obs = applyLabel(state, labelstamps)
 obsSeq = splitObservation(obs)
 
-trainSet = obsSeq[1]
+--trainSet = obsSeq[1]
+--for i = 1, #obsSeq[1] do
+--  print(obsSeq[1][i].label, obsSeq[1][i].prelabel)
+--end
+ObsSetNum = #obsSeq
+print('num of training sets '..#obsSeq)
+ObsSetIdx = torch.randperm(ObsSetNum)
+trainSetRatio = 0.7
+trainSetNum = math.floor(trainSetRatio * ObsSetNum)
+testSetNum = ObsSetNum - trainSetNum
+print('train set '..trainSetNum, 'test set '..testSetNum)
+-- Generate new train set
+local trainSet = {}
+local nTrain = 0
+for i = 1, trainSetNum do
+  print(ObsSetIdx[i], #obsSeq[ObsSetIdx[i]])
+  nTrain = nTrain + #obsSeq[ObsSetIdx[i]]
+  for j = 1, #obsSeq[ObsSetIdx[i]] do
+    trainSet[#trainSet+1] = obsSeq[ObsSetIdx[i]][j]
+  end
+end
+print(#trainSet, nTrain)
 
+-- training
 hmm = trainHMM(trainSet, stateSet)
 --ForwardBackward(hmm, testSet, stateSet)
 
+-- testing
+for i = 1, testSetNum do
+  print(ObsSetIdx[i+trainSetNum], #obsSeq[ObsSetIdx[i+trainSetNum]])
+  testSet = obsSeq[ObsSetIdx[i+trainSetNum]]
+  p, st = viterbi(hmm, testSet, stateSet)
+end
 
 --local dataPath = '../test/'
 --for i = 1, 7 do
