@@ -98,12 +98,12 @@ function splitObservation(obs, Debug)
   end
 end
 
---local datasetpath = '../data/150213185940/'
---local label = loadData(datasetpath, 'label', _, 1)
---local state = loadData(datasetpath, 'state150213185940', _, 1)
+local datasetpath = '../data/150213185940/'
+local label = loadData(datasetpath, 'label', _, 1)
+local state = loadData(datasetpath, 'state150213185940', _, 1)
 --
---labelstamps = extractLabel(label)
---obs = applyLabel(state, labelstamps)
---obsSeq = splitObservation(obs)
+labelstamps = extractLabel(label)
+obs = applyLabel(state, labelstamps)
+obsSeq = splitObservation(obs)
 
---saveData(obs, 'obs', './')
+saveData(obs, 'obs', './')

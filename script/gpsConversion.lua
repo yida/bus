@@ -16,8 +16,9 @@ local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
-local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
+--local datasetpath = './'
+--local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
+local dataset = loadData(datasetpath, 'gps', _, 1)
 print('done loading data')
 
 earth = Geocentric.new(Constants.WGS84_a(), Constants.WGS84_f())
@@ -74,6 +75,7 @@ for i = 1, #dataset do
     
 --    print(latitude, longtitude, height)
     if coorInit == false and heightInit and latitudeInit and longtitudeInit then
+      print(latitude, longtitude, height)
       proj = LocalCartesian.new(latitude, longtitude, height, earth)
       coorInit = true
     end
@@ -107,7 +109,7 @@ end
 
 print(#gpsLocal, dopcounter)
 --saveData(gpsLocal, 'gpsLocal')
-saveDataMP(gpsLocal, 'gpsLocal', './')
+--saveDataMP(gpsLocal, 'gpsLocal', './')
 --local dataset = loadDataMP('./', 'gpsLocal', _, 1)
 --print(#dataset)
 

@@ -52,18 +52,19 @@ local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
 --local datasetpath = '../data/010213180247/'
-imu = loadData(datasetpath, 'imuPruned', _, 1)
-mag = loadData(datasetpath, 'magPruned', _, 1)
-gps = loadData(datasetpath, 'gpsLocal', _, 1)
-label = loadData(datasetpath, 'label')
-data = syncData(_, imu, gps)
-data = syncData(_, data, mag)
-saveData(data, 'measurement', datasetpath)
---state = loadData(datasetpath, 'state150213185940', _, 1)
---label = loadData(datasetpath, 'label', _, 1)
---data = syncData(_, state, label)
+--imu = loadData(datasetpath, 'imuPruned', _, 1)
+--mag = loadData(datasetpath, 'magPruned', _, 1)
+--gps = loadData(datasetpath, 'gpsLocal', _, 1)
+--label = loadData(datasetpath, 'label')
+--data = syncData(_, imu, gps)
+--data = syncData(_, data, mag)
+--saveData(data, 'measurement', datasetpath)
+
+state = loadData(datasetpath, 'state150213185940', _, 1)
+label = loadData(datasetpath, 'label', _, 1)
+data = syncData(_, state, label)
 ------print(#mag, #imu, #data)
---saveData(data, 'observation')
+saveData(data, 'observation')
 
 
 ----saveData(data, 'syncdlabelgps')
