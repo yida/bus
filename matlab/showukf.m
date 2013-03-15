@@ -33,8 +33,8 @@ dcounter = 0;
         pos = h.ukf.get_pos();
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
- %       plot3(pos(1), pos(2), pos(3), '*');
-        plot(pos(1), pos(2), 'y.');
+%        plot3(pos(1), pos(2), pos(3)*100, '.');
+        plot(pos(1), pos(2), 'b.');
         hold on;
         grid on;
         axis equal;
@@ -45,15 +45,15 @@ dcounter = 0;
 %         subplot(1,2,2)jkk
 %         rotplotT(tR(1:3, 1:3), tstep);
      end
-     if labelcnt ~= labelcounter
-        value = h.label.get_value();
-        if value == 1
-            plot(pos(1), pos(2), 'b^');
-        elseif value == 2
-            plot(pos(1), pos(2), 'bv');
-        end
-        labelcounter = labelcnt;
-     end
+%      if labelcnt ~= labelcounter
+%         value = h.label.get_value();
+%         if value == 1
+%             plot(pos(1), pos(2), 'b^');
+%         elseif value == 2
+%             plot(pos(1), pos(2), 'bv');
+%         end
+%         labelcounter = labelcnt;
+%      end
      drawnow
  end
 

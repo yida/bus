@@ -17,8 +17,8 @@ local datasetpath = '../data/150213185940/'
 --local datasetpath = '../'
 local dataset = loadData(datasetpath, 'measurement')
 
-local sendState = false
-local saveState = true
+local sendState = true
+local saveState = false
 if saveState then
   local Path = path or './'
   local dtype = 'state150213185940'
@@ -51,7 +51,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
-        print(KGainCount)
+--        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)

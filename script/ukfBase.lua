@@ -230,6 +230,14 @@ function measurementGPSUpdate(gps)
   end
 
   gpspos =torch.Tensor({gps.x, gps.y, gps.z})
+  -- require DOP to adjust measurement cov
+  gpsdop = torch.Tensor({gps.HDOP, gps.VDOP, gps.PDOP})
+  local R = torch.eye(3, 3):mul(0.07^2)
+  R[1][1] = gpsdop[1]^2 / 2 / 40 
+  R[2][2] = gpsdop[1]^2 / 2 / 40
+  R[3][3] = gpsdop[2]^2 / 40
+  print(R[1][1], R[2][2], R[3][3])
+
   if not processInit then return false end
 
   local Z = torch.Tensor(3, 2 * ns):fill(0)
@@ -243,7 +251,6 @@ function measurementGPSUpdate(gps)
   -- reset Z with zMean since no measurement here
   local v = gpspos - zMean
 
-  local R = torch.eye(3, 3):mul(0.07^2)
   -- linear measurement update
   local C = torch.Tensor(3, 9):fill(0)
   C:narrow(1, 1, 3):narrow(2, 1, 3):copy(torch.eye(3, 3))

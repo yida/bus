@@ -67,6 +67,29 @@ function saveData(dataset, dtype, path)
   print(filename)
 end
 
+function saveDataMP(dataset, dtype, path)
+  local mp = require 'MessagePack'
+  local Path = path or './'
+  local filecnt = 0
+  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
+  
+  local file = io.open(Path..filename, "w")
+  
+  print(#dataset)
+  for i = 1, #dataset do
+    io.write('\rline #'..i)
+    savedatastr = mp.pack(dataset[i])
+    savedata = serialization.serialize({['index'] = i ,['mp'] = savedatastr})
+    file:write(savedata)
+    file:write('\n')
+  --  print(savedata)
+  end
+  io.write('\n')
+  file:close()
+  print(filename)
+end
+
 function getFileName(path, dtype)
   local file = assert(io.popen('/bin/ls '..path..dtype..'*', 'r'))
   local filename = file:read();
@@ -87,6 +110,36 @@ function loadData(path, dtype, maxlines, Debug)
       io.write('\r', dtype..' '..datacounter)
     end
     dataPoint = serialization.deserialize(line)
+    data[datacounter] = dataPoint
+--    util.ptable(dataPoint)
+    line = file:read();
+    if maxlines and datacounter >= maxlines then break end
+  end
+  if debug == 1 then
+    io.write('\n')
+    print(filename..' '..datacounter)
+  end
+  return data
+end
+
+function loadDataMP(path, dtype, maxlines, Debug)
+  local mp = require 'MessagePack'
+  local filename = getFileName(path, dtype)
+  local file = assert(io.open(filename, 'r'))
+  local line = file:read()
+  local datacounter = 0
+  local data = {}
+  local debug = Debug or 0
+  while line ~= nil do
+--    print(line)
+    datacounter = datacounter + 1
+    if debug == 1 then
+      io.write('\r', dtype..' '..datacounter)
+    end
+    print(line)
+    dataTable = serialization.deserialize(line)
+--    print(dataTable.mp)
+    dataPoint = mp.unpack(dataTable.mp)
     data[datacounter] = dataPoint
 --    util.ptable(dataPoint)
     line = file:read();
