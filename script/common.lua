@@ -154,8 +154,9 @@ end
 
 function loadDataMP(path, dtype, maxlines, Debug)
   local mp = require 'luajit-msgpack-pure'
+--  local mp = require 'luajit-msgpack'
   local filename = getFileName(path, dtype)
-  local file = assert(io.open(filename, 'rb'))
+  local file = assert(io.open(filename, 'r'))
   local content = file:read('*a')
   local datacounter = 0
   local data = {}
@@ -164,16 +165,21 @@ function loadDataMP(path, dtype, maxlines, Debug)
   local current = file:seek()
   local size = file:seek('end')
   file:seek('set', current)
-  print(size)
 
+--  t0 = utime()
   local offset, decoded = mp.unpack(content)
   data[#data+1] = decoded
+--  print(utime() - t0)
 
+  t0 = utime()
   while offset < size do
     offset, decoded = mp.unpack(content, offset)
---    util.ptable(decoded)
     data[#data+1] = decoded
+--    print(offset)
+--    print(utime() - t0)
+    t0 = utime()
   end
+  file:close()
   return data
 end
 

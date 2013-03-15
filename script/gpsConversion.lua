@@ -16,7 +16,9 @@ local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
-local dataset = loadData(datasetpath, 'gps', _, 1)
+local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
+print('done loading data')
 
 earth = Geocentric.new(Constants.WGS84_a(), Constants.WGS84_f())
 coorInit = false
@@ -95,7 +97,7 @@ for i = 1, #dataset do
 --      gpsstr = serialization.serialize(lgps)
 --      print(gpsstr)
       gpsmp = mp.pack(lgps)
---      print(#gpsstr, #gpsmp)
+      print(#gpsstr, #gpsmp)
 --      print(gpsmp:byte(1, #gpsmp))
 --      print(gpsmp)
 --      local lg = mp.unpack(gpsstr)
@@ -105,7 +107,7 @@ end
 
 print(#gpsLocal, dopcounter)
 --saveData(gpsLocal, 'gpsLocal')
-saveDataMP(gpsLocal, 'gpsLocal')
-local dataset = loadDataMP('./', 'gpsLocal', _, 1)
-print(#dataset)
+saveDataMP(gpsLocal, 'gpsLocal', './')
+--local dataset = loadDataMP('./', 'gpsLocal', _, 1)
+--print(#dataset)
 

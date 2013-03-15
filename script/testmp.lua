@@ -4,6 +4,7 @@ require 'common'
 local util = require 'util'
 
 local mp = require'luajit-msgpack-pure'
+--local mp = require'luajit-msgpack'
 --local mp = require'MessagePack'
 
 tbl = {['a'] = 45, ['rt']='4444'}
@@ -13,12 +14,13 @@ str = mp.pack(tbl)
 str1 = mp.pack(tbl1)
 st = str..str1
 offset, decoded = mp.unpack(st)
+t0 = utime()
 print(offset, decoded)
 util.ptable(decoded)
 offset1, decoded = mp.unpack(st, offset)
 print(offset1, decoded)
 util.ptable(decoded)
-
+print(utime()-t0)
 
 --print(str)
 --print(str1)

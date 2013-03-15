@@ -17,16 +17,16 @@ dataStamp = '01010000'
 --dataStamp = '12311916'
 
 
-imuset = parseIMU()
+--imuset = parseIMU()
 --saveDataMP(imuset, 'imuMP', './')
 --print 'prune imu'
 --imusetPruned = pruneTUC(imuset)
 --saveDataMP(imusetPruned, 'imuPrunedMP', './')
 --print(#imuset)
 --
---gpsset = parseGPS()
---saveDataMP(gpsset, 'gps', './')
---print(#gpsset)
+gpsset = parseGPS()
+saveDataMP(gpsset, 'gpsMP', './')
+print(#gpsset)
 --
 --magset = parseMAG()
 --saveDataMP(magset, 'mag', './')
