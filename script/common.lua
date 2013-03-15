@@ -67,6 +67,40 @@ function saveData(dataset, dtype, path)
   print(filename)
 end
 
+function saveCsvMP(dataset, dtype, path)
+  local mp = require 'luajit-msgpack-pure'
+  local Path = path or './'
+  local filecnt = 0
+  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filename = string.format(dtype.."-%s-%d.csv", filetime, filecnt)
+  
+  local file = io.open(Path..filename, "w")
+
+  local data1 = dataset[1]
+  local titles = {}
+  for k, v in pairs(data1) do
+    titles[#titles+1] = k
+  end
+
+  local headstr = ''
+  for i = 1, #titles do
+    headstr = headstr..titles[i]..','
+  end
+  headstr = headstr:sub(1, #headstr-1)
+  file:write(headstr..'\n')
+
+  for i = 1, #dataset do
+    local line = ''
+    for j = 1, #titles do
+      line = line..dataset[i][titles[j]]..','
+    end
+    line = line:sub(1, #line-1)
+    file:write(line..'\n')
+  end
+  file:close()
+  print(filename)
+end
+
 function saveDataMP(dataset, dtype, path)
   local mp = require 'luajit-msgpack-pure'
   local Path = path or './'
@@ -140,26 +174,6 @@ function loadDataMP(path, dtype, maxlines, Debug)
 --    util.ptable(decoded)
     data[#data+1] = decoded
   end
-
---  while line ~= nil do
-----    print(line)
---    datacounter = datacounter + 1
---    if debug == 1 then
---      io.write('\r', dtype..' '..datacounter)
---    end
---    print(line)
---    dataTable = serialization.deserialize(line)
-----    print(dataTable.mp)
---    dataPoint = mp.unpack(dataTable.mp)
---    data[datacounter] = dataPoint
-----    util.ptable(dataPoint)
---    line = file:read();
---    if maxlines and datacounter >= maxlines then break end
---  end
---  if debug == 1 then
---    io.write('\n')
---    print(filename..' '..datacounter)
---  end
   return data
 end
 
