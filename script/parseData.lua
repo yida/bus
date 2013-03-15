@@ -17,32 +17,26 @@ dataStamp = '01010000'
 --dataStamp = '12311916'
 
 
---imuset = parseIMU()
---saveData(imuset, 'imu')
-----print(#imuset)
-
-gpsset = parseGPS()
-saveData(gpsset, 'gps', './')
-for i = 1, #gpsset do
---  if gpsset[i].HDOP ~= nil then
---    print('HDOP '..gpsset[i].HDOP)
---  end
---  if gpsset[i].VDOP ~= nil then
---    print('VDOP '..gpsset[i].VDOP)
---  end
-  if gpsset[i].satellites ~= nil then
-    print('VDOP '..gpsset[i].satellites)
-  end
-
-end
+imuset = parseIMU()
+--saveDataMP(imuset, 'imuMP', './')
+--print 'prune imu'
+--imusetPruned = pruneTUC(imuset)
+--saveDataMP(imusetPruned, 'imuPrunedMP', './')
+--print(#imuset)
+--
+--gpsset = parseGPS()
+--saveDataMP(gpsset, 'gps', './')
 --print(#gpsset)
-
+--
 --magset = parseMAG()
---saveData(magset, 'mag')
-------print(#magset)
-----
+--saveDataMP(magset, 'mag', './')
+--print 'prune mag'
+--magsetPruned = pruneTUC(magset)
+--saveDataMP(magsetPruned, 'magPrunedMP', './')
+--print(#magset)
+------
 --labelset = parseLAB()
---saveData(labelset, 'label')
---------print(#labelset)
+--saveDataMP(labelset, 'label', './')
+--print(#labelset)
 
 

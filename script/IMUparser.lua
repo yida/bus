@@ -44,39 +44,60 @@ end
 function iterateIMU(data, xmlroot)
   local imuset = {}
   local imucounter = 0
---  for i = 0, 0 do -- data.FileNum - 1 do
-  for i = 0, data.FileNum - 1 do
+  for i = 0, 0 do -- data.FileNum - 1 do
+--  for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
     print(fileName)
     local file = assert(io.open(fileName, 'r+'))
-    local line = file:read("*all");
-    local lfpos = string.find(line, '\n', 1)
-    local lastlfpos = 0;
+    local line = file:read("*a");
+    local lastlfpos = string.find(line, '94668', 1)
+    local lfpos = string.find(line, '94668', lastlfpos + 1)
     while lfpos ~= nil do
-      local substr = string.sub(line, lastlfpos + 1, lfpos)
-      --print(substr)
-      --print(string.byte(substr, 1, lfpos - lastlfpos)) 
-      local len = lfpos - lastlfpos - 1 
-      local lencheck = checkLen(44, len) or checkLen(40, len) or checkLen(42, len)
---      print(len, lencheck)
-      if lencheck then
+      local len = lfpos - lastlfpos - 1
+      local substr = string.sub(line, lastlfpos, lfpos-2)
+      if len == 40 then
+--        print(#substr, substr)
         imu = readImuLine(substr, len)
         local datacheck = checkData(imu)
-        if datacheck then
-          local tdata = os.date('*t', imu.timestamp)
-          print(imu.timstamp, imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
---          print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
-          imucounter = imucounter + 1
-          imuset[imucounter] = imu
-        else
-        print('datecheck fail')
-        end
-      else
-      print('lencheck fail '..len)
-      end
+        local tdata = os.date('*t', imu.timestamp)
+        print(imu.timstamp, imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
+--        print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
+        imucounter = imucounter + 1
+        imuset[imucounter] = imu
+
+      end 
       lastlfpos = lfpos
-      lfpos = string.find(line, '\n', lfpos + 1)
+      lfpos = string.find(line, '94668', lastlfpos + 1)
     end
+--    while lfpos ~= nil do
+--      local substr = string.sub(line, lastlfpos + 1, lfpos)
+--      print(substr)
+--      local len = lfpos - lastlfpos 
+--      if len < 40 then
+--        lastlfpos = lfpos
+--        lfpos = string.find(line, '\n', lfpos + 1)
+--        len = lfpos - lastlfpos
+--      end
+--      local lencheck = checkLen(44, len) or checkLen(40, len) or checkLen(42, len)
+----      print(len, lencheck)
+--      if lencheck then
+--        imu = readImuLine(substr, len)
+--        local datacheck = checkData(imu)
+--        if datacheck then
+--          local tdata = os.date('*t', imu.timestamp)
+----          print(imu.timstamp, imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
+----          print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
+--          imucounter = imucounter + 1
+--          imuset[imucounter] = imu
+--        else
+--        print('datecheck fail')
+--        end
+--      else
+--      print('lencheck fail '..len)
+--      end
+--      lastlfpos = lfpos
+--      lfpos = string.find(line, '\n', lfpos + 1)
+--    end
     file:close();
   end
   return imuset
