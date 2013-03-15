@@ -68,22 +68,18 @@ function saveData(dataset, dtype, path)
 end
 
 function saveDataMP(dataset, dtype, path)
-  local mp = require 'MessagePack'
+  local mp = require 'luajit-msgpack-pure'
   local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
-  local file = io.open(Path..filename, "w")
+  local file = io.open(Path..filename, "wb")
   
-  print(#dataset)
   for i = 1, #dataset do
     io.write('\rline #'..i)
-    savedatastr = mp.pack(dataset[i])
-    savedata = serialization.serialize({['index'] = i ,['mp'] = savedatastr})
+    savedata = mp.pack(dataset[i])
     file:write(savedata)
-    file:write('\n')
-  --  print(savedata)
   end
   io.write('\n')
   file:close()
@@ -123,32 +119,47 @@ function loadData(path, dtype, maxlines, Debug)
 end
 
 function loadDataMP(path, dtype, maxlines, Debug)
-  local mp = require 'MessagePack'
+  local mp = require 'luajit-msgpack-pure'
   local filename = getFileName(path, dtype)
-  local file = assert(io.open(filename, 'r'))
-  local line = file:read()
+  local file = assert(io.open(filename, 'rb'))
+  local content = file:read('*a')
   local datacounter = 0
   local data = {}
   local debug = Debug or 0
-  while line ~= nil do
+
+  local current = file:seek()
+  local size = file:seek('end')
+  file:seek('set', current)
+  print(size)
+
+  local offset, decoded = mp.unpack(content)
+  data[#data+1] = decoded
+
+  while offset < size do
+    offset, decoded = mp.unpack(content, offset)
+--    util.ptable(decoded)
+    data[#data+1] = decoded
+  end
+
+--  while line ~= nil do
+----    print(line)
+--    datacounter = datacounter + 1
+--    if debug == 1 then
+--      io.write('\r', dtype..' '..datacounter)
+--    end
 --    print(line)
-    datacounter = datacounter + 1
-    if debug == 1 then
-      io.write('\r', dtype..' '..datacounter)
-    end
-    print(line)
-    dataTable = serialization.deserialize(line)
---    print(dataTable.mp)
-    dataPoint = mp.unpack(dataTable.mp)
-    data[datacounter] = dataPoint
---    util.ptable(dataPoint)
-    line = file:read();
-    if maxlines and datacounter >= maxlines then break end
-  end
-  if debug == 1 then
-    io.write('\n')
-    print(filename..' '..datacounter)
-  end
+--    dataTable = serialization.deserialize(line)
+----    print(dataTable.mp)
+--    dataPoint = mp.unpack(dataTable.mp)
+--    data[datacounter] = dataPoint
+----    util.ptable(dataPoint)
+--    line = file:read();
+--    if maxlines and datacounter >= maxlines then break end
+--  end
+--  if debug == 1 then
+--    io.write('\n')
+--    print(filename..' '..datacounter)
+--  end
   return data
 end
 

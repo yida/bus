@@ -50,7 +50,7 @@ for i = 1, #dataset do
     if dataset[i].PDOP ~= nil then
       PDOP = tonumber(dataset[i].PDOP)
     end
-    print(HDOP, VDOP, PDOP)
+--    print(HDOP, VDOP, PDOP)
 
     if dataset[i].height ~= nil and dataset[i].height ~= '' then
       height = dataset[i].height
@@ -94,17 +94,18 @@ for i = 1, #dataset do
       gpsLocal[#gpsLocal+1] = lgps
 --      gpsstr = serialization.serialize(lgps)
 --      print(gpsstr)
---      gpsmp = mp.pack(lgps)
+      gpsmp = mp.pack(lgps)
 --      print(#gpsstr, #gpsmp)
---      print(gpsstr:byte(1, #gpsstr))
+--      print(gpsmp:byte(1, #gpsmp))
+--      print(gpsmp)
 --      local lg = mp.unpack(gpsstr)
     end
   end
 end
 
 print(#gpsLocal, dopcounter)
-saveData(gpsLocal, 'gpsLocal')
---saveDataMP(gpsLocal, 'gpsLocal')
---local dataset = loadDataMP('./', 'gpsLocal', _, 1)
---print(#dataset)
+--saveData(gpsLocal, 'gpsLocal')
+saveDataMP(gpsLocal, 'gpsLocal')
+local dataset = loadDataMP('./', 'gpsLocal', _, 1)
+print(#dataset)
 
