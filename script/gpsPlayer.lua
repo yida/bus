@@ -10,7 +10,8 @@ local serialization = require('serialization');
 
 local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/010213180247/'
-local dataset = loadData(datasetpath, 'gpsLocal', _, 1)
+local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
