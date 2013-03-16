@@ -1,15 +1,22 @@
 --require 'torch-load'
 --require 'gnuplot-load'
 --
+require 'include'
+local util = require 'util'
 require 'torch'
 --local ffi = require 'ffi'
 --require 'poseUtils'
 
-state = torch.DoubleTensor(13, 1):fill(0)
-print(state)
+state = torch.DoubleTensor(13):fill(0)
+util.ptorch(state)
+--print(state)
+
 P = torch.DoubleTensor(12,12):eye(12):mul(1000)
-print(torch.typename(P))
-print(tostring(P))
+Q = torch.DoubleTensor(10, 1):randperm(10)
+util.ptorch(Q)
+util.ptorch(P)
+--print(torch.typename(P))
+--print(tostring(P))
 
 --Q = torch.eye(12):mul(90)
 ----print(torch.sqrt((P + Q):mul(2*12)))
@@ -30,11 +37,12 @@ print(tostring(P))
 --print(d)
 --
 --
---A = torch.Tensor({{0.1622,   0.6020,   0.4505,   0.8258,   0.1067},
---   {0.7943,   0.2630,   0.0838,   0.5383,   0.9619},
---   {0.3112,   0.6541,   0.2290,   0.9961,   0.0046},
---   {0.5285,   0.6892,   0.9133,   0.0782,   0.7749},
---   {0.1656,   0.7482,   0.1524,   0.4427,   0.8173}})
+A = torch.DoubleTensor({{0.1622,   0.6020,   0.4505,   0.8258,   0.1067},
+   {0.7943,   0.2630,   0.0838,   0.5383,   0.9619},
+   {0.3112,   0.6541,   0.2290,   0.9961,   0.0046},
+   {0.5285,   0.6892,   0.9133,   0.0782,   0.7749},
+   {0.1656,   0.7482,   0.1524,   0.4427,   0.8173}})
+util.ptorch(A)
 --print(torch.det(A))
 ----print(d[0])
 ----print(type(tble))
