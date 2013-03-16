@@ -68,7 +68,6 @@ function saveData(dataset, dtype, path)
 end
 
 function saveCsvMP(dataset, dtype, path)
-  local mp = require 'luajit-msgpack-pure'
   local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
@@ -107,9 +106,9 @@ function saveDataMP(dataset, dtype, path)
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
-  
   local file = io.open(Path..filename, "wb")
   
+  print(Path..filename)
   for i = 1, #dataset do
     io.write('\rline #'..i)
     savedata = mp.pack(dataset[i])
@@ -153,8 +152,6 @@ function loadData(path, dtype, maxlines, Debug)
 end
 
 function loadDataMP(path, dtype, maxlines, Debug)
---  local mp = require 'luajit-msgpack-pure'
---  local mp = require 'luajit-msgpack'
   local mp = require 'MessagePack'
   local filename = getFileName(path, dtype)
   local file = assert(io.open(filename, 'r'))
@@ -170,25 +167,9 @@ function loadDataMP(path, dtype, maxlines, Debug)
   t = mp.unpacker( content )
   local idx, val = t()
   while idx ~= nil do
---    t0 = utime()
---    print(idx)
     idx, val = t()
     data[#data+1] = val
---    print(utime() - t0)
   end
-----  t0 = utime()
---  local offset, decoded = mp.unpack(content)
---  data[#data+1] = decoded
-----  print(utime() - t0)
---
---  t0 = utime()
---  while offset < size do
---    offset, decoded = mp.unpack(content, offset)
---    data[#data+1] = decoded
---    print(offset)
---    print(utime() - t0)
---    t0 = utime()
---  end
   file:close()
   return data
 end

@@ -1,4 +1,4 @@
-require 'torch-load'
+require 'torch'
 
 function pdcheck(A)
   local e = torch.symeig(A)
@@ -14,7 +14,7 @@ function cholesky(A)
   -- http://rosettacode.org/wiki/Cholesky_decomposition
   pdcheck(A)
   local m = A:size(1)
-  local L = torch.Tensor(A:size(1), A:size(1)):fill(0)
+  local L = torch.DoubleTensor(A:size(1), A:size(1)):fill(0)
   for i = 1, m do
     for k = 1, i do
       local sum = 0
@@ -46,8 +46,8 @@ function GaussianPDF(x, mean, cov)
 --  print(mean)
 --  print(cov)
   local vectorSize = x:size(1)
-  local Diff = torch.Tensor(vectorSize,1):copy(x - mean)
-  local Cov = torch.Tensor(vectorSize, vectorSize):copy(cov)
+  local Diff = torch.DoubleTensor(vectorSize,1):copy(x - mean)
+  local Cov = torch.DoubleTensor(vectorSize, vectorSize):copy(cov)
   local exp = torch.exp((Diff:t() * torch.inverse(Cov) * Diff):mul(-0.5))
   local detCov = torch.det(Cov)
   local const = (2 * math.pi)^(-vectorSize/2) / torch.sqrt(detCov)

@@ -8,7 +8,7 @@ require 'GPSUtils'
 
 local serialization = require('serialization');
 
-local datasetpath = '../data/150213185940/'
+local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
 local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
@@ -22,6 +22,10 @@ local vmax = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
+--    if dataset[i].satellites ~= nil then
+--      print(dataset[i].satellites)
+--      counter = counter + 1
+--    end
         counter = counter + 1 
         if type(dataset[i].VDOP) == 'string' then
           dataset[i].VDOP = tonumber(dataset[i].VDOP)
@@ -32,13 +36,13 @@ for i = 1, #dataset do
         if HDOP > hmax then hmax = HDOP end
         if VDOP < vmin then vmin = VDOP end
         if VDOP > vmax then vmax = VDOP end
-        print('dxdy '..math.sqrt(HDOP^2/2), 'dz '..math.sqrt(VDOP^2))
-         
+--        print('dxdy '..math.sqrt(HDOP^2/2), 'dz '..math.sqrt(VDOP^2))
+        print(dataset[i].satellites)        
         pos = vector.new({dataset[i].x, dataset[i].y, HDOP})
         ucm.set_ukf_counter(counter)
         ucm.set_ukf_pos(pos)
 --      usleep(0.1)
   end
 end
-
-print(hmin, hmax, vmin, vmax)
+print(counter)
+--print(hmin, hmax, vmin, vmax)

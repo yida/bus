@@ -28,12 +28,12 @@ dataStamp = '01010000'
 --saveDataMP(gpsset, 'gpsMP', './')
 --print(#gpsset)
 --
-magset = parseMAG()
-saveDataMP(magset, 'mag', './')
-print 'prune mag'
-magsetPruned = pruneTUC(magset)
-saveDataMP(magsetPruned, 'magPrunedMP', './')
-print(#magset)
+--magset = parseMAG()
+--saveDataMP(magset, 'mag', './')
+--print 'prune mag'
+--magsetPruned = pruneTUC(magset)
+--saveDataMP(magsetPruned, 'magPrunedMP', './')
+--print(#magset)
 ------
 --labelset = parseLAB()
 --saveDataMP(labelset, 'labelMP', './')

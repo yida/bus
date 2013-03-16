@@ -1,5 +1,5 @@
 require 'include'
-require 'torch-load'
+require 'torch'
 
 require 'GeographicLib'
 
@@ -35,7 +35,7 @@ end
 function global2metric(gps)
   local lat, lnt = nmea2degree(gps.latitude, gps.northsouth, gps.longtitude, gps.eastwest)
   local gpspos = GeographicLib.Forward(lat, lnt, gps.height)
-  local pos = torch.Tensor({gpspos.x, gpspos.y, gpspos.z})
+  local pos = torch.DoubleTensor({gpspos.x, gpspos.y, gpspos.z})
   return pos
 end
 

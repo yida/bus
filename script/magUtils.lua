@@ -2,7 +2,7 @@ require 'include'
 require 'common'
 require 'poseUtils'
 
-require 'torch-load'
+require 'torch'
 
 function magCorrect(mag)
   local m = torch.DoubleTensor(3):fill(0)

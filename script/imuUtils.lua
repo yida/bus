@@ -1,12 +1,12 @@
-require 'torch-load'
+require 'torch'
 
 function imuCorrent(imu, Bias)
-  local ac = torch.Tensor(3, 1):copy(-Bias)
+  local ac = torch.DoubleTensor(3, 1):copy(-Bias)
 
   ac[1] = ac[1] - imu.ax
   ac[2] = ac[2] + imu.ay
   ac[3] = ac[3] - imu.az
-  local gyr = torch.Tensor(3, 1):fill(0)
+  local gyr = torch.DoubleTensor(3, 1):fill(0)
   gyr[1] = -imu.wr
   gyr[2] = imu.wp
   gyr[3] = -imu.wy

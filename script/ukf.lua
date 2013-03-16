@@ -5,6 +5,7 @@ require 'ucm'
 require 'include'
 require 'common'
 local serialization = require('serialization');
+local mp = require 'MessagePack'
 
 
 --local datasetpath = '../data/010213180247/'
@@ -12,21 +13,21 @@ local serialization = require('serialization');
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
-local datasetpath = '../data/150213185940/'
+local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/'
 --local datasetpath = '../'
-local dataset = loadData(datasetpath, 'measurement')
+local dataset = loadDataMP(datasetpath, 'measurementMP')
 
-local sendState = true
-local saveState = false
+local sendState = false
+local saveState = true
 if saveState then
   local Path = path or './'
-  local dtype = 'state150213185940'
+  local dtype = 'stateMP'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
-  file = io.open(Path..filename, "w")
+  file = io.open(Path..filename, "wb")
 end 
 
 
@@ -51,7 +52,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
---        print(KGainCount)
+        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)
@@ -60,10 +61,8 @@ for i = 1, #dataset do
               ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
               ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
               ['type'] = 'state', ['timestamp'] = tstep}
-        saveData = serialization.serialize(st)
-        print(saveData)
+        saveData = mp.pack(st)
         file:write(saveData)
-        file:write('\n')
   --    sdata[#sdata + 1] = st
       end
    
@@ -83,5 +82,4 @@ end
 if saveState then
   file:close()
 end
---saveData(sdata, 'state', dataPath)
 

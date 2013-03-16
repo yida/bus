@@ -1,4 +1,4 @@
-require 'torch-load'
+require 'torch'
 
 function QuatCompare(q1, q2)
   local e1 = Quat2Vector(q1)
@@ -9,7 +9,7 @@ end
 
 function Vector2Quat(W, dt)
   local w = torch.DoubleTensor(3):copy(W) 
-  local dq = torch.Tensor(4):fill(0)
+  local dq = torch.DoubleTensor(4):fill(0)
   local wNorm = w:norm()
   if wNorm < 1e-6 then
     dq[1] = 1
@@ -27,10 +27,10 @@ function Vector2Quat(W, dt)
 end
 
 function Quat2Vector(Q)
-  local q = torch.Tensor(4):copy(Q)
+  local q = torch.DoubleTensor(4):copy(Q)
 --  if q[1] > 1 then q[1] = 1 end
   local alphaW = 2*math.acos(q[1])
-  local v = torch.Tensor(3):fill(0)
+  local v = torch.DoubleTensor(3):fill(0)
 --  print('q', math.sin(alphaW/2) * alphaW)
 --  print(q)
   if alphaW > 1e-6 then
@@ -42,15 +42,15 @@ function Quat2Vector(Q)
 end
 
 function QuatInv(Q)
-  local q = torch.Tensor(4):copy(Q)
+  local q = torch.DoubleTensor(4):copy(Q)
   local rt = q[1]^2 + q[2]^2 + q[3]^2 + q[4]^2
-  return torch.Tensor({q[1]/rt, -q[2]/rt,
+  return torch.DoubleTensor({q[1]/rt, -q[2]/rt,
                             -q[3]/rt, -q[4]/rt})
 end
 
 function Quat2R(qin)
-  local R = torch.Tensor(3,3):fill(0)
-  local q = torch.Tensor(4):copy(qin)
+  local R = torch.DoubleTensor(3,3):fill(0)
+  local q = torch.DoubleTensor(4):copy(qin)
 
   R[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
   R[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
@@ -67,7 +67,7 @@ end
 
 function R2Quat(Rin)
   local R = torch.DoubleTensor(3, 3):copy(Rin)
-  local q = torch.Tensor(4)
+  local q = torch.DoubleTensor(4)
   local tr = R[1][1] + R[2][2] + R[3][3]
   if tr > 0 then
     local S = math.sqrt(tr + 1.0) * 2
@@ -98,9 +98,9 @@ function R2Quat(Rin)
 end
 
 function QuatMul2(Q1, Q2)
-  local q = torch.Tensor(4)
-  local q1 = torch.Tensor(4):copy(Q1)
-  local q2 = torch.Tensor(4):copy(Q2)
+  local q = torch.DoubleTensor(4)
+  local q1 = torch.DoubleTensor(4):copy(Q1)
+  local q2 = torch.DoubleTensor(4):copy(Q2)
   q[1] = q2[1]*q1[1]-q2[2]*q1[2]-q2[3]*q1[3]-q2[4]*q1[4]
   q[2] = q2[1]*q1[2]+q2[2]*q1[1]+q2[3]*q1[4]-q2[4]*q1[3]
   q[3] = q2[1]*q1[3]-q2[2]*q1[4]+q2[3]*q1[1]+q2[4]*q1[2]
@@ -109,9 +109,9 @@ function QuatMul2(Q1, Q2)
 end
 
 function QuatMul(Q1, Q2)  -- q = q1 x q2
-  local q = torch.Tensor(4)
-  local q1 = torch.Tensor(4):copy(Q1)
-  local q2 = torch.Tensor(4):copy(Q2)
+  local q = torch.DoubleTensor(4)
+  local q1 = torch.DoubleTensor(4):copy(Q1)
+  local q2 = torch.DoubleTensor(4):copy(Q2)
   local a1 = q1[1]
   local b1 = q1[2]
   local c1 = q1[3]
@@ -133,7 +133,7 @@ function R2rpy(Rin)
   local y = math.atan2(R[2][1], R[1][1])
   local p = math.atan2(-R[3][1], math.sqrt(R[3][2]^2+R[3][3]^2))
   local r = math.atan2(R[3][2], R[3][3])
-  local rpy = torch.Tensor({r, p, y})
+  local rpy = torch.DoubleTensor({r, p, y})
   return rpy
 end
 
@@ -142,8 +142,8 @@ function rpy2Quat(rpyin)
 end
 
 function Quat2rpy(Qin)
-  local q = torch.Tensor(4):copy(Qin)
-  local rpy = torch.Tensor(3):fill(0)
+  local q = torch.DoubleTensor(4):copy(Qin)
+  local rpy = torch.DoubleTensor(3):fill(0)
   rpy[1] = math.atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]))
   rpy[2] = math.asin(2*(q[1]*q[3]-q[4]*q[2]))
   rpy[3] = math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
@@ -152,7 +152,7 @@ end
 
 function rotX(gamma)
   -- http://planning.cs.uiuc.edu/node102.html
-  local R = torch.Tensor(3,3):fill(0)
+  local R = torch.DoubleTensor(3,3):fill(0)
   R[2][2] = math.cos(gamma)
   R[3][2] = math.sin(gamma) 
   R[1][1] = 1
@@ -163,7 +163,7 @@ end
 
 function rotY(beta)
   -- http://planning.cs.uiuc.edu/node102.html
-  local R = torch.Tensor(3,3):fill(0)
+  local R = torch.DoubleTensor(3,3):fill(0)
   R[1][1] = math.cos(beta)
   R[1][3] = math.sin(beta) 
   R[2][2] = 1
@@ -174,7 +174,7 @@ end
 
 function rotZ(alpha)
   -- http://planning.cs.uiuc.edu/node102.html
-  local R = torch.Tensor(3,3):fill(0)
+  local R = torch.DoubleTensor(3,3):fill(0)
   R[1][1] = math.cos(alpha)
   R[2][1] = math.sin(alpha)
   R[1][2] = -math.sin(alpha)
@@ -185,7 +185,7 @@ end
 
 function rpy2R(rpy)
   -- http://planning.cs.uiuc.edu/node102.html
-  local R = torch.Tensor(3,3):fill(0)
+  local R = torch.DoubleTensor(3,3):fill(0)
   local alpha = rpy[3]
   local beta = rpy[2]
   local gamma = rpy[1]
@@ -215,7 +215,7 @@ function cholesky(A)
   -- http://rosettacode.org/wiki/Cholesky_decomposition
   pdcheck(A)
   local m = A:size(1)
-  local L = torch.Tensor(A:size(1), A:size(1)):fill(0)
+  local L = torch.DoubleTensor(A:size(1), A:size(1)):fill(0)
   for i = 1, m do
     for k = 1, i do
       local sum = 0
@@ -243,8 +243,8 @@ function det(A)
 end
 
 function QuatMean(QMax, qInit)
-  local qIter = torch.Tensor(4):copy(qInit)
-  local e = torch.Tensor(3, QMax:size(2)):fill(0)
+  local qIter = torch.DoubleTensor(4):copy(qInit)
+  local e = torch.DoubleTensor(3, QMax:size(2)):fill(0)
   local iter = 0
   local diff = 0
   repeat

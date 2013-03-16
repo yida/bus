@@ -3,23 +3,20 @@ require 'ucm'
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch-load'
-
-local serialization = require('serialization');
-
+require 'torch'
 
 local datasetpath = '../data/010213180247/'
 local datasetpath = './'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'obs', _, 1)
---local dataset = loadData(datasetpath, 'state3', _, 1)
+--local dataset = loadData(datasetpath, 'obs', _, 1)
+local dataset = loadDataMP(datasetpath, 'stateMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
 for i = 1, #dataset do
   if dataset[i].type == 'state' then
     local tstep = dataset[i].timestamp
-    local vec = torch.Tensor({dataset[i].e1, dataset[i].e2, dataset[i].e3})
+    local vec = torch.DoubleTensor({dataset[i].e1, dataset[i].e2, dataset[i].e3})
     local Q = Vector2Quat(vec)
     
     counter = counter + 1 

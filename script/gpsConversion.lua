@@ -16,7 +16,7 @@ local datasetpath = '../data/150213185940/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
-local datasetpath = './'
+--local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 --local dataset = loadData(datasetpath, 'gps', _, 1)
 print('done loading data')
@@ -31,6 +31,7 @@ local dopcounter = 0
 local HDOP = '3'
 local VDOP = '3'
 local PDOP = '3'
+local satellites = 4
 local height = 0
 local heightInit = false
 local latitude = 0
@@ -52,6 +53,9 @@ for i = 1, #dataset do
     end
     if dataset[i].PDOP ~= nil then
       PDOP = tonumber(dataset[i].PDOP)
+    end
+    if dataset[i].satellites ~= nil then
+      satellites = tonumber(dataset[i].satellites)
     end
 --    print(HDOP, VDOP, PDOP)
 
@@ -95,6 +99,7 @@ for i = 1, #dataset do
       lgps.HDOP = HDOP
       lgps.VDOP = VDOP
       lgps.PDOP = PDOP
+      lgps.satellites = satellites
       gpsLocal[#gpsLocal+1] = lgps
 --      gpsstr = serialization.serialize(lgps)
 --      print(gpsstr)
