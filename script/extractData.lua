@@ -37,7 +37,7 @@ for i = 1, #dataset do
   end
 end
 
-saveData(gps, 'gps', './')
-saveData(imu, 'imuPruned', './')
-saveData(mag, 'magPruned', './')
-saveData(label, 'label', './')
+saveDataMP(gps, 'gpsMP', './')
+saveDataMP(imu, 'imuPrunedMP', './')
+saveDataMP(mag, 'magPrunedMP', './')
+saveDataMP(label, 'labelMP', './')
