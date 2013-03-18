@@ -1,4 +1,4 @@
-require 'ucm'
+local ucm = require 'ucm'
 
 require 'include'
 require 'common'
