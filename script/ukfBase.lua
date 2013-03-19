@@ -231,12 +231,24 @@ function measurementGPSUpdate(gps)
 
   gpspos =torch.DoubleTensor({gps.x, gps.y, gps.z})
   -- require DOP to adjust measurement cov
+  local HDOP = gps.HDOP
+  if HDOP > 1.4 then HDOP = 1.4 end
+  local VDOP = gps.VDOP
+  if VDOP > 2.0 then HDOP = 2.0 end
+  local PDOP = gps.PDOP
+  local Satellites = gps.satellites
   gpsdop = torch.DoubleTensor({gps.HDOP, gps.VDOP, gps.PDOP})
+  local pDOP = 0.117 * Satellites - 0.37
+  if pDOP < 0 then pDOP = 0 end
+  if pDOP > 1 then pDOP = 1 end
+  local rHDOP = ( math.sqrt(HDOP^2/2) * (1 - pDOP) )^2
+  local rVDOP = ( VDOP * (1 - pDOP) )^2
+  local rPDOP = ( PDOP * (1 - pDOP) )^2
+
   local R = torch.DoubleTensor(3,3):eye(3, 3):mul(0.07^2)
-  R[1][1] = gpsdop[1]^2 / 2 / 40 
-  R[2][2] = gpsdop[1]^2 / 2 / 40
-  R[3][3] = gpsdop[2]^2 / 40
---  print(R[1][1], R[2][2], R[3][3])
+  R[1][1] = rHDOP / 5
+  R[2][2] = rHDOP / 5
+  R[3][3] = rVDOP / 2.5
 
   if not processInit then return false end
 

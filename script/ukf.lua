@@ -1,6 +1,6 @@
 require 'ukfBase'
 
-require 'ucm'
+local ucm = require 'ucm'
 
 require 'include'
 require 'common'
@@ -18,8 +18,8 @@ local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../'
 local dataset = loadDataMP(datasetpath, 'measurementMP')
 
-local sendState = false
-local saveState = true
+local sendState = true
+local saveState = false
 if saveState then
   local Path = path or './'
   local dtype = 'stateMP'

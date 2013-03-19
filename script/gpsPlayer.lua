@@ -6,8 +6,6 @@ require 'poseUtils'
 require 'torch'
 require 'GPSUtils'
 
-local serialization = require('serialization');
-
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = './'
@@ -35,15 +33,20 @@ for i = 1, #dataset do
         PDOP = dataset[i].PDOP
         Satellites = dataset[i].satellites
         -- HACK: map satellite nums to DOP likelihood
-        pDOP = 0.175 * Satellites - 0.6
+--        pDOP = 0.175 * Satellites - 0.6
+        pDOP = 0.117 * Satellites - 0.37
         if pDOP < 0 then pDOP = 0 end
         if pDOP > 1 then pDOP = 1 end
+        rHDOP = ( math.sqrt(HDOP^2/2) * (1 - pDOP) )^2
+        rVDOP = ( VDOP * (1 - pDOP) )^2
+        rPDOP = ( PDOP * (1 - pDOP) )^2
         if HDOP < hmin then hmin = HDOP end
         if HDOP > hmax then hmax = HDOP end
         if VDOP < vmin then vmin = VDOP end
         if VDOP > vmax then vmax = VDOP end
         
-        print('HDOP '..HDOP, 'VDOP '..VDOP, 'PDOP '..PDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
+--        print('HDOP '..HDOP, 'VDOP '..VDOP, 'PDOP '..PDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
+        print('HDOP '..rHDOP, 'VDOP '..rVDOP, 'PDOP '..rPDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
 --        print('dxdy '..math.sqrt(HDOP^2/2), 'dz '..math.sqrt(VDOP^2))
 --        print(dataset[i].satellites)        
         pos = vector.new({dataset[i].x, dataset[i].y, HDOP})
