@@ -1,11 +1,13 @@
 clear all;
 close all;
 %/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util/
+if ismac
 addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab/util') )
 addpath( genpath('/Users/Yida/Projects/UPennTHOR/Tools/Matlab') )
-%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
-%addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
-
+else
+addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab/util') )
+addpath( genpath('/home/yida/UPennTHOR/Tools/Matlab') )
+end
 
 h = {};
 h.tid = 1;

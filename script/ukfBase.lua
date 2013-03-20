@@ -87,6 +87,7 @@ function processUpdate(tstep, imu)
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
+  print(dtime)
   local res = GenerateSigmaPoints(dtime)
   if res == false then return false end
   res = ProcessModel(dtime)
@@ -232,7 +233,7 @@ function measurementGPSUpdate(gps)
   gpspos =torch.DoubleTensor({gps.x, gps.y, gps.z})
   -- require DOP to adjust measurement cov
   local HDOP = gps.HDOP
-  if HDOP > 1.4 then HDOP = 1.4 end
+  if HDOP > 1.0 then HDOP = 1.0 end
   local VDOP = gps.VDOP
   if VDOP > 2.0 then HDOP = 2.0 end
   local PDOP = gps.PDOP

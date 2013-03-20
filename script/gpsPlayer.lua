@@ -45,7 +45,7 @@ for i = 1, #dataset do
         if VDOP < vmin then vmin = VDOP end
         if VDOP > vmax then vmax = VDOP end
         
---        print('HDOP '..HDOP, 'VDOP '..VDOP, 'PDOP '..PDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
+        print('HDOP '..HDOP, 'VDOP '..VDOP, 'PDOP '..PDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
         print('HDOP '..rHDOP, 'VDOP '..rVDOP, 'PDOP '..rPDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
 --        print('dxdy '..math.sqrt(HDOP^2/2), 'dz '..math.sqrt(VDOP^2))
 --        print(dataset[i].satellites)        
