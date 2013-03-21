@@ -18,8 +18,8 @@ local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../'
 local dataset = loadDataMP(datasetpath, 'measurementMP')
 
-local sendState = true
-local saveState = false
+local sendState = false
+local saveState = true
 if saveState then
   local Path = path or './'
   local dtype = 'stateMP'

@@ -1,5 +1,5 @@
 require 'include'
-require 'torch-load'
+require 'torch'
 
 local ffi = require 'ffi'
 --local Z = require 'Z'

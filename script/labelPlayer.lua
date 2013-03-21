@@ -3,18 +3,32 @@ require 'ucm'
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch-load'
+require 'torch'
 require 'GPSUtils'
 
-local serialization = require('serialization');
-
-local datasetpath = '../data/150213185940/'
+local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
-local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'labelMP', _, 1)
+--local datasetpath = './'
+--local dataset = loadDataMP(datasetpath, 'labelMP', _, 1)
+--
+--local newdataset = {}
+--local i = 1
+--while i <= #dataset do
+----for i = 1, #dataset do
+--  if dataset[i].type == 'label' then
+--    if dataset[i].timestamp > 946686893.57 and dataset[i].timestamp < 946686897.74 then
+--      print(dataset[i].timestamp, dataset[i].value)
+--    else
+--      newdataset[#newdataset+1] = dataset[i]
+--    end 
+--  end
+--  i = i + 1
+--end
+--
+--print(#newdataset)
+--saveDataMP(newdataset, 'labelCleanMP', datasetpath)
+local dataset = loadDataMP(datasetpath, 'labelCleanMP', _, 1)
 
 for i = 1, #dataset do
-  if dataset[i].type == 'label' then
-    util.ptable(dataset[i])
-  end
+  print(dataset[i].timestamp, dataset[i].value)
 end

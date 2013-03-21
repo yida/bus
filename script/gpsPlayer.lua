@@ -8,8 +8,8 @@ require 'GPSUtils'
 
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
---local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpslabel', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -45,14 +45,16 @@ for i = 1, #dataset do
         if VDOP < vmin then vmin = VDOP end
         if VDOP > vmax then vmax = VDOP end
         
-        print('HDOP '..HDOP, 'VDOP '..VDOP, 'PDOP '..PDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
-        print('HDOP '..rHDOP, 'VDOP '..rVDOP, 'PDOP '..rPDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
+        print(dataset[i].timestamp, dataset[i].latitude, dataset[i].longtitude)
+--        print('HDOP '..rHDOP, 'VDOP '..rVDOP, 'PDOP '..rPDOP, 'Satellites '..Satellites, 'DOP Likelihood '..pDOP)
 --        print('dxdy '..math.sqrt(HDOP^2/2), 'dz '..math.sqrt(VDOP^2))
 --        print(dataset[i].satellites)        
         pos = vector.new({dataset[i].x, dataset[i].y, HDOP})
         ucm.set_ukf_counter(counter)
         ucm.set_ukf_pos(pos)
 --      usleep(0.1)
+  elseif dataset[i].type == 'label' then
+    print(dataset[i].timestamp, dataset[i].value)
   end
 end
 print(counter)
