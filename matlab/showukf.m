@@ -18,12 +18,12 @@ h.ukf  = shm(sprintf('ucmUkf%d%d%s',  h.tid, h.pid, h.user));
 h.label  = shm(sprintf('ucmLabel%d%d%s',  h.tid, h.pid, h.user));
 
 rpy = zeros(1, 3);
-counter = 0;
-labelcounter = 0;
+counter = h.ukf.get_counter();
+labelcounter = h.label.get_counter();
 dcounter = 0;
  while (1)
      cnt = h.ukf.get_counter();
-     labelcnt = h.label.get_counter(); 
+     labelcnt = h.label.get_counter();
      if cnt ~= counter
         counter = cnt;
         dcounter = dcounter + 1;
@@ -36,7 +36,7 @@ dcounter = 0;
         R = rotz(yaw)*roty(pitch)*rotx(roll);
         tR = rotz(trpy(3))*roty(trpy(2))*rotx(trpy(1));
 %        plot3(pos(1), pos(2), pos(3)*100, '.');
-        plot(pos(1), pos(2), 'b.');
+        plot(pos(1), pos(2), 'm.');
         hold on;
         grid on;
         axis equal;
@@ -47,15 +47,18 @@ dcounter = 0;
 %         subplot(1,2,2)jkk
 %         rotplotT(tR(1:3, 1:3), tstep);
      end
-%      if labelcnt ~= labelcounter
-%         value = h.label.get_value();
-%         if value == 1
-%             plot(pos(1), pos(2), 'b^');
-%         elseif value == 2
-%             plot(pos(1), pos(2), 'bv');
-%         end
-%         labelcounter = labelcnt;
-%      end
+     if labelcnt ~= labelcounter
+        value = h.label.get_value();
+        if value == 1
+            plot(pos(1), pos(2), 'b*');
+        elseif value == 2
+            plot(pos(1), pos(2), 'b*');
+        end
+        labelcounter = labelcnt;
+%         hold on;
+%         grid on;
+%         axis equal;
+     end
      drawnow
  end
 

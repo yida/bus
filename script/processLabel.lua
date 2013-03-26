@@ -1,7 +1,7 @@
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch-load'
+require 'torch'
 
 local util = require 'util'
 
@@ -98,12 +98,13 @@ function splitObservation(obs, Debug)
   end
 end
 
-local datasetpath = '../data/150213185940/'
-local label = loadData(datasetpath, 'label', _, 1)
-local state = loadData(datasetpath, 'state150213185940', _, 1)
+local datasetpath = '../data/150213185940.20/'
+local label = loadDataMP(datasetpath, 'labelCleanMP', _, 1)
+--local state = loadDataMP(datasetpath, 'stateMP', _, 1)
+local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 --
 labelstamps = extractLabel(label)
 obs = applyLabel(state, labelstamps)
 obsSeq = splitObservation(obs)
 
-saveData(obs, 'obs', './')
+saveDataMP(obs, 'gpswlabelMP', datasetpath)

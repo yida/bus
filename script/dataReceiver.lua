@@ -7,10 +7,9 @@ package.cpath = home..'/Lib/?.so;'..package.cpath
 
 require 'include'
 require 'poseUtils'
-require 'torch-load'
+require 'torch'
 require 'magUtils'
 require 'common'
-torch.setdefaulttensortype('torch.DoubleTensor')
 
 
 local ffi = require 'ffi'
@@ -201,6 +200,7 @@ while (1) do
       elseif rawdata[4] == 34 and imuFlag then
         data = extractImu(rawdata, size)
         data.timestamp = timestamp
+        print(data.timestamp, data.tuc)
         gyro[1] = data.r
         gyro[2] = data.p
         gyro[3] = -data.y
@@ -211,18 +211,18 @@ while (1) do
       elseif rawdata[4] == 35 and magFlag then
         data = extractMag(rawdata, size)
 
-        magv = torch.DoubleTensor({data.y, data.x, -data.z})
-        magval = magCalibrated(magv)
-        print(magv)
-        print(magval)
-        magvalue = magTiltCompensate(magv, acc)
-        print(magvalue)
---        local heading = Mag2Heading(magvalue)
-        local heading = Mag2Heading(magval)
-        local heading1 = Mag2Heading(magvalue)
-        print('w/o tilt compensation '..heading * 180 / math.pi)
-        print('w tilt compensation '..heading1 * 180 / math.pi)
-        data.timestamp = timestamp
+--        magv = torch.DoubleTensor({data.y, data.x, -data.z})
+--        magval = magCalibrated(magv)
+--        print(magv)
+--        print(magval)
+--        magvalue = magTiltCompensate(magv, acc)
+--        print(magvalue)
+----        local heading = Mag2Heading(magvalue)
+--        local heading = Mag2Heading(magval)
+--        local heading1 = Mag2Heading(magvalue)
+--        print('w/o tilt compensation '..heading * 180 / math.pi)
+--        print('w tilt compensation '..heading1 * 180 / math.pi)
+--        data.timestamp = timestamp
       end
 --      if data and fileSaveFlag then
 --        savedata = serialization.serialize(data)

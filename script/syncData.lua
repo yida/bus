@@ -66,17 +66,17 @@ local datasetpath = '../data/150213185940.20/'
 --------print(#mag, #imu, #data)
 --saveData(data, 'observation')
 
---state = loadData(datasetpath, 'state150213185940', _, 1)
---label = loadData(datasetpath, 'label', _, 1)
---data = syncData(_, state, label)
---------print(#mag, #imu, #data)
---saveData(data, 'observation')
-
-state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+state = loadDataMP(datasetpath, 'stateMP', _, 1)
 label = loadDataMP(datasetpath, 'labelMP', _, 1)
 data = syncData(_, state, label)
 ------print(#mag, #imu, #data)
-saveDataMP(data, 'gpslabel', './')
+saveDataMP(data, 'statewlabelMP', datasetpath)
+
+--state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+--label = loadDataMP(datasetpath, 'labelMP', _, 1)
+--data = syncData(_, state, label)
+--------print(#mag, #imu, #data)
+--saveDataMP(data, 'gpslabel', './')
 
 
 ----saveData(data, 'syncdlabelgps')

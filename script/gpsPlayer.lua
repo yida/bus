@@ -8,8 +8,8 @@ require 'GPSUtils'
 
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
-local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'gpslabel', _, 1)
+--local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -20,6 +20,8 @@ local vmax = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
+    util.ptable(dataset[i])
+    error()
 --    if dataset[i].satellites ~= nil then
 --      print(dataset[i].satellites)
 --      counter = counter + 1
