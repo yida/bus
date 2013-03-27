@@ -7,10 +7,14 @@ require 'torch'
 require 'unix'
 
 local datasetpath = '../data/150213185940.20/'
+local datasetpath = './'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
 t0 = unix.time()
 --local dataset = loadDataMP(datasetpath, 'statewlabelMP', _, 1)
-local dataset = loadDataMP(datasetpath, 'obsMP', _, 1)
+--local dataset = loadDataMP(datasetpath, 'obsMP', _, 1)
+local dataset = loadDataMP(datasetpath, 'stateMP-03.27.2013.17.00.57-0', _, 1)
+print(#dataset)
+error()
 
 local counter = 0
 local labelcounter = 0

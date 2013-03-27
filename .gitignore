@@ -37,3 +37,6 @@ ReceivePackets
 # log files
 log-*
 *-0
+
+#matlab temp file
+*.m~

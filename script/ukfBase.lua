@@ -22,11 +22,11 @@ P:sub(7, 9, 7, 9):eye(3, 3):mul((10 * math.pi / 180)^2)
 Q = torch.DoubleTensor(9, 9):fill(0) -- process noise covariance
 Q:sub(1, 3, 1, 3):eye(3, 3):mul(0.05^2)
 Q:sub(4, 6, 4, 6):eye(3, 3):mul(0.01^2)
-Q:sub(7, 9, 7, 9):eye(3, 3):mul((0.1 * math.pi / 180)^2)
+Q:sub(7, 9, 7, 9):eye(3, 3):mul((10 * math.pi / 180)^2)
 
 --R = torch.DoubleTensor(12, 12):fill(0) -- measurement noise covariance
 posCovR = torch.DoubleTensor(3,3):eye(3, 3):mul(0.01^2)
-velCovR = torch.DoubleTensor(3,3):eye(3, 3):mul(0.1^2)
+velCovR = torch.DoubleTensor(3,3):eye(3, 3):mul(0.01^2)
 qCovRG  = torch.DoubleTensor(3,3):eye(3, 3):mul((1 * math.pi / 180)^2)
 qCovRM  = torch.DoubleTensor(3,3):eye(3, 3):mul((10 * math.pi / 180)^2)
 
@@ -87,7 +87,6 @@ function processUpdate(tstep, imu)
   -- substract gravity from z axis and convert from g to m/s^2
   acc:copy(gacc - g)
   acc = acc * gravity
-  print(dtime)
   local res = GenerateSigmaPoints(dtime)
   if res == false then return false end
   res = ProcessModel(dtime)
@@ -247,9 +246,9 @@ function measurementGPSUpdate(gps)
   local rPDOP = ( PDOP * (1 - pDOP) )^2
 
   local R = torch.DoubleTensor(3,3):eye(3, 3):mul(0.07^2)
-  R[1][1] = rHDOP / 5
-  R[2][2] = rHDOP / 5
-  R[3][3] = rVDOP / 2.5
+  R[1][1] = rHDOP / 10
+  R[2][2] = rHDOP / 10
+  R[3][3] = rVDOP / 5
 
   if not processInit then return false end
 

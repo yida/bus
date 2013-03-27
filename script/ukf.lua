@@ -1,12 +1,11 @@
 require 'ukfBase'
 
-local ucm = require 'ucm'
-
 require 'include'
 require 'common'
-local serialization = require('serialization');
+local simple_ipc = require 'simple_ipc'
 local mp = require 'MessagePack'
 
+local state_channel = simple_ipc.setup_publisher('state');
 
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
@@ -37,6 +36,7 @@ local kCount = 0
 local t1 = utime()
 for i = 1, #dataset do
   tstep = dataset[i].timstamp or dataset[i].timestamp
+  if tstep > 946685120.97 then error() end
   if dataset[i].type == 'imu' then
     local ret = processUpdate(tstep, dataset[i])
     if ret == true then measurementGravityUpdate() end
@@ -52,7 +52,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
---        print(KGainCount)
+        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)
@@ -67,14 +67,15 @@ for i = 1, #dataset do
       end
    
     if sendState then
+      local st = {}
       local Q = state:narrow(1, 7, 4)
-      counter = counter + 1 
-    
-      q = vector.new({Q[1][1], Q[2][1], Q[3][1], Q[4][1]})
-      pos = vector.new({state[1][1], state[2][1], state[3][1]})
-      ucm.set_ukf_counter(counter)
-      ucm.set_ukf_quat(q)
-      ucm.set_ukf_pos(pos)
+      local vec = Quat2Vector(Q)
+      st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
+            ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
+            ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
+            ['type'] = 'state', ['timestamp'] = tstep}
+      st.counter = counter
+      state_channel:send(mp.pack(st))
     end
   end
 end
