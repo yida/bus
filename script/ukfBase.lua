@@ -71,7 +71,14 @@ end
 
 function processUpdate(tstep, imu)
   rawacc, gyro = imuCorrent(imu, accBias)
+--  util.ptorch(rawacc:t())
   gacc = accTiltCompensate(rawacc)
+  local currentQ = state:narrow(1, 7, 4);
+  local R = Quat2R(currentQ)
+  local pacc = R * rawacc
+  util.ptorch(pacc:t())
+
+--  util.ptorch(gacc:t())
   local dtime = tstep - imuTstep
   imuTstep = tstep
 
@@ -246,9 +253,9 @@ function measurementGPSUpdate(gps)
   local rPDOP = ( PDOP * (1 - pDOP) )^2
 
   local R = torch.DoubleTensor(3,3):eye(3, 3):mul(0.07^2)
-  R[1][1] = rHDOP / 10
-  R[2][2] = rHDOP / 10
-  R[3][3] = rVDOP / 5
+  R[1][1] = rHDOP * 1000000
+  R[2][2] = rHDOP * 1000000
+  R[3][3] = rVDOP * 5000000
 
   if not processInit then return false end
 
