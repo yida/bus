@@ -1,7 +1,7 @@
 %
 clear all;
 
-filename = '../script/stateMP-03.28.2013.03.21.50-0';
+filename = '../script/stateMP-03.28.2013.16.08.05-0';
 
 tic;
 fid = fopen(filename);
@@ -9,7 +9,7 @@ data = fread(fid, '*uint8');
 state = msgpack('unpacker', data);
 toc;
 
-pos = zeros(4, size(state,1));
+pos = zeros(7, size(state,1));
 label = zeros(4, size(state, 1));
 labelc = 0;
 for i = 1 : size(state, 1)
@@ -17,6 +17,10 @@ for i = 1 : size(state, 1)
     pos(2, i) = state{i}.y;
     pos(3, i) = state{i}.z;
     pos(4, i) = state{i}.timestamp;
+    pos(5, i) = state{i}.r;
+    pos(6, i) = state{i}.p;
+    pos(7, i) = state{i}.y;
+
 %     if state{i}.label ~= 3
 %         labelc = labelc + 1;
 %         label(1, labelc) = state{i}.x;

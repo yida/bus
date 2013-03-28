@@ -14,6 +14,7 @@ local dataset = loadDataMP(datasetpath, 'measurementMP')
 
 local sendState = false
 local saveState = true
+path = '../data/'
 if saveState then
   local Path = path or './'
   local dtype = 'stateMP'
@@ -51,9 +52,11 @@ for i = 1, #dataset do
       if saveState then
         local Q = state:narrow(1, 7, 4)
         local vec = Quat2Vector(Q)
+        local rpy = Quat2rpy(Q)
         st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
               ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
               ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
+              ['r'] = rpy[1], ['p'] = rpy[2], ['y'] = rpy[3], 
               ['type'] = 'state', ['timestamp'] = tstep}
         saveData = mp.pack(st)
         file:write(saveData)
