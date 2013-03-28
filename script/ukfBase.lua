@@ -11,7 +11,8 @@ util = require 'util'
 
 -- state init Posterior state
 state = torch.DoubleTensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
-state[7] = 1
+--state[7] = 1
+state:narrow(1,7,4):copy(torch.DoubleTensor({0.76178963441862, 0, 0, 0.64782447691666}))
 
 -- state Cov, Posterior
 P = torch.DoubleTensor(9, 9):fill(0) -- estimate error covariance
@@ -72,11 +73,11 @@ end
 function processUpdate(tstep, imu)
   rawacc, gyro = imuCorrent(imu, accBias)
 --  util.ptorch(rawacc:t())
-  gacc = accTiltCompensate(rawacc)
+--  gacc = accTiltCompensate(rawacc)
   local currentQ = state:narrow(1, 7, 4);
   local R = Quat2R(currentQ)
-  local pacc = R * rawacc
-  util.ptorch(pacc:t())
+  gacc = R * rawacc
+--  util.ptorch(pacc:t())
 
 --  util.ptorch(gacc:t())
   local dtime = tstep - imuTstep
@@ -253,9 +254,9 @@ function measurementGPSUpdate(gps)
   local rPDOP = ( PDOP * (1 - pDOP) )^2
 
   local R = torch.DoubleTensor(3,3):eye(3, 3):mul(0.07^2)
-  R[1][1] = rHDOP * 1000000
-  R[2][2] = rHDOP * 1000000
-  R[3][3] = rVDOP * 5000000
+  R[1][1] = rHDOP * 100000
+  R[2][2] = rHDOP * 100000
+  R[3][3] = rVDOP * 500000
 
   if not processInit then return false end
 
@@ -280,7 +281,6 @@ function measurementGPSUpdate(gps)
   KGainCount = KGainCount + 1
 --  return KalmanGainUpdate(Z, zMean, v, R)
   return true
-
 end
 
 function magInitiate(mag)
@@ -288,6 +288,7 @@ function magInitiate(mag)
   local rawmag = magCorrect(mag)
   -- calibrated & tilt compensated heading 
   local heading, Bf = magTiltCompensate(rawmag, rawacc)
+  print(heading, Bf)
 
   -- HACK here as set mag heading always as init yaw value
   local initRPY = torch.DoubleTensor({0,0,heading}) 
@@ -318,7 +319,7 @@ function measurementMagUpdate(mag)
   calibratedMag[3] = 0
   calibratedMag:div(calibratedMag:norm())
   
-  local mq = torch.DoubleDoubleTensor({0, 1, 0, 0})
+  local mq = torch.DoubleTensor({0, 1, 0, 0})
   local Z = torch.DoubleTensor(3, 2 * ns):fill(0)
   for i = 1, 2 * ns do
     local Zcol = Z:narrow(2, i, 1)

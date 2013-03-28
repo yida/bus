@@ -7,11 +7,6 @@ local mp = require 'MessagePack'
 
 local state_channel = simple_ipc.setup_publisher('state');
 
---local datasetpath = '../data/010213180247/'
---local datasetpath = '../data/010213192135/'
---local datasetpath = '../data/191212190259/'
---local datasetpath = '../data/211212164337/'
---local datasetpath = '../data/211212165622/'
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/'
 --local datasetpath = '../'
@@ -25,7 +20,6 @@ if saveState then
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
-  
   file = io.open(Path..filename, "wb")
 end 
 
@@ -52,7 +46,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
---        print(KGainCount)
+        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)

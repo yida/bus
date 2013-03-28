@@ -14,7 +14,6 @@ t0 = unix.time()
 --local dataset = loadDataMP(datasetpath, 'obsMP', _, 1)
 local dataset = loadDataMP(datasetpath, 'stateMP-03.27.2013.17.00.57-0', _, 1)
 print(#dataset)
-error()
 
 local counter = 0
 local labelcounter = 0

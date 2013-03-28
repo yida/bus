@@ -1,7 +1,7 @@
-%%
+%
 clear all;
 
-filename = '../script/stateMP-03.27.2013.21.03.22-0';
+filename = '../script/stateMP-03.28.2013.03.21.50-0';
 
 tic;
 fid = fopen(filename);
@@ -52,7 +52,7 @@ for i = 1 : size(gps, 1)
     end
 end
 
-%%
+%
 % label = label(:, 1 : labelc);
 % 
 % plot(pos(1,:), pos(2,:), 'y.');
@@ -64,7 +64,7 @@ end
 % grid on;
 % axis equal;
 
-%%
+%
 filename = '../data/150213185940.20/imuPrunedMP-03.16.2013.15.30.15-0';
 
 tic;
@@ -85,5 +85,20 @@ for i = 1: size(imu, 1)
     imudata(8, i) = imu{i}.p;
     imudata(9, i) = imu{i}.y;
     imudata(10, i) = imu{i}.timestamp;
+end
+
+
+filename = '../data/150213185940.20/headingMP-03.28.2013.04.04.33-0';
+
+tic;
+fid = fopen(filename);
+data = fread(fid, '*uint8');
+mag = msgpack('unpacker', data);
+toc;
+
+magdata = zeros(2, size(mag, 1));
+for i = 1: size(mag, 1) 
+    magdata(1, i) = mag{i}.heading;
+    magdata(2, i) = mag{i}.timestamp;
 end
 
