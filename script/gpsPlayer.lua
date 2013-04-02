@@ -9,7 +9,7 @@ require 'GPSUtils'
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -20,8 +20,14 @@ local vmax = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
-    util.ptable(dataset[i])
-    error()
+--    util.ptable(dataset[i])
+    if dataset[i].nspeed ~= nil then
+      print('speed m/s '..dataset[i].nspeed * 0.514444)
+    end
+    if dataset[i].truecourse ~= nil and dataset[i].truecourse ~= '' then
+      print('true course '..dataset[i].truecourse)
+    end
+--[[
 --    if dataset[i].satellites ~= nil then
 --      print(dataset[i].satellites)
 --      counter = counter + 1
@@ -55,6 +61,7 @@ for i = 1, #dataset do
         ucm.set_ukf_counter(counter)
         ucm.set_ukf_pos(pos)
 --      usleep(0.1)
+--]]
   elseif dataset[i].type == 'label' then
     print(dataset[i].timestamp, dataset[i].value)
   end

@@ -1,7 +1,7 @@
 %
 clear all;
 
-filename = '../script/stateMP-03.28.2013.16.08.05-0';
+filename = '../data/stateMP-03.29.2013.13.58.27-0';
 
 tic;
 fid = fopen(filename);
@@ -17,9 +17,9 @@ for i = 1 : size(state, 1)
     pos(2, i) = state{i}.y;
     pos(3, i) = state{i}.z;
     pos(4, i) = state{i}.timestamp;
-    pos(5, i) = state{i}.r;
-    pos(6, i) = state{i}.p;
-    pos(7, i) = state{i}.y;
+    pos(5, i) = state{i}.roll;
+    pos(6, i) = state{i}.pitch;
+    pos(7, i) = state{i}.yaw;
 
 %     if state{i}.label ~= 3
 %         labelc = labelc + 1;

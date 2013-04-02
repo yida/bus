@@ -11,8 +11,8 @@ util = require 'util'
 
 -- state init Posterior state
 state = torch.DoubleTensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
---state[7] = 1
-state:narrow(1,7,4):copy(torch.DoubleTensor({0.76178963441862, 0, 0, 0.64782447691666}))
+state[7] = 1
+--state:narrow(1,7,4):copy(torch.DoubleTensor({0.76178963441862, 0, 0, 0.64782447691666}))
 
 -- state Cov, Posterior
 P = torch.DoubleTensor(9, 9):fill(0) -- estimate error covariance
@@ -33,7 +33,10 @@ qCovRM  = torch.DoubleTensor(3,3):eye(3, 3):mul((10 * math.pi / 180)^2)
 
 ns = 9
 Chi = torch.DoubleTensor(10, 2 * ns):fill(0)
+Chi:narrow(1, 7, 1):fill(1)
+--util.ptorch(Chi)
 ChiMean = torch.DoubleTensor(10, 1):fill(0)
+ChiMean:narrow(1, 7, 1):fill(1)
 e = torch.DoubleTensor(3, 2 * ns):fill(0)
 Y = torch.DoubleTensor(10, 2 * ns):fill(0)
 yMean = torch.DoubleTensor(10, 1):fill(0)
@@ -72,14 +75,10 @@ end
 
 function processUpdate(tstep, imu)
   rawacc, gyro = imuCorrent(imu, accBias)
---  util.ptorch(rawacc:t())
 --  gacc = accTiltCompensate(rawacc)
-  local currentQ = state:narrow(1, 7, 4);
+  local currentQ = state:narrow(1, 7, 4)
   local R = Quat2R(currentQ)
   gacc = R * rawacc
---  util.ptorch(pacc:t())
-
---  util.ptorch(gacc:t())
   local dtime = tstep - imuTstep
   imuTstep = tstep
 
@@ -198,6 +197,8 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Quat(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuatMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
+--  util.ptorch(K)
+--  util.ptorch(Pvv)
   KGainCount = KGainCount + 1
   return true
 end
@@ -214,9 +215,9 @@ function measurementGravityUpdate()
     Zcol:copy(QuatMul(QuatMul(qk, gq), QuatInv(qk)):narrow(1, 2, 3))
   end
   local zMean = torch.mean(Z, 2)
-  local v = rawacc - zMean
-  local R = qCovRG
-  return KalmanGainUpdate(Z, zMean, v, R)
+  local v = rawacc:narrow(1, 1, 2) - zMean:narrow(1, 1, 2)
+  local R = qCovRG:narrow(1, 1, 2):narrow(2,1,2)
+  return KalmanGainUpdate(Z:narrow(1, 1, 2), zMean:narrow(1, 1, 2), v, R)
 end
 
 -- Geo Init
@@ -229,7 +230,6 @@ function gpsInitiate(gps)
 end
 
 function measurementGPSUpdate(gps)
-
   if not imuInit then return false end
 
   if not gpsInit then
@@ -254,9 +254,9 @@ function measurementGPSUpdate(gps)
   local rPDOP = ( PDOP * (1 - pDOP) )^2
 
   local R = torch.DoubleTensor(3,3):eye(3, 3):mul(0.07^2)
-  R[1][1] = rHDOP * 100000
-  R[2][2] = rHDOP * 100000
-  R[3][3] = rVDOP * 500000
+  R[1][1] = rHDOP / 100
+  R[2][2] = rHDOP / 100
+  R[3][3] = rVDOP / 50
 
   if not processInit then return false end
 
@@ -281,6 +281,7 @@ function measurementGPSUpdate(gps)
   KGainCount = KGainCount + 1
 --  return KalmanGainUpdate(Z, zMean, v, R)
   return true
+
 end
 
 function magInitiate(mag)
@@ -288,12 +289,12 @@ function magInitiate(mag)
   local rawmag = magCorrect(mag)
   -- calibrated & tilt compensated heading 
   local heading, Bf = magTiltCompensate(rawmag, rawacc)
-  print(heading, Bf)
 
   -- HACK here as set mag heading always as init yaw value
   local initRPY = torch.DoubleTensor({0,0,heading}) 
   local initQ = torch.DoubleTensor(rpy2Quat(initRPY))
-  state:sub(7, 10, 1, 1):copy(initQ)
+  state:narrow(1, 7, 4):copy(initQ)
+--  util.ptorch(state)
   print('initiated mag')
   return true  
 end
@@ -307,28 +308,46 @@ function measurementMagUpdate(mag)
   local heading, Bf = magTiltCompensate(rawmag, rawacc)
 
   -- set init orientation
-  if not magInit then
-    magInit = magInitiate(mag)
-    return false
-  end
+  if not magInit then magInit = magInitiate(mag) return false end
 
   if not processInit then return false end
 
   local calibratedMag = magCalibrated(rawmag)
-  -- just use the first too
-  calibratedMag[3] = 0
-  calibratedMag:div(calibratedMag:norm())
-  
-  local mq = torch.DoubleTensor({0, 1, 0, 0})
-  local Z = torch.DoubleTensor(3, 2 * ns):fill(0)
-  for i = 1, 2 * ns do
-    local Zcol = Z:narrow(2, i, 1)
-    local Chicol = Chi:narrow(2, i , 1)
-    local qk = Chicol:narrow(1, 7, 4)
-    Zcol:copy(QuatMul(QuatMul(qk, mq), QuatInv(qk)):narrow(1, 2, 3))
-  end
-  local zMean = torch.mean(Z, 2)
-  local v = calibratedMag - zMean
-  local R = qCovRM
-  return KalmanGainUpdate(Z, zMean, v, R)
+  local heading, Bf = magTiltCompensate(rawmag, rawacc)
+--  Bf:div(Bf:norm())
+--  util.ptorch(Bf)
+--  local Z = torch.DoubleTensor(4, 2 * ns):fill(0)
+--  for i = 1, 2 * ns do
+--    local Zcol = Z:narrow(2, i, 1)
+--    local Chicol = Chi:narrow(2, i, 1)
+--    Zcol:copy(Chicol:narrow(1, 7, 4))
+--  end
+--  local zMeanQ = QuatMean(Z, state:narrow(1, 7, 4))
+--  local zMeanRPY = Quat2rpy(zMeanQ)
+--  local v = heading - zMeanRPY[3]
+--  local R = (0.1)^2
+--  -- linear measurement update
+--  local C = torch.DoubleTensor(1, 9):fill(0)
+--  C[1][9] = 1
+--  local K = P * C:t() * torch.inverse(C * P * C:t() + R)
+--  local newYaw = zMeanRPY[3] + K[9][1] * v
+--  local newRPY = torch.DoubleTensor({zMeanRPY[1], zMeanRPY[2], newYaw})
+--  local newQ = rpy2Quat(newRPY)
+--  state:narrow(1, 7, 4):copy(newQ)
+--  P = (torch.DoubleTensor(9,9):eye(9,9) - K * C) * P
+--  KGainCount = KGainCount + 1
+
+--  local mq = torch.DoubleTensor({0,1,0,0})
+--  local Z = torch.DoubleTensor(3, 2 * ns):fill(0)
+--  for i = 1, 2 * ns do
+--    local Zcol = Z:narrow(2, i, 1)
+--    local Chicol = Chi:narrow(2, i , 1)
+--    local qk = Chicol:narrow(1, 7, 4)
+--    Zcol:copy(QuatMul(QuatMul(qk, mq), QuatInv(qk)):narrow(1, 2, 3))
+--  end
+--  local zMean = torch.mean(Z, 2)
+--  local v = Bf:narrow(1, 3, 1) - zMean:narrow(1, 3, 1)
+--  local R = (0.1)^2
+--  return KalmanGainUpdate(Z:narrow(1, 3, 1), zMean:narrow(1, 3, 1), v, R)
+
 end

@@ -30,15 +30,16 @@ for i = 1, #dataset do
     mag.timestamp = dataset[i].timestamp
     mag.heading = heading
     mags[#mags+1] = mag
---    print(j, dataset[i].timestamp, heading)
+  --  print(j, dataset[i].timestamp, heading)
+    local BfNorm = Bf:norm()
+    print(Bf[1]/BfNorm, Bf[2]/BfNorm, Bf[3]/BfNorm)
     local rpy = torch.DoubleTensor({0, 0, -heading})
     local Q = rpy2Quat(rpy)
 --    util.ptorch(Q)
---    error()
   elseif dataset[i].type == 'imu' then
     rawacc, gyro = imuCorrent(dataset[i], accBias)
   end
 end
 
 print(#mags)
-saveDataMP(mags, 'headingMP', './')
+--saveDataMP(mags, 'headingMP', './')
