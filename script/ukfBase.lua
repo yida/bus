@@ -2,7 +2,6 @@ require 'include'
 require 'common'
 require 'torch'
 
-require 'GPSUtils'
 require 'poseUtils'
 require 'magUtils'
 require 'imuUtils'

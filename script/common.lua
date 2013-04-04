@@ -1,6 +1,5 @@
 
 require 'include'
-local serialization = require 'serialization'
 
 
 local ffi = require 'ffi'
@@ -47,6 +46,7 @@ function loadRawData(path, stamp, datatype)
 end
 
 function saveData(dataset, dtype, path)
+  local serialization = require 'serialization'
   local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
@@ -126,6 +126,7 @@ function getFileName(path, dtype)
 end
 
 function loadData(path, dtype, maxlines, Debug)
+  local serialization = require 'serialization'
   local filename = getFileName(path, dtype)
   local file = assert(io.open(filename, 'r'))
   local line = file:read()
