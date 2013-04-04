@@ -1,15 +1,11 @@
-cwd = '../../UPennTHOR/'
-Config = true
-dofile('../../UPennTHOR/Run/include.lua')
-
 require 'ukfBase'
 
-require 'include2'
+require 'include'
 require 'common'
 local msgpack = require 'cmsgpack'
 local simple_ipc = require 'simple_ipc'
 
-local test_channel = simple_ipc.setup_subscriber('test');
+local test_channel = simple_ipc.new_subscriber('test');
 
 while true do
   local str = test_channel:receive()
