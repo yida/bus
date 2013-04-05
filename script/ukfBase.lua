@@ -57,6 +57,7 @@ gpsInit = false
 magInit = false
 gravity = 9.80
 imuTstep = 0
+gpsTstep = 0
 
 KGainCount = 0
 
@@ -72,7 +73,11 @@ function imuInitiate(step, accin)
   end
 end
 
-function processUpdate(tstep, imu)
+function processUpdatePos(tstep, gps)
+  local res = GenerateSigmaPoints(dtime)
+end
+
+function processUpdateRot(tstep, imu)
   rawacc, gyro = imuCorrent(imu, accBias)
 --  gacc = accTiltCompensate(rawacc)
   local currentQ = state:narrow(1, 7, 4)
@@ -95,7 +100,7 @@ function processUpdate(tstep, imu)
   acc = acc * gravity
   local res = GenerateSigmaPoints(dtime)
   if res == false then return false end
-  res = ProcessModel(dtime)
+  res = ProcessModelRot(dtime)
   if res == false then return false end
   res = PrioriEstimate(dtime)
   if res == false then return false end
@@ -123,16 +128,19 @@ function GenerateSigmaPoints(dt)
   return true
 end
 
-function ProcessModel(dt)
+function ProcessModelPos(dt)
+end
+
+function ProcessModelRot(dt)
   -- Process Model Update and generate y
-  local F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
-                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
+--  local F = torch.DoubleTensor({{1,0,0,dt,0,0}, {0,1,0,0,dt,0}, {0,0,1,0,0,dt},
+--                          {0,0,0,1,0,0}, {0,0,0,0,1,0}, {0,0,0,0,0,1}})
   local G = torch.DoubleTensor({{dt^2/2,0,0}, {0,dt^2/2,0}, {0,0,dt^2/2},
                           {dt,0,0}, {0,dt,0}, {0,0,dt}})
   -- Y
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
-    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+--    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
 
     local q = Chicol:narrow(1, 7, 4)
     local dq = Vector2Quat(gyro, dt)
@@ -196,8 +204,6 @@ function KalmanGainUpdate(Z, zMean, v, R)
   local stateaddqi = Vector2Quat(stateadd:narrow(1, 7, 3))
   state:narrow(1, 7, 4):copy(QuatMul(stateqi, stateaddqi))
   P = P - K * Pvv * K:t()
---  util.ptorch(K)
---  util.ptorch(Pvv)
   KGainCount = KGainCount + 1
   return true
 end
@@ -293,7 +299,6 @@ function magInitiate(mag)
   local initRPY = torch.DoubleTensor({0,0,heading}) 
   local initQ = torch.DoubleTensor(rpy2Quat(initRPY))
   state:narrow(1, 7, 4):copy(initQ)
---  util.ptorch(state)
   print('initiated mag')
   return true  
 end

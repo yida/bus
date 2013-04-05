@@ -8,9 +8,10 @@ require 'GPSUtils'
 
 --local serialization = require('serialization');
 
-local datasetpath = '../data/rawdata/'
+--local datasetpath = '../data/rawdata/'
+local datasetpath = '../simulation/'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
+local dataset = loadData(datasetpath, 'logall-', _, 1)
 
 function extractFromLog(dataset)
   local counter = 0
@@ -84,6 +85,6 @@ print(prefix)
 prefix = ''
 
 saveDataMP(gps, 'gpsMP', './'..prefix)
---saveDataMP(imu, 'imuPrunedMP', './'..prefix)
---saveDataMP(mag, 'magPrunedMP', './'..prefix)
---saveDataMP(label, 'labelMP', './'..prefix)
+saveDataMP(imu, 'imuPrunedMP', './'..prefix)
+saveDataMP(mag, 'magPrunedMP', './'..prefix)
+saveDataMP(label, 'labelMP', './'..prefix)

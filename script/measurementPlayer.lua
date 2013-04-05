@@ -12,7 +12,8 @@ local unix = require 'unix'
 
 local test_channel = simple_ipc.new_publisher('test')
 
-local datasetpath = '../data/150213185940.20/'
+--local datasetpath = '../data/150213185940.20/'
+local datasetpath = '../data/rottest/'
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'measurementMP', _, 1)
@@ -23,7 +24,7 @@ for i = 1, #dataset do
   end
   local mpstr = msgpack.pack(dataset[i])
   test_channel:send(mpstr)
---  unix.usleep(1e6 * 0.05)
+  unix.usleep(1e6 * 0.1)
 --  if dataset[i].type == 'label' then
 --    if dataset[i].timestamp > 946686893.57 and dataset[i].timestamp < 946686897.74 then
 --      print(dataset[i].timestamp, dataset[i].value)

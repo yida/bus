@@ -5,10 +5,9 @@ require 'common'
 require 'poseUtils'
 require 'torch'
 require 'GPSUtils'
+local util = require 'util'
 
 local datasetpath = '../data/150213185940.20/'
---local datasetpath = '../data/010213180247/'
---local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 
 local counter = 0
@@ -21,11 +20,9 @@ local vmax = 0
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
 --    util.ptable(dataset[i])
-    if dataset[i].nspeed ~= nil then
-      print('speed m/s '..dataset[i].nspeed * 0.514444)
-    end
-    if dataset[i].truecourse ~= nil and dataset[i].truecourse ~= '' then
-      print('true course '..dataset[i].truecourse)
+    if dataset[i].utctime ~= nil then
+      counter = counter + 1
+--      print('speed m/s '..dataset[i].nspeed * 0.514444)
     end
 --[[
 --    if dataset[i].satellites ~= nil then
