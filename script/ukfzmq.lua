@@ -1,10 +1,12 @@
+local ucm = require 'ucm'
+
 require 'ukfBase'
 require 'include'
 require 'common'
 local msgpack = require 'cmsgpack'
 local simple_ipc = require 'simple_ipc'
 local test_channel = simple_ipc.new_subscriber('test');
-local state_channel = simple_ipc.new_publisher('state');
+--local state_channel = simple_ipc.new_publisher('state');
 
 while true do
   local str = test_channel:receive()
@@ -14,14 +16,15 @@ while true do
     local ret = processUpdateRot(tstep, data)
     if ret == true then measurementGravityUpdate() end
   elseif data.type == 'gps' then
-    if data.nspeed ~= nil then
-      processUpdatePos(tstep, data)
-    end
-    measurementGPSUpdate(data)
+--    if data.nspeed ~= nil then
+--      processUpdatePos(tstep, data)
+--    end
+--    measurementGPSUpdate(data)
   elseif data.type == 'mag' then
-    measurementMagUpdate(data)
+--    measurementMagUpdate(data)
   end
   gpsInit = true
+  magInit = true
   processInit = imuInit and magInit and gpsInit
   if processInit then
     print(KGainCount)
@@ -33,7 +36,10 @@ while true do
           ['q0'] = state[7][1], ['q1'] = state[8][1], ['q2'] = state[9][1], ['q3'] = state[10][1],
           ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3],
           ['type'] = 'state', ['timestamp'] = tstep}
-    st.counter = KGainCount
-    state_channel:send(msgpack.pack(st))
+    local quat = {state[7][1], state[8][1], state[9][1], state[10][1]}
+    ucm.set_ukf_quat(quat)
+    ucm.set_ukf_counter(KGainCount)
+--    st.counter = KGainCount
+--    state_channel:send(msgpack.pack(st))
   end
 end

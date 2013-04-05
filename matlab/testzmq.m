@@ -1,4 +1,5 @@
 clear all;
+addpath( genpath('ReceiveImu'));
 s1 = zmq('subscribe','state');
 data = [];
 while (true)

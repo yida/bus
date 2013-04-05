@@ -24,7 +24,7 @@ for i = 1, #dataset do
   end
   local mpstr = msgpack.pack(dataset[i])
   test_channel:send(mpstr)
-  unix.usleep(1e6 * 0.1)
+  unix.usleep(1e6 * 0.01)
 --  if dataset[i].type == 'label' then
 --    if dataset[i].timestamp > 946686893.57 and dataset[i].timestamp < 946686897.74 then
 --      print(dataset[i].timestamp, dataset[i].value)

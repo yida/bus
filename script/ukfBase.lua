@@ -220,9 +220,9 @@ function measurementGravityUpdate()
     Zcol:copy(QuatMul(QuatMul(qk, gq), QuatInv(qk)):narrow(1, 2, 3))
   end
   local zMean = torch.mean(Z, 2)
-  local v = rawacc:narrow(1, 1, 2) - zMean:narrow(1, 1, 2)
-  local R = qCovRG:narrow(1, 1, 2):narrow(2,1,2)
-  return KalmanGainUpdate(Z:narrow(1, 1, 2), zMean:narrow(1, 1, 2), v, R)
+  local v = rawacc - zMean
+  local R = qCovRG
+  return KalmanGainUpdate(Z, zMean, v, R)
 end
 
 -- Geo Init
