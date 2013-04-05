@@ -39,11 +39,13 @@ function readGPSLine(str, len, startptr)
   if stype == '$GPGGA' then
 --    print('GPGGA'..line)
     value = split(line)
+    gps.id = 'GGA'
     gps.utctime = value[1]
     gps.latitude = value[2]
     gps.northsouth = value[3]
     gps.longtitude = value[4]
     gps.eastwest = value[5]
+    gps.quality = value[6]
     gps.satellites = value[7]
     gps.HDOP = value[8]
     gps.height = value[9]
@@ -52,27 +54,37 @@ function readGPSLine(str, len, startptr)
   elseif stype == '$GPGLL' then 
 --  print('GPGLL') 
     value = split(line)
+    gps.id = 'GLL'
     gps.utctime = value[5]
     gps.latitude = value[1]
     gps.northsouth = value[2]
     gps.longtitude = value[3]
     gps.eastwest = value[4]
+    gps.status = value[6]
+    gps.posMode = value[7]:sub(1, #value[7]-3)
 
   elseif stype == '$GPGSA' then 
 --  print('GPGSA') 
     value = split(line)
+    gps.id = 'GSA'
+    gps.opMode = value[1]
+    gps.navMode = value[2]
     gps.PDOP = value[15]
     gps.HDOP = value[16]
-    gps.VDOP = value[17]
+    gps.VDOP = value[17]:sub(1, #value[17]-3)
 --    print(gps.PDOP, gps.HDOP, gps.VDOP)
 
   elseif stype == '$GPGSV' then
 --  print('GPGSV') 
     value = split(line)
+    gps.utctime = ''
+    gps.id = 'GSV'
   elseif stype == '$GPRMC' then 
 --  print('GPRMC') 
     value = split(line)
+    gps.id = 'RMC'
     gps.utctime = value[1]
+    gps.status = value[2]
     gps.latitude = value[3]
     gps.northsouth = value[4]
     gps.longtitude = value[5]
@@ -82,13 +94,16 @@ function readGPSLine(str, len, startptr)
     gps.datastamp = value[9]
     gps.magneticvar = value[10]
     gps.magneticvard = value[11]
+    gps.posMode = value[12]:sub(1, #value[12]-3)
   elseif stype == '$GPVTG' then 
 --    print('GPVTG') 
     value = split(line)
+    gps.id = 'VTG'
     gps.truecourse = value[1]
     gps.magneticcourse = value[3]
     gps.nspeed = value[5]
     gps.kspeed = value[7]
+    gps.posMode = value[9]:sub(1, #value[9]-3)
   else
     print(line)
   end
