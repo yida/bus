@@ -7,8 +7,9 @@ require 'torch'
 require 'GPSUtils'
 local util = require 'util'
 
-local datasetpath = '../data/150213185940.20/'
-local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
+--local datasetpath = '../data/150213185940.20/'
+local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -19,11 +20,14 @@ local vmax = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
---    util.ptable(dataset[i])
-    if dataset[i].utctime ~= nil then
-      counter = counter + 1
---      print('speed m/s '..dataset[i].nspeed * 0.514444)
+    if dataset[i].nspeed then
+      print(dataset[i].x, dataset[i].y, dataset[i].z, 'speed', dataset[i].nspeed);
     end
+--    util.ptable(dataset[i])
+--    if dataset[i].utctime ~= nil then
+--      counter = counter + 1
+--      print('speed m/s '..dataset[i].nspeed * 0.514444)
+--    end
 --[[
 --    if dataset[i].satellites ~= nil then
 --      print(dataset[i].satellites)

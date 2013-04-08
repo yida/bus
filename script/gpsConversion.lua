@@ -3,14 +3,13 @@ require 'ucm'
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch-load'
 require 'GPSUtils'
 
 local mp = require 'MessagePack'
 
 local serialization = require('serialization');
 
-local datasetpath = '../data/150213185940/'
+local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/191212190259/'
@@ -41,15 +40,17 @@ local longtitudeInit = false
 local tstep = 0
 local datatype = ''
 local coorInit = false
+local nspeed = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
     local positionUpdate = false
+    local velocityUpdate = false
     if dataset[i].HDOP ~= nil then
       HDOP = tonumber(dataset[i].HDOP)
     end
     if dataset[i].VDOP ~= nil then
-      VDOP = tonumber(dataset[i].VDOP:sub(1, #dataset[i].VDOP-4))
+      VDOP = tonumber(dataset[i].VDOP)
     end
     if dataset[i].PDOP ~= nil then
       PDOP = tonumber(dataset[i].PDOP)
@@ -73,6 +74,11 @@ for i = 1, #dataset do
                                   dataset[i].longtitude, dataset[i].eastwest)
     end
 
+    if dataset[i].nspeed ~= nil then
+      nspeed = dataset[i].nspeed
+      velocityUpdate = true
+    end
+
     local timestamp = dataset[i].timstamp or dataset[i].timestamp
     if timestamp ~= nil then tstep = timestamp end
     if dataset[i].type ~= nil then datatype = dataset[i].type end
@@ -86,16 +92,11 @@ for i = 1, #dataset do
 
     if coorInit and positionUpdate then
       ret = proj:Forward(latitude, longtitude, height)
---      print(ret.x, ret.y, ret.z, HDOP, VDOP, PDOP, latitude, longtitude)
-      dopcounter = dopcounter + 1
-      local lgps = {}
-      lgps.timestamp = timestamp
-      lgps.type = datatype
+--      print(ret.x, ret.y, ret.z, HDOP, VDOP, PDOP, latitude, longtitude) 
+      local lgps = dataset[i]
       lgps.x = ret.x
       lgps.y = ret.y
       lgps.z = ret.z
-      lgps.latitude = latitude
-      lgps.longtitude = longtitude
       lgps.HDOP = HDOP
       lgps.VDOP = VDOP
       lgps.PDOP = PDOP

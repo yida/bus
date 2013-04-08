@@ -68,14 +68,13 @@ end
 % grid on;
 % axis equal;
 
-%
-filename = '../data/150213185940.20/imuPrunedMP-03.16.2013.15.30.15-0';
+%%
+filename = '/home/yida/Downloads/imuPrunedMP-03.16.2013.15.30.15-0';
 
-tic;
 fid = fopen(filename);
 data = fread(fid, '*uint8');
 imu = msgpack('unpacker', data);
-toc;
+
 
 imudata = zeros(10, size(imu, 1));
 for i = 1: size(imu, 1) 
@@ -91,7 +90,7 @@ for i = 1: size(imu, 1)
     imudata(10, i) = imu{i}.timestamp;
 end
 
-
+%%
 filename = '../data/150213185940.20/headingMP-03.28.2013.04.04.33-0';
 
 tic;

@@ -6,7 +6,7 @@ require 'common'
 local msgpack = require 'cmsgpack'
 local simple_ipc = require 'simple_ipc'
 local test_channel = simple_ipc.new_subscriber('test');
---local state_channel = simple_ipc.new_publisher('state');
+local state_channel = simple_ipc.new_publisher('state');
 
 while true do
   local str = test_channel:receive()
@@ -37,9 +37,9 @@ while true do
           ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3],
           ['type'] = 'state', ['timestamp'] = tstep}
     local quat = {state[7][1], state[8][1], state[9][1], state[10][1]}
-    ucm.set_ukf_quat(quat)
-    ucm.set_ukf_counter(KGainCount)
---    st.counter = KGainCount
---    state_channel:send(msgpack.pack(st))
+--    ucm.set_ukf_quat(quat)
+--    ucm.set_ukf_counter(KGainCount)
+    st.counter = KGainCount
+    state_channel:send(msgpack.pack(st))
   end
 end

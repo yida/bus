@@ -11,7 +11,6 @@ util = require 'util'
 -- state init Posterior state
 state = torch.DoubleTensor(10, 1):fill(0) -- x, y, z, vx, vy, vz, q0, q1, q2, q3
 state[7] = 1
---state:narrow(1,7,4):copy(torch.DoubleTensor({0.76178963441862, 0, 0, 0.64782447691666}))
 
 -- state Cov, Posterior
 P = torch.DoubleTensor(9, 9):fill(0) -- estimate error covariance
@@ -75,6 +74,19 @@ end
 
 function processUpdatePos(tstep, gps)
   local res = GenerateSigmaPoints(dtime)
+  local speed = gps.nspeed * 0.514444
+  -- Process Model Update and generate y
+  local rpy = Quat2rpy(state:narrow(1, 7, 4))
+  util.ptorch(rpy)
+  for i = 1, 2 * ns do
+    local Chicol = Chi:narrow(2, i, 1)
+--    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
+    
+  end
+ -- Y mean
+  yMean:copy(torch.mean(Y, 2))
+  yMeanQ = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
+  yMean:narrow(1, 7, 4):copy(yMeanQ)
 end
 
 function processUpdateRot(tstep, imu)

@@ -24,7 +24,6 @@ if saveState then
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
-  
   file = io.open(Path..filename, "wb")
 end 
 
@@ -33,23 +32,28 @@ local counter = 0
 local kCount = 0
 local t1 = utime()
 for i = 1, #dataset do
+  if i > 6000 then error() end
   tstep = dataset[i].timstamp or dataset[i].timestamp
---  if tstep > 946685120.97 then error() end
   if dataset[i].type == 'imu' then
-    local ret = processUpdate(tstep, dataset[i])
+    local ret = processUpdateRot(tstep, dataset[i])
     if ret == true then measurementGravityUpdate() end
   elseif dataset[i].type == 'gps' then
-    measurementGPSUpdate(dataset[i])
+    if dataset[i].nspeed ~= nil then
+      processUpdatePos(tstep, dataset[i])
+    end
+--    measurementGPSUpdate(dataset[i])
   elseif dataset[i].type == 'mag' then
-    measurementMagUpdate(dataset[i])
+--    measurementMagUpdate(dataset[i])
   end
+  gpsInit = true
+  magInit = true
   processInit = imuInit and magInit and gpsInit
 --  processInit = imuInit and gpsInit
   if processInit then 
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
-        print(KGainCount)
+--        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)
@@ -57,10 +61,11 @@ for i = 1, #dataset do
         local rpy = Quat2rpy(Q)
         st = {['x'] = state[1][1], ['y'] = state[2][1], ['z'] = state[3][1],
               ['vx'] = state[4][1], ['vy'] = state[5][1], ['vz'] = state[6][1],
+              ['q0'] = state[7][1], ['q1'] = state[8][1], ['q2'] = state[9][1], ['q3'] = state[10][1],
               ['e1'] = vec[1], ['e2'] = vec[2], ['e3'] = vec[3], 
               ['roll'] = rpy[1], ['pitch'] = rpy[2], ['yaw'] = rpy[3], 
               ['type'] = 'state', ['timestamp'] = tstep}
-        local saveData = msgpack.pack(st)
+        local saveData = mp.pack(st)
         file:write(saveData)
   --    sdata[#sdata + 1] = st
       end
