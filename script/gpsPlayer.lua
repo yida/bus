@@ -7,9 +7,9 @@ require 'torch'
 require 'GPSUtils'
 local util = require 'util'
 
---local datasetpath = '../data/150213185940.20/'
-local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+local datasetpath = '../data/150213185940.20/'
+--local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'measurementMP', _, 1)
 
 local counter = 0
 local labelcounter = 0

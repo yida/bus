@@ -72,21 +72,30 @@ function imuInitiate(step, accin)
   end
 end
 
+
 function processUpdatePos(tstep, gps)
+  local dtime = tstep - gpsTstep
+  gpsTstep = tstep
+
   local res = GenerateSigmaPoints(dtime)
   local speed = gps.nspeed * 0.514444
   -- Process Model Update and generate y
   local rpy = Quat2rpy(state:narrow(1, 7, 4))
-  util.ptorch(rpy)
+  local yaw = rpy[3]
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
 --    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
-    
+  -- x
+    Chicol[1][1] = Chicol[1][1] + speed * math.cos(yaw) * dtime
+  -- y
+    Chicol[2][1] = Chicol[2][1] + speed * math.sin(yaw) * dtime
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
+
+  res = PrioriEstimate(dtime)
 end
 
 function processUpdateRot(tstep, imu)

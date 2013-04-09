@@ -32,7 +32,6 @@ local counter = 0
 local kCount = 0
 local t1 = utime()
 for i = 1, #dataset do
-  if i > 6000 then error() end
   tstep = dataset[i].timstamp or dataset[i].timestamp
   if dataset[i].type == 'imu' then
     local ret = processUpdateRot(tstep, dataset[i])
@@ -41,11 +40,10 @@ for i = 1, #dataset do
     if dataset[i].nspeed ~= nil then
       processUpdatePos(tstep, dataset[i])
     end
---    measurementGPSUpdate(dataset[i])
+    measurementGPSUpdate(dataset[i])
   elseif dataset[i].type == 'mag' then
 --    measurementMagUpdate(dataset[i])
   end
-  gpsInit = true
   magInit = true
   processInit = imuInit and magInit and gpsInit
 --  processInit = imuInit and gpsInit
@@ -53,7 +51,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
---        print(KGainCount)
+        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)

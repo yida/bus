@@ -69,7 +69,7 @@ end
 % axis equal;
 
 %%
-filename = '/home/yida/Downloads/imuPrunedMP-03.16.2013.15.30.15-0';
+filename = '../data/150213185940.20/imuPrunedMP-03.16.2013.15.30.15-0';
 
 fid = fopen(filename);
 data = fread(fid, '*uint8');
