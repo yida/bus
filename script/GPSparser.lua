@@ -107,7 +107,7 @@ function readGPSLine(str, len, startptr)
     gps.kspeed = value[7]
     gps.posMode = value[9]:sub(1, #value[9]-3)
   else
-    print('broken', line)
+--    print('broken', line)
   end
 
   return gps;

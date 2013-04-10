@@ -1,17 +1,13 @@
---require 'ucm'
-
 require 'include'
 require 'common'
 require 'poseUtils'
 require 'GPSparser'
 require 'GPSUtils'
 
---local serialization = require('serialization');
-
---local datasetpath = '../data/rawdata/'
-local datasetpath = '../simulation/'
+local datasetpath = '../data/rawdata/'
+--local datasetpath = '../simulation/'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'logall-', _, 1)
+local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
 
 function extractFromLog(dataset)
   local counter = 0
@@ -51,21 +47,13 @@ function extractFromLog(dataset)
           end
         end
         if gpsContent.id == 'GLL'  or gpsContent.id == 'RMC' or gpsContent.id == 'VTG' then
-          if gpsContent.posMode ~= 'A' and gpsContent.posMode ~= 'D' then
+          if gpsContent.posMode:find('A') == nil and gpsContent.posMode:find('D') == nil then
             datavalid = false
 --            print(gpsContent.id, gpsContent.posMode) 
           end
         end
-        if gpsContent.utctime == '' then
-          datavalid = false
---          print('invalid ', gpsContent.id)
-        end
+        if gpsContent.id == nil then datavalid = false end
         if datavalid then 
-          if gpsContent.truecourse ~= nil then
-            print(dataset[i].line)
-          end
-
-          print(gpsContent.id)
           gpsContent.timestamp = dataset[i].timestamp
           gpsContent.timstamp = nil
           gps[#gps+1] = gpsContent
@@ -88,7 +76,8 @@ end
 print(prefix)
 prefix = ''
 
---saveDataMP(gps, 'gpsMP', './'..prefix)
---saveDataMP(imu, 'imuPrunedMP', './'..prefix)
---saveDataMP(mag, 'magPrunedMP', './'..prefix)
---saveDataMP(label, 'labelMP', './'..prefix)
+print(#gps)
+saveDataMP(gps, 'gpsMP', './'..prefix)
+saveDataMP(imu, 'imuPrunedMP', './'..prefix)
+saveDataMP(mag, 'magPrunedMP', './'..prefix)
+saveDataMP(label, 'labelMP', './'..prefix)
