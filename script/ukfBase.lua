@@ -54,6 +54,7 @@ processInit = false
 imuInit = false
 gpsInit = false 
 magInit = false
+velInit = false
 gravity = 9.80
 imuTstep = 0
 gpsTstep = 0
@@ -74,8 +75,14 @@ end
 
 
 function processUpdatePos(tstep, gps)
+  if not imuInit or not magInit or not gpsInit then return false end
+
   local dtime = tstep - gpsTstep
   gpsTstep = tstep
+  if not velInit then 
+    dtime = 0 
+    velInit = true
+  end
 
   local res = GenerateSigmaPoints(dtime)
   local speed = gps.nspeed * 0.514444
@@ -84,16 +91,16 @@ function processUpdatePos(tstep, gps)
   local yaw = rpy[3]
   for i = 1, 2 * ns do
     local Chicol = Chi:narrow(2, i, 1)
---    Y:narrow(2, i, 1):narrow(1, 1, 6):copy(F * Chicol:narrow(1, 1, 6) + G * acc)
-  -- x
-    Chicol[1][1] = Chicol[1][1] + speed * math.cos(yaw) * dtime
+ -- x
+    Y[1][i] = Chicol[1][1] + speed * math.cos(yaw) * dtime
   -- y
-    Chicol[2][1] = Chicol[2][1] + speed * math.sin(yaw) * dtime
+    Y[2][i] = Chicol[2][1] + speed * math.sin(yaw) * dtime
   end
  -- Y mean
   yMean:copy(torch.mean(Y, 2))
   yMeanQ = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
+  print(yMean[1][1], yMean[2][1], yMean[3][1])
 
   res = PrioriEstimate(dtime)
 end

@@ -51,7 +51,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
-        print(KGainCount)
+--        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)

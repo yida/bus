@@ -10,4 +10,3 @@ function LIDAR = lidar(PanAngle, Center)
   LIDAR.beamAngles = LIDAR.beamRange / LIDAR.numBeams :...
                     LIDAR.beamRange / LIDAR.numBeams : LIDAR.beamRange;
   LIDAR.beamAngles = LIDAR.beamAngles + LIDAR.theta;
-

@@ -1,7 +1,7 @@
 %
 clear all;
 
-filename = '../data/stateMP-03.29.2013.13.58.27-0';
+filename = '../data/stateMP-04.09.2013.13.57.10-0';
 
 tic;
 fid = fopen(filename);

@@ -40,3 +40,9 @@ log-*
 
 #matlab temp file
 *.m~
+data
+proj4
+project3
+project4
+simulation/logall-
+project3
