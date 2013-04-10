@@ -1,6 +1,7 @@
 
 require 'include'
 local util = require 'util'
+require 'GPSUtils'
 
 function split(str)
   local value = {}
@@ -28,7 +29,7 @@ end
 function readGPSLine(str, len, startptr)
   local gps = {}
   gps.type = 'gps'
-  gps.timstamp = tonumber(string.sub(str, 1, 16))
+  gps.timestamp = tonumber(string.sub(str, 1, 16))
   local startpt = startptr or 17
 --  if str[17] ~= '$' then  
 --    startpt = 19
@@ -36,6 +37,7 @@ function readGPSLine(str, len, startptr)
   local line = string.sub(str, startpt)
 --  print(line)
   local stype = string.sub(str, startpt, startpt+5)
+  gps.line = line
   if stype == '$GPGGA' then
 --    print('GPGGA'..line)
     value = split(line)
@@ -71,14 +73,14 @@ function readGPSLine(str, len, startptr)
     gps.navMode = value[2]
     gps.PDOP = value[15]
     gps.HDOP = value[16]
-    gps.VDOP = value[17]:sub(1, #value[17]-3)
+    gps.VDOP = value[17]:sub(1, #value[17]-4)
 --    print(gps.PDOP, gps.HDOP, gps.VDOP)
 
-  elseif stype == '$GPGSV' then
---  print('GPGSV') 
-    value = split(line)
-    gps.utctime = ''
-    gps.id = 'GSV'
+--  elseif stype == '$GPGSV' then
+----  print('GPGSV') 
+--    value = split(line)
+--    gps.utctime = ''
+--    gps.id = 'GSV'
   elseif stype == '$GPRMC' then 
 --  print('GPRMC') 
     value = split(line)
@@ -105,14 +107,14 @@ function readGPSLine(str, len, startptr)
     gps.kspeed = value[7]
     gps.posMode = value[9]:sub(1, #value[9]-3)
   else
-    print(line)
+    print('broken', line)
   end
 
   return gps;
 end
 
 function iterateGPS(data, xmlroot)
-  local gpsset = {}
+  local gps = {}
   local gpscounter = 0
   for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
@@ -123,21 +125,51 @@ function iterateGPS(data, xmlroot)
     while lfpos ~= nil do
       local substr = string.sub(line, lastlfpos + 1, lfpos)
       local len = lfpos - lastlfpos - 1 
-      gps = readGPSLine(substr, len)
-      local datacheck = checkData(gps)
-      datacheck = true
-      if datacheck and util.tablesize(gps) > 3 then
-        gpscounter = gpscounter + 1
-        gpsset[gpscounter] = gps
-      else
---        print('datecheck fail')
+      local gpstart = substr:find('$GP') or 1
+--      print(substr:sub(gpstart, #substr))
+      if gpsChecksum(substr:sub(gpstart, #substr)) then
+        gpsContent = readGPSLine(substr, len)
+--        util.ptable(gpsContent)
+        local datavalid = true
+        if gpsContent.id == 'GLL' or gpsContent.id == 'RMC' then 
+          if gpsContent.status == 'V' then
+            print('fail check ', gpsContent.id, gpsContent.status) 
+            datavalid = false
+          end
+        end
+        if gpsContent.id == 'GGA' then 
+          if gpsContent.quality ~= '1' and gpsContent.quality ~= '2' then
+            datavalid = false
+            print('fail check ', gpsContent.id, gpsContent.quality) 
+          end
+        end
+        if gpsContent.id == 'GSA' then 
+          if gpsContent.navMode == '1' or gpsContent.navMode == '2' then
+            datavalid = false
+            print('fail check ', gpsContent.id, gpsContent.navMode) 
+          end
+        end
+        if gpsContent.id == 'GLL'  or gpsContent.id == 'RMC' or gpsContent.id == 'VTG' then
+          if string.find(gpsContent.posMode, 'A') == nil 
+                      and string.find(gpsContent.posMode, 'D') == nil then
+            datavalid = false
+            print( 'fail check', gpsContent.id, gpsContent.posMode) 
+          end
+        end
+        if gpsContent.id == nil then
+          datavalid = false
+        end
+        if datavalid then 
+--          print('new gps sample', gpsContent.id)
+          gps[#gps+1] = gpsContent
+        end
       end
       lastlfpos = lfpos
       lfpos = string.find(line, '\n', lfpos + 1)
     end
     file:close();
   end
-  return gpsset
+  return gps
 end
 
 function parseGPS()

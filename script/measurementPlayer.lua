@@ -2,15 +2,15 @@
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch'
+--require 'torch'
 require 'GPSUtils'
 
 local util = require 'util'
-local simple_ipc = require 'simple_ipc'
+--local simple_ipc = require 'simple_ipc'
 local msgpack = require 'cmsgpack'
 local unix = require 'unix'
 
-local test_channel = simple_ipc.new_publisher('test')
+--local test_channel = simple_ipc.new_publisher('test')
 
 local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/rottest/'
@@ -19,8 +19,8 @@ local datasetpath = '../data/150213185940.20/'
 local dataset = loadDataMP(datasetpath, 'measurementMP', _, 1)
 --
 for i = 1, #dataset do
-  if dataset[i].nspeed ~= nil then
-    util.ptable(dataset[i])
+  if dataset[i].VDOP then
+    print(dataset[i].HDOP)
   end
 --  local mpstr = msgpack.pack(dataset[i])
 --  test_channel:send(mpstr)
@@ -33,5 +33,5 @@ for i = 1, #dataset do
 --    end 
 --  end
 --  i = i + 1
-  io.stdout:flush()
 end
+print(#dataset)

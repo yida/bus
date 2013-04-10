@@ -8,8 +8,8 @@ require 'GPSUtils'
 local util = require 'util'
 
 local datasetpath = '../data/150213185940.20/'
---local datasetpath = './'
-local dataset = loadDataMP(datasetpath, 'measurementMP', _, 1)
+local datasetpath = './'
+local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 
 local counter = 0
 local labelcounter = 0
@@ -20,8 +20,9 @@ local vmax = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
-    if dataset[i].nspeed then
-      print(dataset[i].x, dataset[i].y, dataset[i].z, 'speed', dataset[i].nspeed);
+    if dataset[i].id == 'GSV' then
+      counter = counter + 1
+--      util.ptable(dataset[i])
     end
 --    util.ptable(dataset[i])
 --    if dataset[i].utctime ~= nil then
@@ -67,5 +68,5 @@ for i = 1, #dataset do
     print(dataset[i].timestamp, dataset[i].value)
   end
 end
-print(counter)
+print(counter, labelcounter)
 --print(hmin, hmax, vmin, vmax)

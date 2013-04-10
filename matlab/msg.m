@@ -4,7 +4,7 @@ clear all;
 filename = '../data/stateMP-04.09.2013.13.57.10-0';
 
 tic;
-fid = fopen(filename);
+fid = fopengeneric(filename);
 data = fread(fid, '*uint8');
 state = msgpack('unpacker', data);
 toc;
@@ -31,29 +31,36 @@ for i = 1 : size(state, 1)
 end
 
 %%
-filename = '../data/150213185940.20/gpswlabelMP-03.26.2013.12.37.43-0';
+filename = '../data/150213185940.20/gpsLocalMP';
 
 tic;
-fid = fopen(filename);
+fid = fopengeneric(filename);
 data = fread(fid, '*uint8');
 gps = msgpack('unpacker', data);
 toc;
 
-gpspos = zeros(4, size(gps,1));
-gpslabel = zeros(4, size(state, 1));
-gpslabelc = 0;
+gpspos = zeros(5, size(gps,1));
+% gpslabel = zeros(4, size(state, 1));
+% gpslabelc = 0;
 for i = 1 : size(gps, 1)
     gpspos(1, i) = gps{i}.x;
     gpspos(2, i) = gps{i}.y;
     gpspos(3, i) = gps{i}.z;
     gpspos(4, i) = gps{i}.timestamp;
-    if gps{i}.label ~= 3
-        gpslabelc = gpslabelc + 1;
-        gpslabel(1, gpslabelc) = gps{i}.x;
-        gpslabel(2, gpslabelc) = gps{i}.y;
-        gpslabel(3, gpslabelc) = gps{i}.label;
-        gpslabel(4, gpslabelc) = gps{i}.timestamp;
+    if isfield(gps{i}, 'nspeed') 
+      gpspos(5, i) = gps{i}.nspeed;
+      gpspos(6, i) = gps{i}.truecourse;
+    else 
+      gpspos(5, i) = 0;
+      gpspos(6, i) = 0;
     end
+%     if gps{i}.label ~= 3
+%         gpslabelc = gpslabelc + 1;
+%         gpslabel(1, gpslabelc) = gps{i}.x;
+%         gpslabel(2, gpslabelc) = gps{i}.y;
+%         gpslabel(3, gpslabelc) = gps{i}.label;
+%         gpslabel(4, gpslabelc) = gps{i}.timestamp;
+%     end
 end
 
 %
@@ -69,9 +76,9 @@ end
 % axis equal;
 
 %%
-filename = '../data/150213185940.20/imuPrunedMP-03.16.2013.15.30.15-0';
+filename = '../data/150213185940.20/imuPrunedMP';
 
-fid = fopen(filename);
+fid = fopengeneric(filename);
 data = fread(fid, '*uint8');
 imu = msgpack('unpacker', data);
 
@@ -91,10 +98,10 @@ for i = 1: size(imu, 1)
 end
 
 %%
-filename = '../data/150213185940.20/headingMP-03.28.2013.04.04.33-0';
+filename = '../data/150213185940.20/headingMP';
 
 tic;
-fid = fopen(filename);
+fid = fopengeneric(filename);
 data = fread(fid, '*uint8');
 mag = msgpack('unpacker', data);
 toc;

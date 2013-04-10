@@ -1,13 +1,12 @@
 require 'include'
 require 'common'
 require 'GPSUtils'
-require 'ucm'
 
-require 'torch-load'
+require 'torch'
 
-local datasetpath = '../data/010213180247/'
-local datasetpath = './'
-local gpsset = loadData(datasetpath, 'gps')
+local datasetpath = '../data/150213185940.20/'
+--local datasetpath = './'
+local gpsset = loadDataMP(datasetpath, 'gpsMP')
 
 gps = {}
 gpscount = 0

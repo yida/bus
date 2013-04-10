@@ -4,7 +4,7 @@ local bit = require 'bit'
 function readImuLine(str, len)
   local imu = {}
   imu.type = 'imu'
-  imu.timstamp = tonumber(string.sub(str, 1, 16))
+  imu.timestamp = tonumber(string.sub(str, 1, 16))
   substr = str:sub(17, #str)
 --  print(substr:byte(1, #substr))
   imustrs = substr
@@ -61,8 +61,7 @@ function iterateIMU(data, xmlroot)
         local datacheck = checkData(imu)
         local tdata = os.date('*t', imu.timestamp)
 --        print(substr:byte(1, #substr))
-        print(string.format('%16f',imu.timstamp), imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
---        error()
+--        print(string.format('%16f',imu.timstamp), imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
 --        print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         imucounter = imucounter + 1
         imuset[imucounter] = imu

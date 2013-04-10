@@ -275,7 +275,7 @@ function measurementGPSUpdate(gps)
   local HDOP = gps.HDOP
   if HDOP > 1.0 then HDOP = 1.0 end
   local VDOP = gps.VDOP
-  if VDOP > 2.0 then HDOP = 2.0 end
+  if VDOP > 2.0 then VDOP = 2.0 end
   local PDOP = gps.PDOP
   local Satellites = gps.satellites
   gpsdop = torch.DoubleTensor({gps.HDOP, gps.VDOP, gps.PDOP})

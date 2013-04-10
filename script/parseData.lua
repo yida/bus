@@ -17,8 +17,8 @@ dataStamp = '01010000'
 --dataStamp = '12311916'
 
 
---imuset = parseIMU()
---saveDataMP(imuset, 'imuMP', './')
+imuset = parseIMU()
+saveDataMP(imuset, 'imuMP', './')
 --print 'prune imu'
 --imusetPruned = pruneTUC(imuset)
 --saveDataMP(imusetPruned, 'imuPrunedMP', './')

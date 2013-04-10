@@ -1,5 +1,3 @@
-require 'ucm'
-
 require 'include'
 require 'common'
 require 'poseUtils'
@@ -15,7 +13,7 @@ local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
---local datasetpath = './'
+local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 --local dataset = loadData(datasetpath, 'gps', _, 1)
 print('done loading data')
@@ -41,6 +39,7 @@ local tstep = 0
 local datatype = ''
 local coorInit = false
 local nspeed = 0
+local truecourse = 0
 
 for i = 1, #dataset do
   if dataset[i].type == 'gps' then
@@ -58,10 +57,10 @@ for i = 1, #dataset do
     if dataset[i].satellites ~= nil then
       satellites = tonumber(dataset[i].satellites)
     end
---    print(HDOP, VDOP, PDOP)
+    print(HDOP, VDOP, PDOP)
 
     if dataset[i].height ~= nil and dataset[i].height ~= '' then
-      height = dataset[i].height
+      height = tonumber(dataset[i].height)
       heightInit = true
     end
 
@@ -75,7 +74,9 @@ for i = 1, #dataset do
     end
 
     if dataset[i].nspeed ~= nil then
-      nspeed = dataset[i].nspeed
+      nspeed = tonumber(dataset[i].nspeed) or 0
+      truecourse = tonumber(dataset[i].truecourse) or 0
+--      print(dataset[i].id, nspeed, truecourse)
       velocityUpdate = true
     end
 
@@ -85,7 +86,7 @@ for i = 1, #dataset do
     
 --    print(latitude, longtitude, height)
     if coorInit == false and heightInit and latitudeInit and longtitudeInit then
-      print(latitude, longtitude, height)
+--      print(latitude, longtitude, height)
       proj = LocalCartesian.new(latitude, longtitude, height, earth)
       coorInit = true
     end
@@ -93,7 +94,14 @@ for i = 1, #dataset do
     if coorInit and positionUpdate then
       ret = proj:Forward(latitude, longtitude, height)
 --      print(ret.x, ret.y, ret.z, HDOP, VDOP, PDOP, latitude, longtitude) 
-      local lgps = dataset[i]
+--      local lgps = dataset[i]
+      lgps = {}
+      lgps.id = dataset[i].id
+      lgps.type = datatype
+      lgps.timestamp = tstep
+      lgps.latitude = latitude
+      lgps.longtitude = longtitude
+      lgps.height = height
       lgps.x = ret.x
       lgps.y = ret.y
       lgps.z = ret.z
@@ -101,21 +109,14 @@ for i = 1, #dataset do
       lgps.VDOP = VDOP
       lgps.PDOP = PDOP
       lgps.satellites = satellites
+      if velocityUpdate then
+        lgps.nspeed = nspeed
+        lgps.truecourse = truecourse or 0
+      end
       gpsLocal[#gpsLocal+1] = lgps
---      gpsstr = serialization.serialize(lgps)
---      print(gpsstr)
---      gpsmp = mp.pack(lgps)
---      print(#gpsstr, #gpsmp)
---      print(gpsmp:byte(1, #gpsmp))
---      print(gpsmp)
---      local lg = mp.unpack(gpsstr)
     end
   end
 end
 
 print(#gpsLocal, dopcounter)
---saveData(gpsLocal, 'gpsLocal')
 saveDataMP(gpsLocal, 'gpsLocalMP', './')
---local dataset = loadDataMP('./', 'gpsLocal', _, 1)
---print(#dataset)
-
