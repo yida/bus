@@ -30,4 +30,4 @@ for i = 1, #dataset do
   end
 end
 
-saveDataMP(dataset, 'imuBinaryMP', './')
+saveDataMP(dataset, 'imuBinaryMP', datasetpath)
