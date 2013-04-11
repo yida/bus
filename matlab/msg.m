@@ -1,7 +1,7 @@
 %
 clear all;
 
-filename = '../data/stateMP-04.09.2013.13.57.10-0';
+filename = '../data/stateMP-04.10.2013.17.14.35-0';
 
 tic;
 fid = fopengeneric(filename);
@@ -17,9 +17,11 @@ for i = 1 : size(state, 1)
     pos(2, i) = state{i}.y;
     pos(3, i) = state{i}.z;
     pos(4, i) = state{i}.timestamp;
-    pos(5, i) = state{i}.roll;
-    pos(6, i) = state{i}.pitch;
-    pos(7, i) = state{i}.yaw;
+    Q = double([state{i}.q0, state{i}.q1, state{i}.q2, state{i}.q3]);
+    [yaw pitch roll] = quat2angle(Q);
+    pos(5, i) = roll;
+    pos(6, i) = pitch;
+    pos(7, i) = yaw;
 
 %     if state{i}.label ~= 3
 %         labelc = labelc + 1;
@@ -97,18 +99,18 @@ for i = 1: size(imu, 1)
     imudata(10, i) = imu{i}.timestamp;
 end
 
-%%
-filename = '../data/150213185940.20/headingMP';
-
-tic;
-fid = fopengeneric(filename);
-data = fread(fid, '*uint8');
-mag = msgpack('unpacker', data);
-toc;
-
-magdata = zeros(2, size(mag, 1));
-for i = 1: size(mag, 1) 
-    magdata(1, i) = mag{i}.heading;
-    magdata(2, i) = mag{i}.timestamp;
-end
+% %%
+% filename = '../data/150213185940.20/headingMP';
+% 
+% tic;
+% fid = fopengeneric(filename);
+% data = fread(fid, '*uint8');
+% mag = msgpack('unpacker', data);
+% toc;
+% 
+% magdata = zeros(2, size(mag, 1));
+% for i = 1: size(mag, 1) 
+%     magdata(1, i) = mag{i}.heading;
+%     magdata(2, i) = mag{i}.timestamp;
+% end
 

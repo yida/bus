@@ -9,16 +9,18 @@ hold on;
 %idx = floor((idf(1) + ide(end))/2);
 idx = floor(size(gpspos, 2));
 % %idx = size(gpspos, 2);
-% heading = gpspos(7, 1:idx);
-cosheading = cos(gpspos(6,1:idx)) .* gpspos(5, 1:idx) * 10;
-sinheading = sin(gpspos(6,1:idx)) .* gpspos(5, 1:idx) * 10;
+heading = gpspos(7, 1:idx);
+% cosheading = cos(gpspos(6,1:idx)) .* gpspos(5, 1:idx) * 10;
+% sinheading = sin(gpspos(6,1:idx)) .* gpspos(5, 1:idx) * 10;
+cosheading = cos(heading);
+sinheading = sin(heading);
 % yaw = pos(7, 1:end);
 % cosyaw = cos(pos(7,1:end));
 % sinyaw = sin(pos(7,1:end));
 
 % plot(pos(1,1:end), pos(2,1:end), 'y.');
 plot(gpspos(1,1:idx), gpspos(2,1:idx), 'r.');
-% quiver(gpspos(1,1:idx), gpspos(2,1:idx), cosheading, sinheading);
+quiver(gpspos(1,1:idx), gpspos(2,1:idx), sinheading, cosheading);
 % quiver(pos(1,1:end), pos(2,1:end), cosyaw, sinyaw, 'r');
 
 % plot(gpspos(1,:), gpspos(2,:), 'r.');
