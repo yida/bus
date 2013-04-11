@@ -3,11 +3,11 @@
 
 for i = 1 : size(gpspos, 2)
 %for i = 1 : 1
-   gpst = gpspos(4, i);
-%   idxf = find(magdata(2, :) >= gpst);
-%   idxe = find(magdata(2, :) <= gpst);
-%   idxm = floor((idxf(1) + idxe(end))/2);
-%   gpspos(6, i) = magdata(1, idxm);
+  gpst = gpspos(4, i);
+  idxf = find(imu(10, :) >= gpst);
+  idxe = find(imu(10, :) <= gpst);
+  idxm = floor((idxf(1) + idxe(end))/2);
+  gpspos(6, i) = imu(6, idxm);
 
 %   idxf = find(pos(4, :) >= gpst);
 %   idxe = find(pos(4, :) <= gpst);
