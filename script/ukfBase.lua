@@ -100,9 +100,12 @@ function processUpdatePos(tstep, gps)
   yMean:copy(torch.mean(Y, 2))
   yMeanQ = QuatMean(Y:narrow(1, 7, 4), state:narrow(1, 7, 4))
   yMean:narrow(1, 7, 4):copy(yMeanQ)
-  print(yMean[1][1], yMean[2][1], yMean[3][1])
+--  print(yMean[1][1], yMean[2][1], yMean[3][1])
 
   res = PrioriEstimate(dtime)
+
+  processInit = true
+  return true
 end
 
 function processUpdateRot(tstep, imu)
@@ -154,9 +157,6 @@ function GenerateSigmaPoints(dt)
     Chi:narrow(2, i + ns, 1):narrow(1, 7, 4):copy(QuatMul(q, qW))
   end
   return true
-end
-
-function ProcessModelPos(dt)
 end
 
 function ProcessModelRot(dt)

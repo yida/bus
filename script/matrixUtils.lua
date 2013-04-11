@@ -31,16 +31,6 @@ function cholesky(A)
   return L
 end
 
---function det(A)
---  local A = torch.lu(A)
---  local dim = A:size(1)
---  local d = 1
---  for i = 1, dim do
---    d = d * A[i][i]
---  end
---  return d
---end
-
 function GaussianPDF(x, mean, cov)
 --  print(x)
 --  print(mean)

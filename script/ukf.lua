@@ -33,7 +33,7 @@ local kCount = 0
 local t1 = utime()
 for i = 1, #dataset do
   tstep = dataset[i].timstamp or dataset[i].timestamp
-  if tstep > 946686041 then error() end
+--  if tstep > 946686041 then error() end
   if dataset[i].type == 'imu' then
     local ret = processUpdateRot(tstep, dataset[i])
     if ret == true then measurementGravityUpdate() end
@@ -52,7 +52,7 @@ for i = 1, #dataset do
 --    if kCount ~= KGainCount then
 --      print(1/(utime() - t1))
 --      t1 = utime()
---        print(KGainCount)
+        print(KGainCount)
         kCount = KGainCount      
       if saveState then
         local Q = state:narrow(1, 7, 4)

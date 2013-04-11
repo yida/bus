@@ -23,45 +23,15 @@ function extractFromLog(dataset)
       mag[#mag+1] = dataset[i]
     elseif dataset[i].type == 'gps' then
       if gpsChecksum(dataset[i].line) then
---        if dataset[i].line:find('$GPGGA') or dataset[i].line:find('$GPRMC') then
---          print(dataset[i].line)
---        end
         gpsContent = readGPSLine(dataset[i].line, #dataset[i].line, 1)
-        local datavalid = true
-        if gpsContent.id == 'GLL' or gpsContent.id == 'RMC' then 
-          if gpsContent.status == 'V' then
---            print(gpsContent.id, gpsContent.status) 
-            datavalid = false
-          end
-        end
-        if gpsContent.id == 'GGA' then 
-          if gpsContent.quality ~= '1' and gpsContent.quality ~= '2' then
-            datavalid = false
---            print(gpsContent.id, gpsContent.quality) 
-          end
-        end
-        if gpsContent.id == 'GSA' then 
-          if gpsContent.navMode == '1' or gpsContent.navMode == '2' then
-            datavalid = false
---            print(gpsContent.id, gpsContent.navMode) 
-          end
-        end
-        if gpsContent.id == 'GLL'  or gpsContent.id == 'RMC' or gpsContent.id == 'VTG' then
-          if gpsContent.posMode:find('A') == nil and gpsContent.posMode:find('D') == nil then
-            datavalid = false
---            print(gpsContent.id, gpsContent.posMode) 
-          end
-        end
-        if gpsContent.id == nil then datavalid = false end
+        local datavalid = gpsDataCheck(gpsContent)
         if datavalid then 
           gpsContent.timestamp = dataset[i].timestamp
           gpsContent.timstamp = nil
           gps[#gps+1] = gpsContent
         end
       end
-    elseif dataset[i].type == 'label' then
-      label[#label+1] = dataset[i]
-    end
+    elseif dataset[i].type == 'label' then label[#label+1] = dataset[i] end
   end
   return imu, mag, gps, label
 end
