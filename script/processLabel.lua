@@ -29,11 +29,13 @@ function extractLabel(dataset, Debug)
       end
       labelstamps[#labelstamps].et = time
       lastlabel = label
+    --[[ -- debug 
       if label == '1000' or label == '0100' then
         if debug then print(time, init..'left turn '..label) end
       elseif label == '0010' or label == '0001' then
         if debug then print(time, init..'right turn '..label) end
       end
+    --]]
     end
   end
   
@@ -45,16 +47,91 @@ function extractLabel(dataset, Debug)
   return labelstamps
 end
 
+function labelconversion(dataset)
+  local labelstamps = {}
+  for i = 1, #dataset do
+    local label = dataset[i].value
+    local lstamp = {}
+    lstamp.timestamp = dataset[i].timestamp
+    if label:find('1000') then lstamp.label = 1 
+    elseif label:find('0100') then lstamp.label = 2
+    elseif label:find('0010') then lstamp.label = 3
+    elseif label:find('0001') then lstamp.label = 4
+    end
+    labelstamps[#labelstamps+1] = lstamp
+  end
+  -- pair check
+  local lastLabel = 0
+  local labelInit = false
+  for i = 1, #labelstamps do
+    if not labelInit then
+      labelInit = true
+      lastLabel = labelstamps[i].label
+    else
+      if lastLabel == 1 then
+        if labelstamps[i].label == 3 or labelstamps[i].label == 4 then
+          error('not match pair')
+        end
+      end
+      if lastLabel == 3 then
+        if labelstamps[i].label == 1 or labelstamps[i].label == 2 then
+          error('not match pair')
+        end
+      end
+--      print(labelstamps[i].label, lastLabel)
+      lastLabel = labelstamps[i].label
+    end
+  end
+  return labelstamps
+end
+
 function applyLabel(state, lstamps)
+  local inturn = false
+  local nturn = 0
+  local turns = {}
+  for i = 1, #lstamps do
+    local turn = {}
+    if not inturn and (lstamps[i].label == 1 or lstamps[i].label == 3) then
+
+      if turns[#turns] then 
+        turns[#turns].endtime = lstamps[i-1].timestamp
+        print('close turn', nturn, lstamps[i-1].timestamp)
+      end
+
+      nturn = nturn + 1
+      turn.begintime = lstamps[i].timestamp
+      if lstamps[i].label == 1 then turn.label = 1;
+      elseif lstamps[i].label == 3 then turn.label = 2; end
+
+      turns[#turns+1] = turn
+      print('open turn', nturn, i, lstamps[i].timestamp) 
+      inturn = true
+    end
+
+    if inturn and (lstamps[i].label == 2 or lstamps[i].label == 4) then
+      inturn = false
+    end
+
+  end
+  turns[#turns].endtime = lstamps[#lstamps].timestamp
+  print 'check turning starting and ending time'
+  for i = 1, #turns do
+    print(turns[i].begintime, turns[i].endtime)
+  end
+
   for i = 1, #state do
     local ts = state[i].timestamp
-    local label = 3 -- go straight
-    for lidx = 1, #lstamps do
-      if tonumber(ts) >= tonumber(lstamps[lidx].st) and tonumber(ts) <= tonumber(lstamps[lidx].et) then
-        label = lstamps[lidx].label
+    state[i].label = 3 -- in default use label 3 as straight
+    for iturn = 1, #turns do
+      if tonumber(ts) >= tonumber(turns[iturn].begintime) and tonumber(ts) <= tonumber(turns[iturn].endtime) then
+        state[i].label = turns[iturn].label
       end
     end
-    state[i].label = label
+    if state[i-1] then 
+      state[i].prelabel = state[i-1].label
+    else
+      state[i].prelabel = -1
+    end
   end
   return state
 end
@@ -104,7 +181,17 @@ local label = loadDataMP(datasetpath, 'labelMP', _, 1)
 --local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 local state = loadDataMP(datasetpath, 'imuBinaryMP', _, 1)
 
-labelstamps = extractLabel(label)
-obs = applyLabel(state, labelstamps)
-obsSeq = splitObservation(obs)
-saveDataMP(obs, 'imuwlabelBinaryMP', datasetpath)
+--labelstamps = extractLabel(label)
+labelstamps = labelconversion(label)
+statewlabel = applyLabel(state, labelstamps)
+for i = 1, #statewlabel do
+  if statewlabel[i].label ~= 3 and statewlabel[i].label ~= statewlabel[i].prelabel then
+    print(statewlabel[i].label, statewlabel[i].prelabel)
+  end
+end
+saveDataMP(statewlabel, 'imuwlabelMP', './')
+
+
+--obs = applyLabel(state, labelstamps)
+--obsSeq = splitObservation(obs)
+--saveDataMP(obs, 'imuwlabelBinaryMP', datasetpath)
