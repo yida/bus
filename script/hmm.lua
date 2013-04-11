@@ -16,10 +16,6 @@ labelstamps = extractLabel(label)
 obs = applyLabel(state, labelstamps)
 obsSeq = splitObservation(obs)
 
---for i = 1, #obsSeq[2] do
---  print(obsSeq[2][i].label, obsSeq[2][i].prelabel)
---end
---
 ObsSetNum = #obsSeq
 print('num of training sets '..#obsSeq)
 ObsSetIdx = torch.randperm(ObsSetNum)
@@ -56,9 +52,6 @@ for i = 1, testSetNum do
   print('detected state: '..st)
 --  print(obsSeq[ObsSetIdx[i+trainSetNum]].label)
 end
-
-
-
 
 --local dataPath = '../test/'
 --for i = 1, 7 do

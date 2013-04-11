@@ -99,12 +99,12 @@ function splitObservation(obs, Debug)
 end
 
 local datasetpath = '../data/150213185940.20/'
-local label = loadDataMP(datasetpath, 'labelCleanMP', _, 1)
+local label = loadDataMP(datasetpath, 'labelMP', _, 1)
 --local state = loadDataMP(datasetpath, 'stateMP', _, 1)
-local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
---
+--local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+local state = loadDataMP(datasetpath, 'imuBinaryMP', _, 1)
+
 labelstamps = extractLabel(label)
 obs = applyLabel(state, labelstamps)
 obsSeq = splitObservation(obs)
-
-saveDataMP(obs, 'gpswlabelMP', datasetpath)
+saveDataMP(obs, 'imuwlabelBinaryMP', datasetpath)

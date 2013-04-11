@@ -31,7 +31,7 @@ for i = 1 : size(state, 1)
 end
 
 %%
-filename = '../data/150213185940.20/gpsLocalMP';
+filename = '../data/150213185940.20/gpswlabelMP';
 
 tic;
 fid = fopengeneric(filename);
@@ -54,6 +54,7 @@ for i = 1 : size(gps, 1)
       gpspos(5, i) = 0;
       gpspos(6, i) = 0;
     end
+    gpspos(7, i) = gps{i}.label;
 %     if gps{i}.label ~= 3
 %         gpslabelc = gpslabelc + 1;
 %         gpslabel(1, gpslabelc) = gps{i}.x;
@@ -76,7 +77,7 @@ end
 % axis equal;
 
 %%
-filename = '../data/150213185940.20/imuPrunedMP';
+filename = '../data/150213185940.20/imuwlabelBinaryMP';
 
 fid = fopengeneric(filename);
 data = fread(fid, '*uint8');
@@ -90,25 +91,40 @@ for i = 1: size(imu, 1)
     imudata(3, i) = imu{i}.az;
     imudata(4, i) = imu{i}.wr;
     imudata(5, i) = imu{i}.wp;
-    imudata(6, i) = imu{i}.wy;
+    imudata(6, i) = imu{i}.bwy;
     imudata(7, i) = imu{i}.r;
     imudata(8, i) = imu{i}.p;
     imudata(9, i) = imu{i}.y;
     imudata(10, i) = imu{i}.timestamp;
+    imudata(11, i) = imu{i}.label;
 end
 
 %%
-filename = '../data/150213185940.20/headingMP';
+% filename = '../data/150213185940.20/headingMP';
+% 
+% tic;
+% fid = fopengeneric(filename);
+% data = fread(fid, '*uint8');
+% mag = msgpack('unpacker', data);
+% toc;
+% 
+% magdata = zeros(2, size(mag, 1));
+% for i = 1: size(mag, 1) 
+%     magdata(1, i) = mag{i}.heading;
+%     magdata(2, i) = mag{i}.timestamp;
+% end
 
-tic;
-fid = fopengeneric(filename);
-data = fread(fid, '*uint8');
-mag = msgpack('unpacker', data);
-toc;
+%%
+% filename = '../data/150213185940.20/gpswlabelMP';
+% 
+% tic;
+% fid = fopengeneric(filename);
+% data = fread(fid, '*uint8');
+% label = msgpack('unpacker', data);
+% toc;
 
-magdata = zeros(2, size(mag, 1));
-for i = 1: size(mag, 1) 
-    magdata(1, i) = mag{i}.heading;
-    magdata(2, i) = mag{i}.timestamp;
-end
-
+% labeldata = zeros(2, size(label, 1));
+% for i = 1 : size(label, 1)
+%     labeldata(1, i) = label{i}.num;
+%     labeldata(2, i) = label{i}.timestamp;
+% end

@@ -14,7 +14,6 @@ function trainHMM(trainSet, stateSet)
   end
   pinit:div(#trainSet)
   
-  
   print 'Train transition probability'
   local ptrans = torch.Tensor(stateNum, stateNum):fill(0)
   for i = 1, #trainSet do 

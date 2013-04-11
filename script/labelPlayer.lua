@@ -1,5 +1,3 @@
-require 'ucm'
-
 require 'include'
 require 'common'
 require 'poseUtils'
@@ -27,8 +25,22 @@ local datasetpath = '../data/150213185940.20/'
 --
 --print(#newdataset)
 --saveDataMP(newdataset, 'labelCleanMP', datasetpath)
-local dataset = loadDataMP(datasetpath, 'labelCleanMP', _, 1)
+local dataset = loadDataMP(datasetpath, 'labelMP', _, 1)
 
 for i = 1, #dataset do
-  print(dataset[i].timestamp, dataset[i].value)
+  if dataset[i].value:find('1000') then
+    dataset[i].num = 1
+    print(dataset[i].timestamp, 1)
+  elseif dataset[i].value:find('0100') then
+    dataset[i].num = 2
+    print(dataset[i].timestamp, 2)
+  elseif dataset[i].value:find('0010') then
+    dataset[i].num = 3
+    print(dataset[i].timestamp, 3)
+  elseif dataset[i].value:find('0001') then
+    dataset[i].num = 4
+    print(dataset[i].timestamp, 4)
+  end
 end
+
+saveDataMP(dataset, 'labelnumMP', datasetpath)
