@@ -13,11 +13,13 @@ local trainSet = loadDataMP(datasetpath, 'imuwlabelMP', _, 1)
 
 --print(#trainSet)
 hmm = trainDiscreteHMM(trainSet, stateSet)
---util.ptorch(hmm.pinit)
---util.ptorch(hmm.ptrans)
---util.ptorch(hmm.pobs)
 alpha = ForwardBackwardDiscrete(hmm, trainSet, stateSet)
-print(#alpha)
+
+print('sync testing data')
+for i = 1, #trainSet do
+  trainSet[i].alpha = alpha[i]
+end
+saveDataMP(trainSet, 'yawtestMP', './')
 
 
 --local datasetpath = '../data/150213185940/'

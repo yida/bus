@@ -100,7 +100,7 @@ end
 % end
 
 %%
-imu = loadDataMP('../data/150213185940.20/imuwlabelBinaryMP');
+imu = loadDataMP('../data/150213185940.20/yawtestMP');
 imudata = zeros(10, size(imu, 1));
 for i = 1: size(imu, 1) 
     imudata(1, i) = imu{i}.ax;
@@ -114,6 +114,17 @@ for i = 1: size(imu, 1)
     imudata(9, i) = imu{i}.y;
     imudata(10, i) = imu{i}.timestamp;
     imudata(11, i) = imu{i}.label;
+    if iscell(imu{i}.alpha)
+    alpha = double([imu{i}.alpha{1},...
+                    imu{i}.alpha{2},...
+                    imu{i}.alpha{3}]);
+    else
+    alpha = double([imu{i}.alpha(1),...
+                    imu{i}.alpha(2),...
+                    imu{i}.alpha(3)]);
+    end
+    [C, I] = max(alpha);
+    imudata(12, i) = I;
 end
 
 
