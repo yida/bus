@@ -4,6 +4,3 @@ LUA_COM=/usr/local/bin/luajit
 
 echo "Start record imu"
 $LUA_COM /home/root/script/super_recoder.lua
-
-
-

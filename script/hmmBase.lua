@@ -1,13 +1,13 @@
 require 'include'
 require 'common'
-require 'torch-load'
-
+require 'torch'
+local util = require 'util'
 require 'matrixUtils'
 
-function trainHMM(trainSet, stateSet)
+function trainDiscreteHMM(trainSet, stateSet)
   local stateNum = #stateSet
   print 'Train initial probability'
-  local pinit = torch.Tensor(stateNum, 1):fill(0)
+  local pinit = torch.DoubleTensor(stateNum, 1):fill(0)
   for i = 1, #trainSet do 
     local label = trainSet[i].label
     pinit[label][1] = pinit[label][1] + 1
@@ -15,7 +15,53 @@ function trainHMM(trainSet, stateSet)
   pinit:div(#trainSet)
   
   print 'Train transition probability'
-  local ptrans = torch.Tensor(stateNum, stateNum):fill(0)
+  local ptrans = torch.DoubleTensor(stateNum, stateNum):fill(0)
+  for i = 1, #trainSet do 
+    local label = trainSet[i].label
+    local preLabel = trainSet[i].prelabel
+    if preLabel ~= -1 then
+      ptrans:narrow(1, preLabel, 1):narrow(2, label, 1):add(1)
+    end
+  end
+  for i = 1, stateNum do
+    local row = ptrans:narrow(1, i, 1)
+    local rowSum = row:sum()
+    row:div(rowSum)
+  end
+
+  print'Train Observation Probability'
+  local obsDim = 3 -- number of discrete observations
+  local pobs = torch.DoubleTensor(obsDim, stateNum):fill(0)
+  local pobsCount = torch.DoubleTensor(1, stateNum):fill(0)
+  for i = 1, #trainSet do
+    pobs[trainSet[i].bwy + obsDim - 1][trainSet[i].label] = 
+               pobs[trainSet[i].bwy + obsDim - 1][trainSet[i].label] + 1
+    pobsCount[1][trainSet[i].label] = pobsCount[1][trainSet[i].label] + 1
+  end
+  for i = 1, stateNum do
+    pobs:narrow(2, i, 1):div(pobsCount[1][i])
+  end
+ 
+  hmm = {}
+  hmm.pinit = pinit
+  hmm.ptrans = ptrans
+  hmm.pobs = pobs
+
+  return hmm
+end
+
+function trainHMM(trainSet, stateSet)
+  local stateNum = #stateSet
+  print 'Train initial probability'
+  local pinit = torch.DoubleTensor(stateNum, 1):fill(0)
+  for i = 1, #trainSet do 
+    local label = trainSet[i].label
+    pinit[label][1] = pinit[label][1] + 1
+  end
+  pinit:div(#trainSet)
+  
+  print 'Train transition probability'
+  local ptrans = torch.DoubleTensor(stateNum, stateNum):fill(0)
   for i = 1, #trainSet do 
     local label = trainSet[i].label
     local preLabel = trainSet[i].prelabel
@@ -33,17 +79,17 @@ function trainHMM(trainSet, stateSet)
   print'Train Observation Probability'
   local obsDim = 3
 --  local obsDim = 9
-  local pobsMean = torch.Tensor(obsDim, stateNum):fill(0)
-  local pobsMeanCount = torch.Tensor(1, stateNum):fill(0)
-  local pobsCov = torch.Tensor(stateNum, obsDim, obsDim):fill(0)
-  local pobsCovCount = torch.Tensor(1, stateNum):fill(0)
+  local pobsMean = torch.DoubleTensor(obsDim, stateNum):fill(0)
+  local pobsMeanCount = torch.DoubleTensor(1, stateNum):fill(0)
+  local pobsCov = torch.DoubleTensor(stateNum, obsDim, obsDim):fill(0)
+  local pobsCovCount = torch.DoubleTensor(1, stateNum):fill(0)
   
   -- observation Mean
   for i = 1, #trainSet do 
---    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+--    local obs = torch.DoubleTensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
 --                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
 --                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
-    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    local obs = torch.DoubleTensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
 
     local label = trainSet[i].label
     local prevLabel = trainSet[i].prelabel
@@ -58,9 +104,9 @@ function trainHMM(trainSet, stateSet)
   
   -- observation Cov
   for i = 1, #trainSet do
-    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+    local obs = torch.DoubleTensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
 
---    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+--    local obs = torch.DoubleTensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
 --                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
 --                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
     obs:resize(obs:size(1), 1)
@@ -84,13 +130,44 @@ function trainHMM(trainSet, stateSet)
   return hmm
 end
 
+function ForwardBackwardDiscrete(hmm, testSet, stateSet)
+  local stateNum = #stateSet
+  local alpha = torch.DoubleTensor(stateNum, 1):fill(0)
+  local alphaSet = {}
+  local obsDim = 3
+  for i = 1, #testSet do
+    local obs = testSet[i].bwy
+    for st = 1, stateNum do
+      if i == 1 then
+        alpha[st][1] = hmm.pinit[st][1] * hmm.pobs[obs + obsDim - 1][st]
+      else
+        local transP = 0
+        for preSt = 1, stateNum do
+          transP = transP + alpha[preSt][1] * hmm.ptrans[preSt][st]
+        end
+        alpha[st][1] = transP * hmm.pobs[obs + obsDim - 1][st]
+      end
+    end
+    alpha:div(alpha:norm())
+
+    local alphaTbl = {}
+    local pObsGamma = 0
+    for st = 1, stateNum do
+      alphaTbl[st] = alpha[st][1]
+      pObsGamma = pObsGamma + alpha[st][1]
+    end
+    alphaSet[#alphaSet + 1] = alphaTbl
+  end
+  return alphaSet
+end
+
 function ForwardBackward(hmm, testSet, stateSet)
   local stateNum = #stateSet
-  local alpha = torch.Tensor(stateNum, 1):fill(0)
-  local pobs = torch.Tensor(stateNum, 1):fill(0)
+  local alpha = torch.DoubleTensor(stateNum, 1):fill(0)
+  local pobs = torch.DoubleTensor(stateNum, 1):fill(0)
   for i = 1, #testSet do
-    local obs = torch.Tensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
---    local obs = torch.Tensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
+    local obs = torch.DoubleTensor({trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
+--    local obs = torch.DoubleTensor({trainSet[i].x, trainSet[i].y, trainSet[i].z,
 --                              trainSet[i].vx, trainSet[i].vy, trainSet[i].vz,
 --                              trainSet[i].e1, trainSet[i].e2, trainSet[i].e3})
     for st = 1, stateNum do
@@ -117,12 +194,12 @@ end
 
 function viterbi(hmm, testSet, stateSet)
   local stateNum = #stateSet
-  local delta = torch.Tensor(stateNum, 1):fill(0)
-  local psi = torch.Tensor(stateNum, 1):fill(0)
-  local pobs = torch.Tensor(stateNum, 1):fill(0)
+  local delta = torch.DoubleTensor(stateNum, 1):fill(0)
+  local psi = torch.DoubleTensor(stateNum, 1):fill(0)
+  local pobs = torch.DoubleTensor(stateNum, 1):fill(0)
   for i = 1, #testSet do
-    local obs = torch.Tensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
---    local obs = torch.Tensor({testSet[i].x, testSet[i].y, testSet[i].z,
+    local obs = torch.DoubleTensor({testSet[i].e1, testSet[i].e2, testSet[i].e3})
+--    local obs = torch.DoubleTensor({testSet[i].x, testSet[i].y, testSet[i].z,
 --                              testSet[i].vx, testSet[i].vy, testSet[i].vz,
 --                              testSet[i].e1, testSet[i].e2, testSet[i].e3})
 --  print 'state'
@@ -132,7 +209,7 @@ function viterbi(hmm, testSet, stateSet)
       if i == 1 then
         delta[st][1] = hmm.pinit[st][1] * pobs[st][1]
       else
-        local newDelta = torch.Tensor(stateNum, 1):fill(0)
+        local newDelta = torch.DoubleTensor(stateNum, 1):fill(0)
         for preSt = 1, stateNum do
           newDelta[preSt][1] = delta[st][1] * hmm.ptrans[preSt][st]
         end
@@ -165,6 +242,6 @@ end
 --  p, st = viterbi(hmm, testSet, stateSet)
 --  print(stateSet[st], p)
 --end
-----x = torch.Tensor({-1.1299, -0.8433, 1.0718})
+----x = torch.DoubleTensor({-1.1299, -0.8433, 1.0718})
 ----print(GaussianPDF(x, hmm.pobsMean:narrow(2, 1, 1), hmm.pobsCov:narrow(1, 1, 1)))
 --
