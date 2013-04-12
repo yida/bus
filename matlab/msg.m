@@ -100,7 +100,7 @@ end
 % end
 
 %%
-imu = loadDataMP('../data/150213185940.20/yawtestMP');
+imu = loadDataMP('../data/150213185940.20/yawtestGauMP');
 imudata = zeros(10, size(imu, 1));
 for i = 1: size(imu, 1) 
     imudata(1, i) = imu{i}.ax;
