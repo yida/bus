@@ -18,6 +18,7 @@ local trainSet = loadDataMP(datasetpath, 'imuwlabelMP', _, 1)
 --print(#trainSet)
 
 --print(#trainSet)
+--[[
 hmm = trainDiscreteHMM(trainSet, stateSet)
 alpha = ForwardBackwardDiscrete(hmm, trainSet, stateSet)
 
@@ -28,8 +29,20 @@ for i = 1, #trainSet do
 --  trainSet[i].alpha = alpha[i]
   trainSet[i].predict = idx[1]
 end
+saveDataMP(trainSet, 'yawtestMP', './')
+--]]
+
+hmm = trainHMM(trainSet, stateSet)
+alpha = ForwardBackward(hmm, trainSet, stateSet)
+--
+print('sync testing data')
+for i = 1, #trainSet do
+  trainSet[i].alpha = alpha[i]
+end
+saveDataMP(trainSet, 'yawtestGauMP', './')
 --saveDataMP(trainSet, 'estimationMP', './')
 saveCsvMP(trainSet, 'estimate-csv', './')
+
 
 
 --local datasetpath = '../data/150213185940/'
