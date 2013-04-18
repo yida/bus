@@ -9,7 +9,7 @@ function txt = myupdatefcn(~, event_obj, pos, gpspos, imu)
     end
     t1 = find(imu(4,:)>=t);
     t2 = find(imu(4,:)<=t);
-    tidx = floor((t1(1) + t2(end)) / 2);
+    tidx = floor((t1(1) + t2(end)) / 2)
     yaw = pos(7, tidx) * 180 / pi;
     txt = {['x: ',num2str(ps(1))],...
         ['y: ',num2str(ps(2))],...

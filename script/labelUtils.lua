@@ -1,7 +1,6 @@
 require 'include'
 require 'common'
 require 'poseUtils'
-require 'torch-load'
 
 function extractLabel(dataset, Debug)
   local debug = Debug or false

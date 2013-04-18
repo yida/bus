@@ -100,7 +100,7 @@ end
 % end
 
 %%
-imu = loadDataMP('../data/150213185940.20/yawtestMP');
+imu = loadDataMP('../data/150213185940.20/estimate1');
 imudata = zeros(10, size(imu, 1));
 for i = 1: size(imu, 1) 
     imudata(1, i) = imu{i}.ax;
@@ -108,7 +108,7 @@ for i = 1: size(imu, 1)
     imudata(3, i) = imu{i}.az;
     imudata(4, i) = imu{i}.wr;
     imudata(5, i) = imu{i}.wp;
-    imudata(6, i) = imu{i}.bwy;
+    imudata(6, i) = imu{i}.wy;
     imudata(7, i) = imu{i}.r;
     imudata(8, i) = imu{i}.p;
     imudata(9, i) = imu{i}.y;

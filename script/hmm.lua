@@ -1,6 +1,6 @@
 require 'include'
 require 'common'
-require 'torch-load'
+require 'torch'
 
 require 'matrixUtils'
 require 'labelUtils'
@@ -10,6 +10,12 @@ local stateSet = {'leftTurn', 'rightTurn', 'Straight'}
 
 local datasetpath = '../data/150213185940.20/'
 local trainSet = loadDataMP(datasetpath, 'imuwlabelMP', _, 1)
+--local trainSet = {}
+--print(#train)
+--for i = 3880, #train do
+--  trainSet[#trainSet+1] = train[i];
+--end
+--print(#trainSet)
 
 --print(#trainSet)
 hmm = trainDiscreteHMM(trainSet, stateSet)
@@ -17,9 +23,13 @@ alpha = ForwardBackwardDiscrete(hmm, trainSet, stateSet)
 
 print('sync testing data')
 for i = 1, #trainSet do
-  trainSet[i].alpha = alpha[i]
+  y, idx = torch.max(torch.DoubleTensor(alpha[i]), 1)
+--  util.ptorch(y)
+--  trainSet[i].alpha = alpha[i]
+  trainSet[i].predict = idx[1]
 end
-saveDataMP(trainSet, 'yawtestMP', './')
+--saveDataMP(trainSet, 'estimationMP', './')
+saveCsvMP(trainSet, 'estimate-csv', './')
 
 
 --local datasetpath = '../data/150213185940/'
