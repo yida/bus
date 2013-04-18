@@ -10,14 +10,24 @@ local stateSet = {'leftTurn', 'rightTurn', 'Straight'}
 
 local datasetpath = '../data/150213185940.20/'
 local trainSet = loadDataMP(datasetpath, 'imuwlabelMP', _, 1)
---local trainSet = {}
---print(#train)
---for i = 3880, #train do
---  trainSet[#trainSet+1] = train[i];
---end
---print(#trainSet)
+hmm = trainHMM(trainSet, stateSet)
 
---print(#trainSet)
+
+local datasetpath = '../data/010213180304.00/'
+local testSet = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+
+alpha = ForwardBackward(hmm, testSet, stateSet)
+print('sync testing data')
+for i = 1, #trainSet do
+  y, idx = torch.max(torch.DoubleTensor(alpha[i]), 1)
+  testSet[i].predict = idx[1]
+end
+
+saveDataMP(testSet, 'estimateMP', './')
+--saveDataMP(trainSet, 'estimationMP', './')
+--saveCsvMP(trainSet, 'estimate-csv', './')
+
+
 --[[
 hmm = trainDiscreteHMM(trainSet, stateSet)
 alpha = ForwardBackwardDiscrete(hmm, trainSet, stateSet)
@@ -31,17 +41,6 @@ for i = 1, #trainSet do
 end
 saveDataMP(trainSet, 'yawtestMP', './')
 --]]
-
-hmm = trainHMM(trainSet, stateSet)
-alpha = ForwardBackward(hmm, trainSet, stateSet)
---
-print('sync testing data')
-for i = 1, #trainSet do
-  trainSet[i].alpha = alpha[i]
-end
-saveDataMP(trainSet, 'yawtestGauMP', './')
---saveDataMP(trainSet, 'estimationMP', './')
-saveCsvMP(trainSet, 'estimate-csv', './')
 
 
 

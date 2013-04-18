@@ -49,7 +49,7 @@ function iterateMAG(data, xmlroot)
         mag = readMagLine(substr, len)
 --        local datacheck = checkData(mag)
 --        local tdata = os.date('*t', mag.timestamp)
-        print(mag.timstamp, mag.tuc, mag.press, mag.temp, mag.x, mag.y, mag.z)
+--        print(mag.timstamp, mag.tuc, mag.press, mag.temp, mag.x, mag.y, mag.z)
 ----        print(mag.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         magcounter = magcounter + 1
         magset[magcounter] = mag

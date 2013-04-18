@@ -67,12 +67,12 @@ function saveData(dataset, dtype, path)
   print(filename)
 end
 
-function saveCsvMP(dataset, dtype, path)
+function saveCSV(dataset, dtype, path, Debug)
   local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
   local filename = string.format(dtype.."-%s-%d.csv", filetime, filecnt)
-  
+  local debug = Debug or 0
   local file = io.open(Path..filename, "w")
 
   local data1 = dataset[1]
@@ -91,7 +91,8 @@ function saveCsvMP(dataset, dtype, path)
   for i = 1, #dataset do
     local line = ''
     for j = 1, #titles do
-      line = line..dataset[i][titles[j]]..','
+      if debug > 0 then print(titles[j], dataset[i][titles[j]]) end
+      line = line..(dataset[i][titles[j]] or '')..','
     end
     line = line:sub(1, #line-1)
     file:write(line..'\n')

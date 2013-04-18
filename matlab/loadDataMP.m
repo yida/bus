@@ -3,6 +3,5 @@ function dataset = loadDataMP(filename)
     fid = fopengeneric(filename);
     data = fread(fid, '*uint8');
     size(data);
-%     dataset = msgpack('unpacker', data);
-    dataset = 0;
+    dataset = msgpack('unpacker', data);
     toc;

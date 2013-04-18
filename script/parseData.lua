@@ -16,27 +16,33 @@ dataStamp = '01010000'
 --dataStamp = '01010122'
 --dataStamp = '12311916'
 
-
+--[[
 imuset = parseIMU()
 saveDataMP(imuset, 'imuMP', './')
---print 'prune imu'
---imusetPruned = pruneTUC(imuset)
---saveDataMP(imusetPruned, 'imuPrunedMP', './')
---print(#imuset)
+print 'prune imu'
+imusetPruned = pruneTUC(imuset)
+saveDataMP(imusetPruned, 'imuPrunedMP', './')
+print(#imuset)
+--]]
 --
---gpsset = parseGPS()
---saveDataMP(gpsset, 'gpsMP', './')
---print(#gpsset)
+gpsset = parseGPS()
+if #gpsset > 0 then
+  saveDataMP(gpsset, 'gpsMP', './')
+  print(#gpsset)
+end
 --
---magset = parseMAG()
---saveDataMP(magset, 'mag', './')
---print 'prune mag'
---magsetPruned = pruneTUC(magset)
---saveDataMP(magsetPruned, 'magPrunedMP', './')
---print(#magset)
+--[[
+collectgarbage()
+magset = parseMAG()
+saveDataMP(magset, 'mag', './')
+print 'prune mag'
+magsetPruned = pruneTUC(magset)
+saveDataMP(magsetPruned, 'magPrunedMP', './')
+print(#magset)
+collectgarbage()
 ------
---labelset = parseLAB()
---saveDataMP(labelset, 'labelMP', './')
---print(#labelset)
-
+labelset = parseLAB()
+saveDataMP(labelset, 'labelMP', './')
+print(#labelset)
+-]]
 

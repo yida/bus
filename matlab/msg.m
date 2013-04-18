@@ -127,5 +127,14 @@ for i = 1: size(imu, 1)
     imudata(12, i) = I;
 end
 
-
+%%
+gps = loadDataMP('../data/010213180304.00/gpsLocalMP');
+gpspos = zeros(5, size(gps,1));
+for i = 1 : size(gps, 1)
+    gpspos(1, i) = gps{i}.x;
+    gpspos(2, i) = gps{i}.y;
+    gpspos(3, i) = gps{i}.z;
+    gpspos(4, i) = gps{i}.timestamp;
+%     gpspos(5, i) = gps{i}.predict;
+end
 

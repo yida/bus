@@ -67,7 +67,6 @@ function readGPSLine(str, len, startptr)
 --    startpt = 19
 --  end
   local line = string.sub(str, startpt)
---  print(line)
   local stype = string.sub(str, startpt, startpt+5)
   gps.line = line
   if stype == '$GPGGA' then
@@ -172,6 +171,7 @@ function gpsDataCheck(gpsContent)
     end
   end
   if gpsContent.id == nil then datavalid = false end
+  return datavalid
 end
 
 --pos = geo.Forward(27.99, 86.93, 8820)

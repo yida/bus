@@ -40,7 +40,7 @@ function GaussianPDF(x, mean, cov)
   local Cov = torch.DoubleTensor(vectorSize, vectorSize):copy(cov)
   local exp = torch.exp((Diff:t() * torch.inverse(Cov) * Diff):mul(-0.5))
   local detCov = torch.det(Cov)
-  local const = (2 * math.pi)^(-vectorSize/2) / torch.sqrt(detCov)
+  local const = (2 * math.pi)^(-vectorSize/2) / math.sqrt(detCov)
   local pdf = exp:mul(const)
   return pdf  
 end
