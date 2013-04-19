@@ -27,7 +27,7 @@ for i = 1 : size(state, 1)
 end
 
 %%
-gps = loadDataMP('../data/150213185940.20/gpswlabelMP');
+gps = loadDataMP('../data/010213180304.00/gpsLocalMP');
 
 gpspos = zeros(5, size(gps,1));
 % gpslabel = zeros(4, size(state, 1));
@@ -44,7 +44,7 @@ for i = 1 : size(gps, 1)
       gpspos(5, i) = 0;
       gpspos(6, i) = 0;
     end
-    gpspos(7, i) = gps{i}.label;
+%     gpspos(7, i) = gps{i}.label;
 %     if gps{i}.label ~= 3
 %         gpslabelc = gpslabelc + 1;
 %         gpslabel(1, gpslabelc) = gps{i}.x;
@@ -100,7 +100,7 @@ end
 % end
 
 %%
-imu = loadDataMP('../data/150213185940.20/estimate1');
+imu = loadDataMP('../data/010213180304.00/estimateMP');
 imudata = zeros(10, size(imu, 1));
 for i = 1: size(imu, 1) 
     imudata(1, i) = imu{i}.ax;
@@ -113,18 +113,18 @@ for i = 1: size(imu, 1)
     imudata(8, i) = imu{i}.p;
     imudata(9, i) = imu{i}.y;
     imudata(10, i) = imu{i}.timestamp;
-    imudata(11, i) = imu{i}.label;
-    if iscell(imu{i}.alpha)
-    alpha = double([imu{i}.alpha{1},...
-                    imu{i}.alpha{2},...
-                    imu{i}.alpha{3}]);
-    else
-    alpha = double([imu{i}.alpha(1),...
-                    imu{i}.alpha(2),...
-                    imu{i}.alpha(3)]);
-    end
-    [C, I] = max(alpha);
-    imudata(12, i) = I;
+%     imudata(11, i) = imu{i}.label;
+%     if iscell(imu{i}.alpha)
+%     alpha = double([imu{i}.alpha{1},...
+%                     imu{i}.alpha{2},...
+%                     imu{i}.alpha{3}]);
+%     else
+%     alpha = double([imu{i}.alpha(1),...
+%                     imu{i}.alpha(2),...
+%                     imu{i}.alpha(3)]);
+%     end
+%     [C, I] = max(alpha);
+%     imudata(12, i) = I;
 end
 
 %%

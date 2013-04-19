@@ -47,12 +47,13 @@ function extractLabel(dataset, Debug)
   return labelstamps
 end
 
-function labelconversion(dataset)
+function labelconversion(dataset, PairCheck)
   local labelstamps = {}
+  local paircheck = PairCheck or false
   for i = 1, #dataset do
     local label = dataset[i].value
     local lstamp = {}
-    lstamp.timestamp = dataset[i].timestamp
+    lstamp.timestamp = dataset[i].timestamp or dataset[i].timstamp
     if label:find('1000') then lstamp.label = 1 
     elseif label:find('0100') then lstamp.label = 2
     elseif label:find('0010') then lstamp.label = 3
@@ -61,25 +62,27 @@ function labelconversion(dataset)
     labelstamps[#labelstamps+1] = lstamp
   end
   -- pair check
-  local lastLabel = 0
-  local labelInit = false
-  for i = 1, #labelstamps do
-    if not labelInit then
-      labelInit = true
-      lastLabel = labelstamps[i].label
-    else
-      if lastLabel == 1 then
-        if labelstamps[i].label == 3 or labelstamps[i].label == 4 then
-          error('not match pair')
+  if paircheck then
+    local lastLabel = 0
+    local labelInit = false
+    for i = 1, #labelstamps do
+      if not labelInit then
+        labelInit = true
+        lastLabel = labelstamps[i].label
+      else
+        if lastLabel == 1 then
+          if labelstamps[i].label == 3 or labelstamps[i].label == 4 then
+            error('not match pair')
+          end
         end
-      end
-      if lastLabel == 3 then
-        if labelstamps[i].label == 1 or labelstamps[i].label == 2 then
-          error('not match pair')
+        if lastLabel == 3 then
+          if labelstamps[i].label == 1 or labelstamps[i].label == 2 then
+            error('not match pair')
+          end
         end
+  --      print(labelstamps[i].label, lastLabel)
+        lastLabel = labelstamps[i].label
       end
---      print(labelstamps[i].label, lastLabel)
-      lastLabel = labelstamps[i].label
     end
   end
   return labelstamps
@@ -175,22 +178,50 @@ function splitObservation(obs, Debug)
   end
 end
 
-local datasetpath = '../data/150213185940.20/'
+function tstepApply(setFrom, setTo)
+  print(#setFrom, #setTo)
+--  for i = 1, #setFrom do
+--    print(setFrom[i].timestamp)
+--  end
+  print(setFrom[1].timestamp, setTo[1].timestamp)
+  print(setFrom[#setFrom].timestamp, setTo[#setTo].timestamp)
+  for i = 1, #setTo do
+    local tstep = setTo[i].timestamp
+    for j = 1, #setFrom do
+      if math.abs(setFrom[j].timestamp - tstep) < 0.5 then
+        print('find match')
+        setTo[i].label = setFrom[j].label
+        break
+      end
+    end
+    if setTo[i].label then
+      print(tstep, setTo[i].label)
+    else
+      setTo[i].label = 0
+    end
+  end
+  return setTo
+end
+
+local datasetpath = '../data/010213180304.00/'
 local label = loadDataMP(datasetpath, 'labelMP', _, 1)
 --local state = loadDataMP(datasetpath, 'stateMP', _, 1)
 --local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
-local state = loadDataMP(datasetpath, 'imuBinaryMP', _, 1)
+local state = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
 
 --labelstamps = extractLabel(label)
-labelstamps = labelconversion(label)
-statewlabel = applyLabel(state, labelstamps)
+labelstamps = labelconversion(label, false)
+imuwlabel = tstepApply(labelstamps, state)
+saveDataMP(imuwlabel, 'imuwlabelMP', datasetpath)
+--statewlabel = applyLabel(state, labelstamps)
+--[[
 for i = 1, #statewlabel do
   if statewlabel[i].label ~= 3 and statewlabel[i].label ~= statewlabel[i].prelabel then
     print(statewlabel[i].label, statewlabel[i].prelabel)
   end
 end
 saveDataMP(statewlabel, 'imuwlabelMP', './')
-
+--]]
 
 --obs = applyLabel(state, labelstamps)
 --obsSeq = splitObservation(obs)
