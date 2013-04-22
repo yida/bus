@@ -1,8 +1,13 @@
-extern "C" {
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-}
+/*
+ * \file lua_Constants.cpp
+ * \brief Lua wrapper for GeographicLib::Constants
+ * 
+ * Copyright (c) Yida Zhang (2013) <yida@seas.upenn.edu>
+ * Licensed under the MIT/X11 License
+ *
+ */
+
+#include <lua.hpp>
 
 #include <exception>
 #include <GeographicLib/Constants.hpp>
@@ -10,7 +15,6 @@ extern "C" {
 
 using namespace std;
 using namespace GeographicLib;
-
 
 static int lua_Constants_WGS84_a(lua_State *L) {
   try {
@@ -34,11 +38,11 @@ static int lua_Constants_WGS84_f(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg Constants_Methods [] = {
+static const luaL_Reg Constants_Methods [] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg Constants_Functions [] = {
+static const luaL_Reg Constants_Functions [] = {
   {"WGS84_a", lua_Constants_WGS84_a},
   {"WGS84_f", lua_Constants_WGS84_f},
   {NULL, NULL}

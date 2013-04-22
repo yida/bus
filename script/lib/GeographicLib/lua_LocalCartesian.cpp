@@ -1,8 +1,13 @@
-extern "C" {
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-}
+/*
+ * \file lua_LocalCartesian.cpp
+ * \brief Lua wrapper for GeographicLib::LocalCartesian
+ * 
+ * Copyright (c) Yida Zhang (2013) <yida@seas.upenn.edu>
+ * Licensed under the MIT/X11 License
+ *
+ */
+
+#include <lua.hpp>
 
 #include <exception>
 #include <GeographicLib/LocalCartesian.hpp>
@@ -101,13 +106,13 @@ static int lua_LocalCartesian_Reverse(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg LocalCartesian_Methods [] = {
+static const luaL_Reg LocalCartesian_Methods [] = {
   {"Forward", lua_LocalCartesian_Forward},
   {"Reverse", lua_LocalCartesian_Reverse},
   {NULL, NULL}
 };
 
-static const struct luaL_reg LocalCartesian_Functions [] = {
+static const luaL_Reg LocalCartesian_Functions [] = {
   {"new", lua_LocalCartesian_new},
   {NULL, NULL}
 };

@@ -1,8 +1,13 @@
-extern "C" {
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-}
+/*
+ * \file lua_GeographicLib.cpp
+ * \brief Lua wrapper for GeographicLib
+ * 
+ * Copyright (c) Yida Zhang (2013) <yida@seas.upenn.edu>
+ * Licensed under the MIT/X11 License
+ *
+ */
+
+#include <lua.hpp>
 
 #include "lua_Constants.hpp"
 #include "lua_Geocentric.hpp"
