@@ -1,5 +1,5 @@
 
-require 'include'
+dofile('include.lua')
 
 
 local ffi = require 'ffi'
@@ -102,7 +102,7 @@ function saveCSV(dataset, dtype, path, Debug)
 end
 
 function saveDataMP(dataset, dtype, path)
-  local mp = require 'MessagePack'
+  local msgpack = require 'msgpack'
   local Path = path or './'
   local filecnt = 0
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
@@ -112,7 +112,7 @@ function saveDataMP(dataset, dtype, path)
   print(Path..filename)
   for i = 1, #dataset do
     io.write('\rline #'..i)
-    savedata = mp.pack(dataset[i])
+    savedata = msgpack.pack(dataset[i])
     file:write(savedata)
   end
   io.write('\n')
@@ -154,7 +154,7 @@ function loadData(path, dtype, maxlines, Debug)
 end
 
 function loadDataMP(path, dtype, maxlines, Debug)
-  local mp = require 'MessagePack'
+  local msgpack = require 'msgpack'
   local filename = getFileName(path, dtype)
   local file = assert(io.open(filename, 'r'))
   local content = file:read('*a')
@@ -166,11 +166,11 @@ function loadDataMP(path, dtype, maxlines, Debug)
   local size = file:seek('end')
   file:seek('set', current)
 
-  t = mp.unpacker( content )
-  local idx, val = t()
-  while idx ~= nil do
-    idx, val = t()
+  t = msgpack.unpacker( content )
+  local val = t:unpack()
+  while val ~= nil do
     data[#data+1] = val
+    val = t:unpack()
   end
   file:close()
   return data

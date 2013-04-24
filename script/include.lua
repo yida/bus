@@ -1,7 +1,7 @@
 local pwd = os.getenv('PWD')
-local repopath = '../../UPennTHOR/Run'
-package.path = repopath..'/Util/?.lua;'..package.path
-package.cpath = repopath..'/Lib/?.so;'..package.cpath
+local repopath = '../../UPennTHOR/'
+package.cpath = repopath..'/Frameworks/Msgpack/?.so;'..package.cpath
+package.path = repopath..'/Run/Util/?.lua;'..package.path
 
 print(pwd)
 package.cpath = pwd..'/lib/GeographicLib/?.so;'..package.cpath
