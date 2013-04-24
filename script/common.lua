@@ -1,30 +1,6 @@
 
 dofile('include.lua')
 
-
-local ffi = require 'ffi'
-
-ffi.cdef[[
-  typedef long int __time_t;
-  typedef long int __suseconds_t;
-  typedef struct timeval {
-    __time_t tv_sec;    /* Seconds.  */
-    __suseconds_t tv_usec;  /* Microseconds.  */
-  };
-  int gettimeofday(struct timeval *restrict tp, void *restrict tzp);
-  int poll(struct pollfd *fds, unsigned long nfds, int timeout);
-]]
-
-function utime()
-  local t = ffi.new('struct timeval')
-  ffi.C.gettimeofday(t, nil)
-  return t.tv_sec + 1e-6 * t.tv_usec
-end
-
-function usleep(s)
-  ffi.C.poll(nil, 0, s * 1000)
-end
-
 function checkLen(value, len)
   if len == value then
     return true

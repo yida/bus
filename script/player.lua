@@ -1,4 +1,5 @@
 dofile('include.lua')
+
 require 'common'
 require 'poseUtils'
 require 'GPSUtils'
@@ -17,10 +18,6 @@ local gps = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 local label = loadDataMP(datasetpath, 'labelMP', _, 1)
 
 print(#gps, #label, #prediction)
-
---for i = 1, #label do
---  print(label[i].value)
---end
 
 --print(#prediction, #gps)
 --print(prediction[#prediction].timestamp, gps[#gps].timestamp)
