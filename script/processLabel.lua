@@ -203,17 +203,18 @@ function tstepApply(setFrom, setTo)
   return setTo
 end
 
-local datasetpath = '../data/010213180304.00/'
-local label = loadDataMP(datasetpath, 'labelMP', _, 1)
+local datasetpath = '../data/150213185940.20/'
+local label = loadDataMP(datasetpath, 'labelCleanMP', _, 1)
 --local state = loadDataMP(datasetpath, 'stateMP', _, 1)
 --local state = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
-local state = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+local state = loadDataMP(datasetpath, 'imuPrunedCleanMP', _, 1)
 
 --labelstamps = extractLabel(label)
 labelstamps = labelconversion(label, false)
-imuwlabel = tstepApply(labelstamps, state)
-saveDataMP(imuwlabel, 'imuwlabelMP', datasetpath)
---statewlabel = applyLabel(state, labelstamps)
+--imuwlabel = tstepApply(labelstamps, state)
+--saveDataMP(imuwlabel, 'imuwlabelMP', datasetpath)
+statewlabel = applyLabel(state, labelstamps)
+saveDataMP(statewlabel, 'imuwlabelCleanMP', datasetpath)
 --[[
 for i = 1, #statewlabel do
   if statewlabel[i].label ~= 3 and statewlabel[i].label ~= statewlabel[i].prelabel then
