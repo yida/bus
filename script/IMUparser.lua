@@ -47,11 +47,12 @@ function iterateIMU(data, xmlroot)
 --  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
---    print(fileName)
+    print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*a");
-    local lastlfpos = string.find(line, '94668', 1)
-    local lfpos = string.find(line, '94668', lastlfpos + 1)
+    local lastlfpos = string.find(line, '9466', 1)
+    if lastlfpos == nil then break; end
+    local lfpos = string.find(line, '9466', lastlfpos + 1)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
@@ -61,14 +62,14 @@ function iterateIMU(data, xmlroot)
         local datacheck = checkData(imu)
         local tdata = os.date('*t', imu.timestamp)
 --        print(substr:byte(1, #substr))
---        print(string.format('%16f',imu.timstamp), imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
+--        print(imucounter, string.format('%16f',imu.timestamp), imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
 --        print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         imucounter = imucounter + 1
         imuset[imucounter] = imu
 
       end 
       lastlfpos = lfpos
-      lfpos = string.find(line, '94668', lastlfpos + 1)
+      lfpos = string.find(line, '9466', lastlfpos + 1)
     end
     file:close();
   end

@@ -139,27 +139,104 @@ close all;
 %%     gpspos(5, i) = gps{i}.predict;
 %end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% start_time = 946684969.05;
+% end_time =   946688106.02;
+% 
+% %section_time(1, 1) = 946687357.3764030;
+% %section_time(1, 2) = 946687389.4243770;
+% %section_time(1, 1) = 946685183.22;
+% %section_time(1, 2) = 946685219.19;
+% section_time(1, 1) = start_time
+% section_time(1, 2) = start_time
+% 
+% gps = loadDataMP('../data/150213185940.20/gpsLocalCleanMP');
+% %gps = loadDataMP('../data/010213180304.00/gpsLocalMP');
+% gps_data = zeros(size(gps, 1), 4);
+% tic;
+% for i = 1 : size(gps, 1)
+%   gps_data(i, 1) = gps{i}.x;
+%   gps_data(i, 2) = gps{i}.y;
+%   gps_data(i, 3) = gps{i}.z;
+%   gps_data(i, 4) = gps{i}.timestamp;
+% end
+% toc;
+% gps_idx = find(gps_data(:, 4) <= start_time);
+% gps_start_idx = gps_idx(end);
+% gps_idx = find(gps_data(:, 4) <= end_time);
+% gps_end_idx = gps_idx(end);
+% gps_idx = [];
+% 
+% for i = 1 : size(section_time, 1) 
+%     s_time = section_time(i, 1);
+%     e_time = section_time(i, 2);
+%     idx = find(gps_data(:, 4) <= s_time);
+%     start_idx = idx(end);
+%     idx = find(gps_data(:, 4) <= e_time);
+%     end_idx = idx(end);
+% 
+%     gps_idx = [gps_idx, gps_start_idx:start_idx];
+%     gps_start_idx = end_idx;
+% end
+% gps_idx = [gps_idx, gps_start_idx:gps_end_idx];
+% 
+% 
+% imu = loadDataMP('../data/150213185940.20/imuPrunedCleanMP');
+% % imu = loadDataMP('../data/010213180304.00/imuPrunedMP');
+% imu_data = zeros(size(imu, 1), 7);
+% tic;
+% for i = 1 : size(imu, 1)
+%   imu_data(i, 1) = imu{i}.ax;
+%   imu_data(i, 2) = imu{i}.ay;
+%   imu_data(i, 3) = imu{i}.az;
+%   imu_data(i, 4) = imu{i}.wr;
+%   imu_data(i, 5) = imu{i}.wp;
+%   imu_data(i, 6) = imu{i}.wy;
+%   imu_data(i, 7) = imu{i}.timestamp;
+% end
+% toc;
+% imu_idx = find(imu_data(:, 7) <= start_time);
+% imu_start_idx = imu_idx(end);
+% imu_idx = find(imu_data(:, 7) <= end_time);
+% imu_end_idx = imu_idx(end);
+% imu_idx = [];
+% 
+% for i = 1 : size(section_time, 1) 
+%     s_time = section_time(i, 1);
+%     e_time = section_time(i, 2);
+%     idx = find(imu_data(:, 7) <= s_time);
+%     start_idx = idx(end);
+%     idx = find(imu_data(:, 7) <= e_time);
+%     end_idx = idx(end);
+% 
+%     imu_idx = [imu_idx, imu_start_idx:start_idx];
+%     imu_start_idx = end_idx;
+% end
+% imu_idx = [imu_idx, imu_start_idx : imu_end_idx];
+% 
+% fig1 = figure;
+% plot(gps_data(gps_idx, 1), gps_data(gps_idx, 2), '.');
+% grid;
+% 
+% fig2 = figure;
+% tstart = imu_start_idx;
+% tend = imu_end_idx;
+% plotyy(gps_data(gps_idx, 4),...
+%         gps_data(gps_idx, 2),...
+%         imu_data(imu_idx, 7),...
+%         imu_data(imu_idx, 6));
+% %plot(1:tend, imu_data(tstart:tend, 6))
+% grid;
+% 
+% gps_obj = datacursormode(fig1);
+% set(gps_obj, 'UpdateFcn', {@datafunction, gps_data, imu_data});
+% 
+% imu_obj = datacursormode(fig2);
+% set(imu_obj, 'UpdateFcn', {@datafunction, gps_data, imu_data});
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%start_time = 946684969.05;
-%end_time =   946688106.02;
-%
-%gps = loadDataMP('../data/150213185940.20/gpsLocalMP');
-%gps_data = zeros(size(gps, 1), 4);
-%tic;
-%for i = 1 : size(gps, 1)
-%  gps_data(i, 1) = gps{i}.x;
-%  gps_data(i, 2) = gps{i}.y;
-%  gps_data(i, 3) = gps{i}.z;
-%  gps_data(i, 4) = gps{i}.timestamp;
-%end
-%toc;
-%gps_idx = find(gps_data(:, 4) <= start_time);
-%gps_start_idx = gps_idx(end);
-%gps_idx = find(gps_data(:, 4) <= end_time);
-%gps_end_idx = gps_idx(end);
-%
-%imu = loadDataMP('../data/150213185940.20/imuPrunedMP');
-%imu_data = zeros(size(imu, 1), 7);
+%imu = loadDataMP('../data/150213185940.20/imuwlabelCleanMP');
+%imu_data = zeros(size(imu, 1), 8);
 %tic;
 %for i = 1 : size(imu, 1)
 %  imu_data(i, 1) = imu{i}.ax;
@@ -169,37 +246,43 @@ close all;
 %  imu_data(i, 5) = imu{i}.wp;
 %  imu_data(i, 6) = imu{i}.wy;
 %  imu_data(i, 7) = imu{i}.timestamp;
+%  imu_data(i, 8) = imu{i}.label;
 %end
 %toc;
-%imu_idx = find(imu_data(:, 7) <= start_time);
-%imu_start_idx = imu_idx(end);
-%imu_idx = find(imu_data(:, 7) <= end_time);
-%imu_end_idx = imu_idx(end);
 %
+%figure;
+%plot(imu_data(:, 7), imu_data(:, 6));
+%hold on;
+%plot(imu_data(:, 7), imu_data(:, 8));
+%hold off;
+%grid on;
 %
+%estimate = loadDataMP('../data/150213185940.20/estimateCleanMP');
+%estimate_data = zeros(size(estimate, 1), 8);
+%tic;
+%for i = 1 : size(estimate, 1)
+%  estimate_data(i, 1) = estimate{i}.ax;
+%  estimate_data(i, 2) = estimate{i}.ay;
+%  estimate_data(i, 3) = estimate{i}.az;
+%  estimate_data(i, 4) = estimate{i}.wr;
+%  estimate_data(i, 5) = estimate{i}.wp;
+%  estimate_data(i, 6) = estimate{i}.wy;
+%  estimate_data(i, 7) = estimate{i}.timestamp;
+%  estimate_data(i, 8) = estimate{i}.predict;
+%  estimate_data(i, 9) = estimate{i}.label;
+%end
+%toc;
 %
-%fig1 = figure;
-%plot(gps_data(:, 1), gps_data(:, 2), '.');
-%grid;
-%
-%fig2 = figure;
-%tstart = imu_start_idx;
-%tend = imu_end_idx;
-%plotyy(gps_data(gps_start_idx:gps_end_idx, 4),...
-%        gps_data(gps_start_idx:gps_end_idx, 2),...
-%        imu_data(imu_start_idx:imu_end_idx, 7),...
-%        imu_data(imu_start_idx:imu_end_idx, 6));
-%%plot(1:tend, imu_data(tstart:tend, 6))
-%grid;
-%
-%gps_obj = datacursormode(fig1);
-%set(gps_obj, 'UpdateFcn', {@datafunction, gps_data, imu_data});
-%
-%imu_obj = datacursormode(fig2);
-%set(imu_obj, 'UpdateFcn', {@datafunction, gps_data, imu_data});
+%figure;
+%plot(estimate_data(:, 7), estimate_data(:, 6),...
+%    estimate_data(:, 7), estimate_data(:, 8),...
+%    estimate_data(:, 7), 3 * estimate_data(:, 9));
+%hold off;
+%grid on;
 
 
-imu = loadDataMP('../data/150213185940.20/imuwlabelCleanMP');
+gps = loadDataMP('../data/010213192135.40/gpsLocalMP');
+imu = loadDataMP('../data/010213192135.40/imuPrunedMP');
 imu_data = zeros(size(imu, 1), 8);
 tic;
 for i = 1 : size(imu, 1)
@@ -210,36 +293,21 @@ for i = 1 : size(imu, 1)
   imu_data(i, 5) = imu{i}.wp;
   imu_data(i, 6) = imu{i}.wy;
   imu_data(i, 7) = imu{i}.timestamp;
-  imu_data(i, 8) = imu{i}.label;
 end
 toc;
-
-figure;
-plot(imu_data(:, 7), imu_data(:, 6));
-hold on;
-plot(imu_data(:, 7), imu_data(:, 8));
-hold off;
-grid on;
-
-estimate = loadDataMP('../data/150213185940.20/estimateCleanMP');
-estimate_data = zeros(size(estimate, 1), 8);
+gps_data = zeros(size(gps, 1), 4);
 tic;
-for i = 1 : size(estimate, 1)
-  estimate_data(i, 1) = estimate{i}.ax;
-  estimate_data(i, 2) = estimate{i}.ay;
-  estimate_data(i, 3) = estimate{i}.az;
-  estimate_data(i, 4) = estimate{i}.wr;
-  estimate_data(i, 5) = estimate{i}.wp;
-  estimate_data(i, 6) = estimate{i}.wy;
-  estimate_data(i, 7) = estimate{i}.timestamp;
-  estimate_data(i, 8) = estimate{i}.predict;
-  estimate_data(i, 9) = estimate{i}.label;
+for i = 1 : size(gps, 1)
+  gps_data(i, 1) = gps{i}.x;
+  gps_data(i, 2) = gps{i}.y;
+  gps_data(i, 3) = gps{i}.z;
+  gps_data(i, 4) = gps{i}.timestamp;
 end
 toc;
 
-figure;
-plot(estimate_data(:, 7), estimate_data(:, 6),...
-    estimate_data(:, 7), estimate_data(:, 8),...
-    estimate_data(:, 7), 3 * estimate_data(:, 9));
-hold off;
-grid on;
+plotyy(gps_data(:, 4), gps_data(:, 2),...
+        imu_data(:, 7), imu_data(:, 6));
+fig1 = figure;
+plot(gps_data(:, 1), gps_data(:, 2), '.');
+grid;
+

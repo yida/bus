@@ -16,10 +16,22 @@ function applylabel(prediction, gps)
   end
 end
 
-function clean_data(data, start_time, end_time)
+function clean_data(data, start_time, end_time, section_time)
     local data_clean = {}
     for i = 1, #data do
-        if data[i].timestamp >= start_time and data[i].timestamp <= end_time then
+        data_time = data[i].timestamp or data[i].timstamp
+        local datavalid = false
+        if data_time >= start_time and data_time <= end_time then
+            datavalid = true
+        end
+        for j = 1, #section_time do
+            local section = section_time[j]
+            if data_time >= section[1] and data_time <= section[2] then
+                print('clean middle points')
+                datavalid = false
+            end
+        end
+        if datavalid then
             data_clean[#data_clean+1] = data[i]
         end
     end
@@ -28,18 +40,21 @@ function clean_data(data, start_time, end_time)
     return data_clean
 end
 
-local datasetpath = '../data/150213185940.20/'
+local datasetpath = '../data/010213192135.40/'
 package.path = datasetpath..'?.lua;'..package.path
-require 'params'
 --local prediction = loadDataMP(datasetpath, 'estimateMP', _, 1)
 local gps = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
 local label = loadDataMP(datasetpath, 'labelMP', _, 1)
 local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
-local mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
+--local mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
 
-print(start_time, end_time)
-saveDataMP(clean_data(gps, start_time, end_time), 'gpsLocalCleanMP', './')
-saveDataMP(clean_data(label, start_time, end_time), 'labelCleanMP', './')
-saveDataMP(clean_data(imu, start_time, end_time), 'imuPrunedCleanMP', './')
-saveDataMP(clean_data(mag, start_time, end_time), 'magPrunedCleanMP', './')
+--print(findDateFromGPS(gps))
+
+--require 'params'
+--print(start_time, end_time)
+--saveDataMP(clean_data(gps, start_time, end_time, section_time), 'gpsLocalCleanMP', './')
+--saveDataMP(clean_data(label, start_time, end_time, section_time), 'labelCleanMP', './')
+--saveDataMP(clean_data(imu, start_time, end_time, section_time), 'imuPrunedCleanMP', './')
+--saveDataMP(clean_data(mag, start_time, end_time, section_time), 'magPrunedCleanMP', './')
 --print(#gps, #label, #prediction)
+saveCSV(gps, 'gps-csv', './')

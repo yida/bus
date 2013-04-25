@@ -38,8 +38,8 @@ function iterateMAG(data, xmlroot)
     print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*a");
-    local lastlfpos = string.find(line, '94668', 1)
-    local lfpos = string.find(line, '94668', lastlfpos + 1)
+    local lastlfpos = string.find(line, '9466', 1)
+    local lfpos = string.find(line, '9466', lastlfpos + 1)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
@@ -57,7 +57,7 @@ function iterateMAG(data, xmlroot)
         print('lencheck fail '..len)
       end
       lastlfpos = lfpos
-      lfpos = string.find(line, '94668', lastlfpos + 1)
+      lfpos = string.find(line, '9466', lastlfpos + 1)
     end
     file:close();
   end
