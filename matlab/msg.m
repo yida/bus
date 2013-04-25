@@ -1,5 +1,6 @@
 %
 clear all;
+close all;
 
 %state = loadDataMP('../data/stateMP-04.10.2013.17.14.35-0');
 %
@@ -232,10 +233,13 @@ for i = 1 : size(estimate, 1)
   estimate_data(i, 6) = estimate{i}.wy;
   estimate_data(i, 7) = estimate{i}.timestamp;
   estimate_data(i, 8) = estimate{i}.predict;
+  estimate_data(i, 9) = estimate{i}.label;
 end
 toc;
 
 figure;
-plot(estimate_data(:, 7), estimate_data(:, 6), estimate_data(:, 7), estimate_data(:, 8));
+plot(estimate_data(:, 7), estimate_data(:, 6),...
+    estimate_data(:, 7), estimate_data(:, 8),...
+    estimate_data(:, 7), 3 * estimate_data(:, 9));
 hold off;
 grid on;

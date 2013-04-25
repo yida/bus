@@ -14,7 +14,7 @@ hmm = trainHMM(trainSet, stateSet)
 
 
 local datasetpath = '../data/150213185940.20/'
-local testSet = loadDataMP(datasetpath, 'imuPrunedCleanMP', _, 1)
+local testSet = loadDataMP(datasetpath, 'imuwlabelCleanMP', _, 1)
 
 alpha = ForwardBackward(hmm, testSet, stateSet)
 print('sync testing data')
