@@ -41,8 +41,9 @@ function checkData(imu)
   return true
 end
 
-function iterateIMU(data, xmlroot)
+function iterateIMU(data, xmlroot, labeloffset)
   local imuset = {}
+  local labeloffset = labeloffset or 0
   local imucounter = 0
 --  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
@@ -56,7 +57,7 @@ function iterateIMU(data, xmlroot)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
-      if len == 40 then
+      if len == (40 + labeloffset) then
 --        print(#substr, substr)
         imu = readImuLine(substr, len)
         local datacheck = checkData(imu)
@@ -76,9 +77,9 @@ function iterateIMU(data, xmlroot)
   return imuset
 end
 
-function parseIMU()
+function parseIMU(labeloffset)
   local data = loadRawData(dataPath, dataStamp, 'imu')
-  imuset = iterateIMU(data)
+  imuset = iterateIMU(data, _, labeloffset)
 
   return imuset
 end
