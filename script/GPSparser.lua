@@ -20,9 +20,6 @@ function split(str)
 --  print(str:sub(lastcmpos + 1, #str))
   valuecounter = valuecounter + 1
   value[valuecounter] = str:sub(lastcmpos + 1, #str)
---  for k, v in pairs(value) do
---    print(k, v)
---  end
   return value
 end
 
@@ -37,10 +34,11 @@ function iterateGPS(data, xmlroot)
     local lastlfpos = 0;
     while lfpos ~= nil do
       local substr = string.sub(line, lastlfpos + 1, lfpos)
+--      print(substr)
       local len = lfpos - lastlfpos - 1 
       local gpstart = substr:find('$GP') or 1
       if gpsChecksum(substr:sub(gpstart, #substr)) then
-        gpsContent = readGPSLine(substr, len)
+        gpsContent = readGPSLine(substr, len, 19)
         local datavalid = gpsDataCheck(gpsContent)
         if datavalid then gps[#gps+1] = gpsContent end
       end

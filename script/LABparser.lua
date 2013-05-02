@@ -110,11 +110,15 @@ function iterateLabFromIMU(data)
 
 end
 
-function parseLAB()
-  local data = loadRawData(dataPath, dataStamp, 'lab')
-  labelset = iterateLAB(data)
---  local data = loadRawData(dataPath, dataStamp, 'imu')
---  labelset = iterateLabFromIMU(data)
+function parseLAB(indata, label)
+    local label = label or 'lab'
+    local indata = indata or false
+    local data = loadRawData(dataPath, dataStamp, label)
+    if indata then
+        labelset = iterateLabFromIMU(data)
+    else
+        labelset = iterateLAB(data)
+    end
 
   return labelset
 end

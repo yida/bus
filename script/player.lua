@@ -41,11 +41,12 @@ function clean_data(data, start_time, end_time, section_time)
 end
 
 local datasetpath = '../data/010213192135.40/'
+local datasetpath = './'
 package.path = datasetpath..'?.lua;'..package.path
 --local prediction = loadDataMP(datasetpath, 'estimateMP', _, 1)
-local gps = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+--local gps = loadDataMP(datasetpath, 'gpsMP', _, 1)
 local label = loadDataMP(datasetpath, 'labelMP', _, 1)
-local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+--local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
 --local mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
 
 --print(findDateFromGPS(gps))
@@ -57,4 +58,9 @@ local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
 --saveDataMP(clean_data(imu, start_time, end_time, section_time), 'imuPrunedCleanMP', './')
 --saveDataMP(clean_data(mag, start_time, end_time, section_time), 'magPrunedCleanMP', './')
 --print(#gps, #label, #prediction)
-saveCSV(gps, 'gps-csv', './')
+--saveCSV(gps, 'gps-csv', './')
+
+for i = 1, #label do
+    util.ptable(label[i])
+    print(label[i].timestamp, label[i].value)
+end

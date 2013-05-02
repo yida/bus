@@ -19,7 +19,7 @@ dataPath = '../data/rawdata/2012121914/'
 --dataStamp = '12311916'
 dataStamp = '12311901'
 
-
+--[[
 imuset = parseIMU(2)
 if #imuset > 0 then
   saveDataMP(imuset, 'imuMP', './')
@@ -34,6 +34,7 @@ if #imuset > 0 then
 else
   print("imu set empty!")
 end
+--]]
 --[[
 gpsset = parseGPS()
 if #gpsset > 0 then
@@ -50,9 +51,9 @@ saveDataMP(magsetPruned, 'magPrunedMP', './')
 print(#magset)
 --]]
 ------
---[[
-labelset = parseLAB()
+
+labelset = parseLAB(true, 'imu')
 saveDataMP(labelset, 'labelMP', './')
 print(#labelset)
---]]
+
 
