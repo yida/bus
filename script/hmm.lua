@@ -8,17 +8,16 @@ require 'hmmBase'
 
 local stateSet = {'leftTurn', 'rightTurn', 'Straight'}
 
-local datasetpath = '../data/150213185940.20/'
+local datasetpath = '../data/010213180304.00/'
 local trainSet = loadDataMP(datasetpath, 'imuwlabelCleanMP', _, 1)
 hmm = trainHMM(trainSet, stateSet)
-
 
 local datasetpath = '../data/150213185940.20/'
 local testSet = loadDataMP(datasetpath, 'imuwlabelCleanMP', _, 1)
 
 alpha = ForwardBackward(hmm, testSet, stateSet)
 print('sync testing data')
-for i = 1, #trainSet do
+for i = 1, #testSet do
   y, idx = torch.max(torch.DoubleTensor(alpha[i]), 1)
   testSet[i].predict = idx[1]
 end
