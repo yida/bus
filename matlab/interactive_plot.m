@@ -34,3 +34,5 @@ axis equal;
 
 dcm_obj = datacursormode(fig);
 set(dcm_obj, 'UpdateFcn', {@myupdatefcn, pos, gpspos, imudata});
+
+

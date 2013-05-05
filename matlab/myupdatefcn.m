@@ -1,4 +1,4 @@
-function txt = myupdatefcn(~, event_obj, pos, gpspos, imu)
+function txt = myupdatefcn(obj, event_obj, pos, gpspos, imu)
     ps = get(event_obj, 'Position');
    
     datapoint = find( (gpspos(1, :) == ps(1)) & (gpspos(2, :) == ps(2)));

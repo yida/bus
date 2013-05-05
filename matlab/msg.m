@@ -281,45 +281,45 @@ close all;
 %grid on;
 
 
-
-gps = loadDataMP('../data/010213180304.00/gpsLocalCleanMP');
-% imu = loadDataMP('../data/010213180304.00/imuwlabelCleanMP');
-imu = loadDataMP('../data/010213180304.00/estimateCleanMP');
-
-imu_data = zeros(size(imu, 1), 8);
-tic;
-for i = 1 : size(imu, 1)
-  imu_data(i, 1) = imu{i}.ax;
-  imu_data(i, 2) = imu{i}.ay;
-  imu_data(i, 3) = imu{i}.az;
-  imu_data(i, 4) = imu{i}.wr;
-  imu_data(i, 5) = imu{i}.wp;
-  imu_data(i, 6) = imu{i}.wy;
-  imu_data(i, 7) = imu{i}.timestamp;
-  imu_data(i, 8) = imu{i}.label;
-  imu_data(i, 9) = imu{i}.predict;
-end
-toc;
-gps_data = zeros(size(gps, 1), 4);
-tic;
-for i = 1 : size(gps, 1)
-  gps_data(i, 1) = gps{i}.x;
-  gps_data(i, 2) = gps{i}.y;
-  gps_data(i, 3) = gps{i}.z;
-  gps_data(i, 4) = gps{i}.timestamp;
-end
-toc;
-
-figure;
-plotyy(imu_data(:, 7), imu_data(:, 9),...
-        imu_data(:, 7), imu_data(:, 6));
-figure;
-plotyy(imu_data(:, 7), imu_data(:, 8),...
-        imu_data(:, 7), imu_data(:, 6));
-
-fig1 = figure;
-plot(gps_data(:, 1), gps_data(:, 2), '.');
-grid;
+% 
+% gps = loadDataMP('../data/010213180304.00/gpsLocalCleanMP');
+% % imu = loadDataMP('../data/010213180304.00/imuwlabelCleanMP');
+% imu = loadDataMP('../data/010213180304.00/estimateCleanMP');
+% 
+% imu_data = zeros(size(imu, 1), 8);
+% tic;
+% for i = 1 : size(imu, 1)
+%   imu_data(i, 1) = imu{i}.ax;
+%   imu_data(i, 2) = imu{i}.ay;
+%   imu_data(i, 3) = imu{i}.az;
+%   imu_data(i, 4) = imu{i}.wr;
+%   imu_data(i, 5) = imu{i}.wp;
+%   imu_data(i, 6) = imu{i}.wy;
+%   imu_data(i, 7) = imu{i}.timestamp;
+%   imu_data(i, 8) = imu{i}.label;
+%   imu_data(i, 9) = imu{i}.predict;
+% end
+% toc;
+% gps_data = zeros(size(gps, 1), 4);
+% tic;
+% for i = 1 : size(gps, 1)
+%   gps_data(i, 1) = gps{i}.x;
+%   gps_data(i, 2) = gps{i}.y;
+%   gps_data(i, 3) = gps{i}.z;
+%   gps_data(i, 4) = gps{i}.timestamp;
+% end
+% toc;
+% 
+% figure;
+% plotyy(imu_data(:, 7), imu_data(:, 9),...
+%         imu_data(:, 7), imu_data(:, 6));
+% figure;
+% plotyy(imu_data(:, 7), imu_data(:, 8),...
+%         imu_data(:, 7), imu_data(:, 6));
+% 
+% fig1 = figure;
+% plot(gps_data(:, 1), gps_data(:, 2), '.');
+% grid;
 
 
 gps = loadDataMP('../data/150213185940.20/gpsLocalCleanMP');
@@ -349,15 +349,36 @@ for i = 1 : size(gps, 1)
   gps_data(i, 4) = gps{i}.timestamp;
 end
 toc;
-cl
-figure;
-plotyy(imu_data(:, 7), imu_data(:, 9),...
-        imu_data(:, 7), imu_data(:, 6));
-figure;
-plotyy(imu_data(:, 7), imu_data(:, 8),...
-        imu_data(:, 7), imu_data(:, 6));
+
+% fig1 = figure;
+% plotyy(imu_data(:, 7), imu_data(:, 9),...
+%         imu_data(:, 7), imu_data(:, 6));
 
 fig2 = figure;
-plot(gps_data(:, 1), gps_data(:, 2), '.');
-grid;
+[ax, labelline, wyline] = plotyy(imu_data(:, 7), imu_data(:, 8),...
+        imu_data(:, 7), imu_data(:, 6));
+grid on;
+
+fig3 = figure;
+gpsline = plot(gps_data(:, 1), gps_data(:, 2), '.');
+grid on;
+
+hTarget_wy = handle(wyline);
+hTarget_gps = handle(gpsline);
+
+% dcm_obj1 = datacursormode(fig1);
+dcm_obj2 = datacursormode(fig2);
+dcm_obj3 = datacursormode(fig3);
+
+% set(dcm_obj1, 'UpdateFcn', {@dcupdate, gps_data, imu_data});
+% set(dcm_obj1, 'Enable', 'on');
+
+set(dcm_obj2, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
+    'Enable', 'on', 'NewDataCursorOnClick',false);
+hDatatip2 = dcm_obj2.createDatatip(hTarget_wy);
+
+set(dcm_obj3, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
+    'Enable', 'on', 'NewDataCursorOnClick',false);
+hDatatip3 = dcm_obj3.createDatatip(hTarget_gps);
+
 
