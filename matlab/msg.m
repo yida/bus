@@ -375,10 +375,11 @@ dcm_obj3 = datacursormode(fig3);
 
 set(dcm_obj2, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
     'Enable', 'on', 'NewDataCursorOnClick',false);
-hDatatip2 = dcm_obj2.createDatatip(hTarget_wy);
 
 set(dcm_obj3, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
     'Enable', 'on', 'NewDataCursorOnClick',false);
+
+hDatatip2 = dcm_obj2.createDatatip(hTarget_wy);
 hDatatip3 = dcm_obj3.createDatatip(hTarget_gps);
 
 
