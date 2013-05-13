@@ -1076,67 +1076,6 @@
 			<name>RMC</name>
 			<snippet></snippet>
 			<description><![CDATA[<div class="googft-info-window">
-<b>x:</b> 128.53083472957<br>
-<b>latitude:</b> 39.955496<br>
-<b>id:</b> RMC<br>
-<b>y:</b> 403.48201386392<br>
-<b>r_xy:</b> 0.71943832949936<br>
-<b>longtitude:</b> -75.188557<br>
-<b>timestamp:</b> 946685104.15<br>
-<b>height:</b> 44.4<br>
-<b>PDOP:</b> 2.29<br>
-<b>HDOP:</b> 1.47
-</div>]]></description>
-			<styleUrl>#Style2-point-1-map</styleUrl>
-			<ExtendedData>
-				<Data name='x'>
-					<value>128.53083472957</value>
-				</Data>
-				<Data name='latitude'>
-					<value>39.955496</value>
-				</Data>
-				<Data name='y'>
-					<value>403.48201386392</value>
-				</Data>
-				<Data name='r_xy'>
-					<value>0.71943832949936</value>
-				</Data>
-				<Data name='longtitude'>
-					<value>-75.188557</value>
-				</Data>
-				<Data name='timestamp'>
-					<value>946685104.15</value>
-				</Data>
-				<Data name='height'>
-					<value>44.4</value>
-				</Data>
-				<Data name='PDOP'>
-					<value>2.29</value>
-				</Data>
-				<Data name='HDOP'>
-					<value>1.47</value>
-				</Data>
-				<Data name='type'>
-					<value>gps</value>
-				</Data>
-				<Data name='VDOP'>
-					<value>1.7</value>
-				</Data>
-				<Data name='z'>
-					<value>35.485911810761</value>
-				</Data>
-				<Data name='satellites'>
-					<value>8</value>
-				</Data>
-			</ExtendedData>
-			<Point>
-				<coordinates>-75.188557,39.9554958,0</coordinates>
-			</Point>
-		</Placemark>
-		<Placemark>
-			<name>RMC</name>
-			<snippet></snippet>
-			<description><![CDATA[<div class="googft-info-window">
 <b>x:</b> 153.59631081991<br>
 <b>latitude:</b> 39.955486166667<br>
 <b>id:</b> RMC<br>
@@ -1741,67 +1680,6 @@
 			</ExtendedData>
 			<Point>
 				<coordinates>-75.1837575,39.9558008,0</coordinates>
-			</Point>
-		</Placemark>
-		<Placemark>
-			<name>RMC</name>
-			<snippet></snippet>
-			<description><![CDATA[<div class="googft-info-window">
-<b>x:</b> -450.1342915593<br>
-<b>latitude:</b> 39.956081166667<br>
-<b>id:</b> RMC<br>
-<b>y:</b> 468.47054703173<br>
-<b>r_xy:</b> 0.73009841415287<br>
-<b>longtitude:</b> -75.195329<br>
-<b>timestamp:</b> 946687635.53<br>
-<b>height:</b> 79.8<br>
-<b>PDOP:</b> 2.61<br>
-<b>HDOP:</b> 1.3
-</div>]]></description>
-			<styleUrl>#Style2-point-1-map</styleUrl>
-			<ExtendedData>
-				<Data name='x'>
-					<value>-450.1342915593</value>
-				</Data>
-				<Data name='latitude'>
-					<value>39.956081166667</value>
-				</Data>
-				<Data name='y'>
-					<value>468.47054703173</value>
-				</Data>
-				<Data name='r_xy'>
-					<value>0.73009841415287</value>
-				</Data>
-				<Data name='longtitude'>
-					<value>-75.195329</value>
-				</Data>
-				<Data name='timestamp'>
-					<value>946687635.53</value>
-				</Data>
-				<Data name='height'>
-					<value>79.8</value>
-				</Data>
-				<Data name='PDOP'>
-					<value>2.61</value>
-				</Data>
-				<Data name='HDOP'>
-					<value>1.3</value>
-				</Data>
-				<Data name='type'>
-					<value>gps</value>
-				</Data>
-				<Data name='VDOP'>
-					<value>2.2</value>
-				</Data>
-				<Data name='z'>
-					<value>70.866889614813</value>
-				</Data>
-				<Data name='satellites'>
-					<value>9</value>
-				</Data>
-			</ExtendedData>
-			<Point>
-				<coordinates>-75.195329,39.9560811,0</coordinates>
 			</Point>
 		</Placemark>
 		<Placemark>
@@ -2906,67 +2784,6 @@
 			<name>RMC</name>
 			<snippet></snippet>
 			<description><![CDATA[<div class="googft-info-window">
-<b>x:</b> 179.64348760132<br>
-<b>latitude:</b> 39.9556375<br>
-<b>id:</b> RMC<br>
-<b>y:</b> 419.1938826825<br>
-<b>r_xy:</b> 0.77475801848463<br>
-<b>longtitude:</b> -75.187958833333<br>
-<b>timestamp:</b> 946686272.15<br>
-<b>height:</b> 36<br>
-<b>PDOP:</b> 2.24<br>
-<b>HDOP:</b> 1.28
-</div>]]></description>
-			<styleUrl>#Style2-point-1-map</styleUrl>
-			<ExtendedData>
-				<Data name='x'>
-					<value>179.64348760132</value>
-				</Data>
-				<Data name='latitude'>
-					<value>39.9556375</value>
-				</Data>
-				<Data name='y'>
-					<value>419.1938826825</value>
-				</Data>
-				<Data name='r_xy'>
-					<value>0.77475801848463</value>
-				</Data>
-				<Data name='longtitude'>
-					<value>-75.187958833333</value>
-				</Data>
-				<Data name='timestamp'>
-					<value>946686272.15</value>
-				</Data>
-				<Data name='height'>
-					<value>36</value>
-				</Data>
-				<Data name='PDOP'>
-					<value>2.24</value>
-				</Data>
-				<Data name='HDOP'>
-					<value>1.28</value>
-				</Data>
-				<Data name='type'>
-					<value>gps</value>
-				</Data>
-				<Data name='VDOP'>
-					<value>1.8</value>
-				</Data>
-				<Data name='z'>
-					<value>27.083662801334</value>
-				</Data>
-				<Data name='satellites'>
-					<value>9</value>
-				</Data>
-			</ExtendedData>
-			<Point>
-				<coordinates>-75.1879587,39.9556375,0</coordinates>
-			</Point>
-		</Placemark>
-		<Placemark>
-			<name>RMC</name>
-			<snippet></snippet>
-			<description><![CDATA[<div class="googft-info-window">
 <b>x:</b> -456.01606955081<br>
 <b>latitude:</b> 39.956081666667<br>
 <b>id:</b> RMC<br>
@@ -3937,67 +3754,6 @@
 			</ExtendedData>
 			<Point>
 				<coordinates>-75.183318,39.9552906,0</coordinates>
-			</Point>
-		</Placemark>
-		<Placemark>
-			<name>GGA</name>
-			<snippet></snippet>
-			<description><![CDATA[<div class="googft-info-window">
-<b>x:</b> -782.70671793395<br>
-<b>latitude:</b> 39.949068666667<br>
-<b>id:</b> GGA<br>
-<b>y:</b> -310.13385320631<br>
-<b>r_xy:</b> 0.84629461831981<br>
-<b>longtitude:</b> -75.199220166667<br>
-<b>timestamp:</b> 946686814.55<br>
-<b>height:</b> 29.5<br>
-<b>PDOP:</b> 2.77<br>
-<b>HDOP:</b> 1.47
-</div>]]></description>
-			<styleUrl>#Style2-point-1-map</styleUrl>
-			<ExtendedData>
-				<Data name='x'>
-					<value>-782.70671793395</value>
-				</Data>
-				<Data name='latitude'>
-					<value>39.949068666667</value>
-				</Data>
-				<Data name='y'>
-					<value>-310.13385320631</value>
-				</Data>
-				<Data name='r_xy'>
-					<value>0.84629461831981</value>
-				</Data>
-				<Data name='longtitude'>
-					<value>-75.199220166667</value>
-				</Data>
-				<Data name='timestamp'>
-					<value>946686814.55</value>
-				</Data>
-				<Data name='height'>
-					<value>29.5</value>
-				</Data>
-				<Data name='PDOP'>
-					<value>2.77</value>
-				</Data>
-				<Data name='HDOP'>
-					<value>1.47</value>
-				</Data>
-				<Data name='type'>
-					<value>gps</value>
-				</Data>
-				<Data name='VDOP'>
-					<value>2.3</value>
-				</Data>
-				<Data name='z'>
-					<value>20.544481353749</value>
-				</Data>
-				<Data name='satellites'>
-					<value>7</value>
-				</Data>
-			</ExtendedData>
-			<Point>
-				<coordinates>-75.19922,39.949068499999996,0</coordinates>
 			</Point>
 		</Placemark>
 		<Placemark>
