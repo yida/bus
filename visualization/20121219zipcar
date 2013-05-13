@@ -65,9 +65,6 @@
       <input type="radio" name="kmlfile" value="gpsdata20121219zipcar.kml" checked = "checked">20121219zipcar</input><br/>
       <input type="radio" name="kmlfile" value="20130207v1.kml" >20130207</input><br/>
       <input type="radio" name="kmlfile" value="syn_gps.kml" >syn_gps</input><br/>
-      <input type="radio" name="kmlfile" value="syn_gps1.kml" >syn_gps1</input><br/>
-      <input type="radio" name="kmlfile" value="syn_gps2.kml" >syn_gps2</input><br/>
-      <input type="radio" name="kmlfile" value="syn_gps3.kml" >syn_gps3</input><br/>
       <input type="radio" name="kmlfile" value="syn_gps4.kml" >syn_gps4</input><br/>
       <input type="button" onclick="getElements()" value="Load KML">
     </div>
