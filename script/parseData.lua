@@ -20,7 +20,7 @@ dataPath = '../data/rawdata/20121221route42/'
 dataStamp = '12311904'
 --dataStamp = '12311901'
 
-----[[
+--[[
 imuset = parseIMU(2)
 if #imuset > 0 then
   saveDataMP(imuset, 'imuMP', './')
@@ -37,7 +37,7 @@ else
 end
 --]]
 
-----[[
+--[[
 gpsset = parseGPS(2)
 if #gpsset > 0 then
   saveDataMP(gpsset, 'gpsMP', './')
