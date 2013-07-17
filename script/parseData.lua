@@ -10,16 +10,17 @@ require 'MAGparser'
 --require 'LABparser'
 require 'common'
 
---dataPath = '../data/rawdat/20121221route42/'
+dataPath = '../data/rawdata/20121221route42/'
 --dataPath = '../data/rawdata/8/'
 --dataPath = '../data/rawdata/9/'
-dataPath = '../data/rawdata/2012121914/'
+--dataPath = '../data/rawdata/2012121914/'
 --dataStamp = '01010000'
 --dataStamp = '01010122'
 --dataStamp = '12311916'
-dataStamp = '12311901'
+dataStamp = '12311904'
+--dataStamp = '12311901'
 
---[[
+----[[
 imuset = parseIMU(2)
 if #imuset > 0 then
   saveDataMP(imuset, 'imuMP', './')
