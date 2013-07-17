@@ -3,17 +3,15 @@ require 'common'
 require 'poseUtils'
 require 'GPSUtils'
 
-local mp = require 'MessagePack'
-
 local serialization = require('serialization');
 
-local datasetpath = '../data/191212190259.60/'
+--local datasetpath = '../data/191212190259.60/'
 --local datasetpath = '../data/010213180247/'
 --local datasetpath = '../data/010213192135/'
 --local datasetpath = '../data/191212190259/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
---local datasetpath = './'
+local datasetpath = './'
 local dataset = loadDataMP(datasetpath, 'gpsMP', _, 1)
 --local dataset = loadData(datasetpath, 'gps', _, 1)
 print('done loading data')

@@ -1,22 +1,23 @@
-local ffi = require 'ffi'
-local bit = require 'bit'
-
-bor, band, lshift, rshift = bit.bor, bit.band, bit.lshift, bit.rshift
-
 function readMagLine(str, len)
+  local carray = require 'carray'
+  local cutil = require 'cutil'
   local mag = {}
   mag.type = 'mag'
   mag.timstamp = tonumber(string.sub(str, 1, 16))
-  magstr = string.sub(str, 17, #str)
-  ls = #magstr
-  mag.id = tonumber(ffi.new("double", magstr:byte(1)))
-  mag.tuc = tonumber(ffi.new("uint32_t", bor(lshift(magstr:byte(ls - 15), 24),
-                    lshift(magstr:byte(ls - 16), 16), lshift(magstr:byte(ls - 17), 8), magstr:byte(ls - 18))))
-  mag.press = tonumber(ffi.new('int16_t', bor(lshift(magstr:byte(ls - 13), 8), magstr:byte(ls - 14)))) + 100000
-  mag.temp = tonumber(ffi.new('int16_t', bor(lshift(magstr:byte(ls - 9), 8), magstr:byte(ls - 10)))) / 100
-  mag.x = tonumber(ffi.new("int16_t", bor(lshift(magstr:byte(ls - 5), 8), magstr:byte(ls - 6))))
-  mag.y = tonumber(ffi.new("int16_t", bor(lshift(magstr:byte(ls - 3), 8), magstr:byte(ls - 4))))
-  mag.z = tonumber(ffi.new("int16_t", bor(lshift(magstr:byte(ls - 1), 8), magstr:byte(ls - 2))))
+  ls = 16
+
+  mag.id = str:byte(ls + 1)
+  mag.tuc = cutil.bit_or(str:byte(ls + 2), 
+                        cutil.bit_lshift(str:byte(ls + 3), 8), 
+                        cutil.bit_lshift(str:byte(ls + 4), 16), 
+                        cutil.bit_lshift(str:byte(ls + 5), 24));
+  mag.press = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls +  7), 8), str:byte(ls +  6))})[1] + 100000
+  mag.temp = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls +  11), 8), str:byte(ls + 10))})[1] / 100
+--  print(mag.id, mag.tuc, mag.press, mag.temp)
+  mag.x = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls +  15), 8), str:byte(ls +  14))})[1]
+  mag.y = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 17), 8), str:byte(ls +  16))})[1]
+  mag.z = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 19), 8), str:byte(ls + 18))})[1]
+--  print(mag.x, mag.y, mag.z)
   return mag;
 end
 
@@ -55,6 +56,7 @@ function iterateMAG(data, xmlroot)
         magset[magcounter] = mag
       else
         print('lencheck fail '..len)
+        print(line:byte(1, 20))
       end
       lastlfpos = lfpos
       lfpos = string.find(line, '9466', lastlfpos + 1)

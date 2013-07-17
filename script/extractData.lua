@@ -6,8 +6,9 @@ require 'GPSUtils'
 
 local datasetpath = '../data/rawdata/'
 --local datasetpath = '../simulation/'
+local datasetpath = './'
 --local dataset = loadData(datasetpath, 'observation', _, 1)
-local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
+--local dataset = loadData(datasetpath, 'log-946684834.63068', _, 1)
 
 function extractFromLog(dataset)
   local counter = 0
@@ -36,9 +37,10 @@ function extractFromLog(dataset)
   return imu, mag, gps, label
 end
 
-imu, mag, gps, label = extractFromLog(dataset)
+--imu, mag, gps, label = extractFromLog(dataset)
 
 local prefix = ''
+local gps = loadDataMP(datasetpath, 'gpsMP', _, 1)
 if gps ~= {} then
   prefix = findDateFromGPS(gps)
   prefix = prefix..'/'
@@ -46,8 +48,8 @@ end
 print(prefix)
 prefix = ''
 
-print(#gps)
-saveDataMP(gps, 'gpsMP', './'..prefix)
-saveDataMP(imu, 'imuPrunedMP', './'..prefix)
-saveDataMP(mag, 'magPrunedMP', './'..prefix)
-saveDataMP(label, 'labelMP', './'..prefix)
+--print(#gps)
+--saveDataMP(gps, 'gpsMP', './'..prefix)
+--saveDataMP(imu, 'imuPrunedMP', './'..prefix)
+--saveDataMP(mag, 'magPrunedMP', './'..prefix)
+--saveDataMP(label, 'labelMP', './'..prefix)

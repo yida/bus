@@ -1,35 +1,37 @@
-local ffi = require 'ffi'
-local bit = require 'bit'
-
 function readImuLine(str, len)
+  local cutil = require 'cutil'
+  local carray = require 'carray'
   local imu = {}
   imu.type = 'imu'
   imu.timestamp = tonumber(string.sub(str, 1, 16))
-  substr = str:sub(17, #str)
---  print(substr:byte(1, #substr))
-  imustrs = substr
-  ls = #substr - 2
+  ls = 16
 
---  imustrs = string.sub(str, len - 24, len - 1)
---  assert(#imustrs == 24)
-  imustr = ffi.new("uint8_t[?]", #imustrs, imustrs)
---  print(imustr[ls])
-  imu.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(imustr[ls - 20], 24),
-                                      bit.lshift(imustr[ls - 21], 16), bit.lshift(imustr[ls - 22], 8), imustr[ls - 23])))
-  imu.id = tonumber(ffi.new("double", imustr[ls - 19]))
-  imu.cntr = tonumber(ffi.new("double", imustr[ls - 18]))
+  imu.tuc = cutil.bit_or(str:byte(ls + 1), 
+                        cutil.bit_lshift(str:byte(ls + 2), 8), 
+                        cutil.bit_lshift(str:byte(ls + 3), 16), 
+                        cutil.bit_lshift(str:byte(ls + 4), 24));
+  imu.id = str:byte(ls + 5)
+  imu.cntr = str:byte(ls + 6)
+--  print(imu.tuc, imu.id, imu.cntr);
   rpyGain = 5000
-  imu.r =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 16], 8), imustr[ls - 17]))) / rpyGain
-  imu.p =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 14], 8), imustr[ls - 15]))) / rpyGain
-  imu.y =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[ls - 12], 8), imustr[ls - 13]))) / rpyGain
+  r = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls +  8), 8), 
+                    str:byte(ls +  7))})
+--    print(r[1])
+  imu.r =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls +  8), 8), str:byte(ls +  7))})[1] / rpyGain
+  imu.p =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 10), 8), str:byte(ls +  9))})[1] / rpyGain
+  imu.y =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 12), 8), str:byte(ls + 11))})[1] / rpyGain
+--  print(imu.r, imu.p, imu.y)
   wrpyGain = 500
-  imu.wr = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 10], 8), imustr[ls - 11]))) / wrpyGain
-  imu.wp = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 8], 8), imustr[ls - 9]))) / wrpyGain
-  imu.wy = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 6], 8), imustr[ls - 7]))) / wrpyGain
+  imu.wr =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 14), 8), str:byte(ls + 13))})[1] / wrpyGain
+  imu.wp =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 16), 8), str:byte(ls + 15))})[1] / wrpyGain
+  imu.wy =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 18), 8), str:byte(ls + 17))})[1] / wrpyGain
+--  print(imu.wr, imu.wp, imu.wy)
   accGain = 5000
-  imu.ax = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 4], 8), imustr[ls - 5]))) / accGain
-  imu.ay = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls - 2], 8), imustr[ls - 3]))) / accGain
-  imu.az = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[ls], 8), imustr[ls - 1]))) / accGain
+  imu.ax =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 20), 8), str:byte(ls + 19))})[1] / accGain
+  imu.ay =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 22), 8), str:byte(ls + 21))})[1] / accGain
+  imu.az =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 24), 8), str:byte(ls + 23))})[1] / accGain
+--  print(imu.ax, imu.ay, imu.az)
+--  error()
   return imu;
 end
 
@@ -48,7 +50,7 @@ function iterateIMU(data, xmlroot, labeloffset)
 --  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
-    print(fileName)
+--    print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*a");
     local lastlfpos = string.find(line, '9466', 1)
@@ -57,6 +59,7 @@ function iterateIMU(data, xmlroot, labeloffset)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
+--      print(len, labeloffset)
       if len == (40 + labeloffset) then
 --        print(#substr, substr)
         imu = readImuLine(substr, len)

@@ -40,7 +40,13 @@ function iterateGPS(data, xmlroot)
       if gpsChecksum(substr:sub(gpstart, #substr)) then
         gpsContent = readGPSLine(substr, len, 19)
         local datavalid = gpsDataCheck(gpsContent)
-        if datavalid then gps[#gps+1] = gpsContent end
+        if datavalid then 
+          gps[#gps+1] = gpsContent 
+        else
+          print('gps data valid fail')
+        end
+      else
+        print('gps checksum fail')
       end
       lastlfpos = lfpos
       lfpos = string.find(line, '\n', lfpos + 1)

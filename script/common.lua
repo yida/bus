@@ -25,7 +25,7 @@ function saveData(dataset, dtype, path)
   local serialization = require 'serialization'
   local Path = path or './'
   local filecnt = 0
-  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filetime = os.date('%m%d%Y%H%M')
   local filename = string.format(dtype.."-%s-%d", filetime, filecnt)
   
   local file = io.open(Path..filename, "w")
@@ -46,7 +46,7 @@ end
 function saveCSV(dataset, dtype, path, Debug)
   local Path = path or './'
   local filecnt = 0
-  local filetime = os.date('%m.%d.%Y.%H.%M.%S')
+  local filetime = os.date('%m%d%Y%H%M')
   local filename = string.format(dtype.."-%s-%d.csv", filetime, filecnt)
   local debug = Debug or 0
   local file = io.open(Path..filename, "w")

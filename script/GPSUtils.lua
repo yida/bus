@@ -40,16 +40,16 @@ function global2metric(gps)
 end
 
 function gpsChecksum(line)
+  local cutil = require 'cutil'
   star = line:find('*')
   if star then
     local trueline = line:sub(2, line:find('*')-1)
     local checksum = line:sub(line:find('*')+1, #line)
     local sum = 0
     for i = 1, #trueline do
-      sum = bit.bxor(sum, trueline:byte(i,i))
+      sum = cutil.bit_xor(sum, trueline:byte(i,i))
     end
-    sum = bit.tohex(sum)
-    sumstr = string.format('%s', sum)
+    sumstr = string.format('%.2X', sum)
     sumstr = string.upper(sumstr:sub(#sumstr-1, #sumstr))
     return sumstr:sub(1,2) == checksum:sub(1,2)
   else
@@ -62,10 +62,8 @@ function readGPSLine(str, len, startptr)
   local gps = {}
   gps.type = 'gps'
   gps.timestamp = tonumber(string.sub(str, 1, 16))
-  local startpt = startptr or 17
---  if str[17] ~= '$' then  
---    startpt = 19
---  end
+  local first_dollar = str:find('%$')
+  local startpt = first_dollar
   local line = string.sub(str, startpt)
   local stype = string.sub(str, startpt, startpt+5)
   gps.line = line
@@ -83,7 +81,6 @@ function readGPSLine(str, len, startptr)
     gps.HDOP = value[8]
     gps.height = value[9]
     gps.wgs84height = value[11]
-
   elseif stype == '$GPGLL' then 
 --  print('GPGLL') 
     value = split(line)
@@ -95,7 +92,6 @@ function readGPSLine(str, len, startptr)
     gps.eastwest = value[4]
     gps.status = value[6]
     gps.posMode = value[7]:sub(1, #value[7]-3)
-
   elseif stype == '$GPGSA' then 
 --  print('GPGSA') 
     value = split(line)
@@ -105,12 +101,11 @@ function readGPSLine(str, len, startptr)
     gps.PDOP = value[15]
     gps.HDOP = value[16]
     gps.VDOP = value[17]:sub(1, #value[17]-4)
-
---  elseif stype == '$GPGSV' then
-----  print('GPGSV') 
---    value = split(line)
+  elseif stype == '$GPGSV' then
+--  print('GPGSV') 
+    value = split(line)
 --    gps.utctime = ''
---    gps.id = 'GSV'
+    gps.id = 'GSV'
   elseif stype == '$GPRMC' then 
 --  print('GPRMC') 
     value = split(line)
@@ -137,7 +132,7 @@ function readGPSLine(str, len, startptr)
     gps.kspeed = value[7]
     gps.posMode = value[9]:sub(1, #value[9]-3)
   else
---    print('broken', line)
+    print('broken', line)
   end
 
   return gps;
@@ -170,7 +165,10 @@ function gpsDataCheck(gpsContent)
       print( 'fail check', gpsContent.id, gpsContent.posMode) 
     end
   end
-  if gpsContent.id == nil then datavalid = false end
+  if gpsContent.id == nil then 
+    datavalid = false 
+    print( 'fail check, gps id empty') 
+  end
   return datavalid
 end
 
