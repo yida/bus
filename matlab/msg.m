@@ -322,10 +322,80 @@ close all;
 % grid;
 
 
-gps = loadDataMP('../data/150213185940.20/gpsLocalCleanMP');
-% imu = loadDataMP('../data/010213180304.00/imuwlabelCleanMP');
-imu = loadDataMP('../data/150213185940.20/estimateCleanMP');
+% gps = loadDataMP('../data/010213180304.00/gpsLocalCleanMP');
+% % imu = loadDataMP('../data/010213180304.00/imuwlabelCleanMP');
+% imu = loadDataMP('../data/010213180304.00/estimateCleanMP');
+% 
+% imu_data = zeros(size(imu, 1), 8);
+% tic;
+% for i = 1 : size(imu, 1)
+%   imu_data(i, 1) = imu{i}.ax;
+%   imu_data(i, 2) = imu{i}.ay;
+%   imu_data(i, 3) = imu{i}.az;
+%   imu_data(i, 4) = imu{i}.wr;
+%   imu_data(i, 5) = imu{i}.wp;
+%   imu_data(i, 6) = imu{i}.wy;
+%   imu_data(i, 7) = imu{i}.timestamp;
+%   imu_data(i, 8) = imu{i}.label * 2;
+%   imu_data(i, 9) = imu{i}.predict;
+% end
+% toc;
+% gps_data = zeros(size(gps, 1), 4);
+% tic;
+% for i = 1 : size(gps, 1)
+%   gps_data(i, 1) = gps{i}.x;
+%   gps_data(i, 2) = gps{i}.y;
+%   gps_data(i, 3) = gps{i}.z;
+%   gps_data(i, 4) = gps{i}.timestamp;
+% end
+% toc;
+% 
+% %non_label_idx = find(imu_data(:, 8) == 6);
+% %size(non_label_idx);
+% %imu_data(non_label_idx, 6) = 0;
+% 
+% % fig1 = figure;
+% % plotyy(imu_data(:, 7), imu_data(:, 9),...
+% %         imu_data(:, 7), imu_data(:, 6));
+% 
+% fig2 = figure;
+% [ax, labelline, wyline] = plotyy(imu_data(:, 7), imu_data(:, 8),...
+%         imu_data(:, 7), imu_data(:, 6));
+% grid on;
+% 
+% fig3 = figure;
+% gpsline = plot(gps_data(:, 1), gps_data(:, 2), '.');
+% grid on;
+% 
+% fig4 = figure;
+% plot(imu_data(:, 7), imu_data(:, 6));
+% hold on;
+% plot(imu_data(:, 7), imu_data(:, 8));
+% hold off;
+% grid on
+% 
+% hTarget_wy = handle(wyline);
+% hTarget_gps = handle(gpsline);
+% 
+% % dcm_obj1 = datacursormode(fig1);
+% dcm_obj2 = datacursormode(fig2);
+% dcm_obj3 = datacursormode(fig3);
+% 
+% % set(dcm_obj1, 'UpdateFcn', {@dcupdate, gps_data, imu_data});
+% % set(dcm_obj1, 'Enable', 'on');
+% 
+% set(dcm_obj2, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
+%     'Enable', 'on', 'NewDataCursorOnClick',false);
+% 
+% set(dcm_obj3, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
+%     'Enable', 'on', 'NewDataCursorOnClick',false);
+% 
+% hDatatip2 = dcm_obj2.createDatatip(hTarget_wy);
+% hDatatip3 = dcm_obj3.createDatatip(hTarget_gps);
+% 
 
+% imu = loadDataMP('../data/010213180304.00/gauMP');
+imu = loadDataMP('../data/150213185940.20/gau2MP');
 imu_data = zeros(size(imu, 1), 8);
 tic;
 for i = 1 : size(imu, 1)
@@ -337,49 +407,25 @@ for i = 1 : size(imu, 1)
   imu_data(i, 6) = imu{i}.wy;
   imu_data(i, 7) = imu{i}.timestamp;
   imu_data(i, 8) = imu{i}.label;
-  imu_data(i, 9) = imu{i}.predict;
+  imu_data(i, 9) = imu{i}.r_xy;
 end
-toc;
-gps_data = zeros(size(gps, 1), 4);
-tic;
-for i = 1 : size(gps, 1)
-  gps_data(i, 1) = gps{i}.x;
-  gps_data(i, 2) = gps{i}.y;
-  gps_data(i, 3) = gps{i}.z;
-  gps_data(i, 4) = gps{i}.timestamp;
-end
-toc;
 
-% fig1 = figure;
-% plotyy(imu_data(:, 7), imu_data(:, 9),...
-%         imu_data(:, 7), imu_data(:, 6));
+% imu_data(imu_data(:, 8) == 2, 8) = 3;
+% imu_data(imu_data(:, 8) == 2, 6) = 0;
+% imu_data(imu_data(:, 8) == 3, 6) = 0;
 
-fig2 = figure;
-[ax, labelline, wyline] = plotyy(imu_data(:, 7), imu_data(:, 8),...
-        imu_data(:, 7), imu_data(:, 6));
+% imu_data(imu_data(:, 8) == 2, 9) = 0;
+% imu_data(imu_data(:, 8) == 3, 9) = 0;
+
+
+figure;
+subplot(3,1,1)
+% [ax, labelline, wyline] = plotyy(imu_data(:, 7), imu_data(:, 6),...
+%         imu_data(:, 7), imu_data(:, 9));
+plot(imu_data(:, 7), imu_data(:, 8));
+subplot(3,1,2)
+plot(imu_data(:, 7), imu_data(:, 9));
+subplot(3,1,3)
+plot(imu_data(:, 7), imu_data(:, 6));
 grid on;
-
-fig3 = figure;
-gpsline = plot(gps_data(:, 1), gps_data(:, 2), '.');
-grid on;
-
-hTarget_wy = handle(wyline);
-hTarget_gps = handle(gpsline);
-
-% dcm_obj1 = datacursormode(fig1);
-dcm_obj2 = datacursormode(fig2);
-dcm_obj3 = datacursormode(fig3);
-
-% set(dcm_obj1, 'UpdateFcn', {@dcupdate, gps_data, imu_data});
-% set(dcm_obj1, 'Enable', 'on');
-
-set(dcm_obj2, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
-    'Enable', 'on', 'NewDataCursorOnClick',false);
-
-set(dcm_obj3, 'UpdateFcn', {@dcupdate, dcm_obj2, dcm_obj3, gps_data, imu_data},...
-    'Enable', 'on', 'NewDataCursorOnClick',false);
-
-hDatatip2 = dcm_obj2.createDatatip(hTarget_wy);
-hDatatip3 = dcm_obj3.createDatatip(hTarget_gps);
-
 

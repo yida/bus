@@ -1,10 +1,10 @@
-function readImuLine(str, len)
+function readImuLine(str, len, labeloffset)
   local cutil = require 'cutil'
   local carray = require 'carray'
   local imu = {}
   imu.type = 'imu'
   imu.timestamp = tonumber(string.sub(str, 1, 16))
-  ls = 16
+  ls = 16 + labeloffset
 
   imu.tuc = cutil.bit_or(str:byte(ls + 1), 
                         cutil.bit_lshift(str:byte(ls + 2), 8), 
@@ -43,6 +43,7 @@ function checkData(imu)
   return true
 end
 
+local pattern = '%d%d%d%d%d%d%d%d%d%.%d%d%d%d%d%d'
 function iterateIMU(data, xmlroot, labeloffset)
   local imuset = {}
   local labeloffset = labeloffset or 0
@@ -50,19 +51,19 @@ function iterateIMU(data, xmlroot, labeloffset)
 --  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
     local fileName = data.Path..data.Type..data.Stamp..i
---    print(fileName)
+    print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*a");
-    local lastlfpos = string.find(line, '9466', 1)
+    local lastlfpos = string.find(line, pattern, 1)
     if lastlfpos == nil then break; end
-    local lfpos = string.find(line, '9466', lastlfpos + 1)
+    local lfpos = string.find(line, pattern, lastlfpos + 1)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
 --      print(len, labeloffset)
       if len == (40 + labeloffset) then
 --        print(#substr, substr)
-        imu = readImuLine(substr, len)
+        imu = readImuLine(substr, len, labeloffset)
         local datacheck = checkData(imu)
         local tdata = os.date('*t', imu.timestamp)
 --        print(substr:byte(1, #substr))
@@ -70,10 +71,9 @@ function iterateIMU(data, xmlroot, labeloffset)
 --        print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         imucounter = imucounter + 1
         imuset[imucounter] = imu
-
       end 
       lastlfpos = lfpos
-      lfpos = string.find(line, '9466', lastlfpos + 1)
+      lfpos = string.find(line, pattern, lastlfpos + 1)
     end
     file:close();
   end

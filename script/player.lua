@@ -41,7 +41,7 @@ function clean_data(data, start_time, end_time, section_time)
 end
 
 local datasetpath = '../data/010213192135.40/'
-local datasetpath = './'
+--local datasetpath = './'
 package.path = datasetpath..'?.lua;'..package.path
 --local prediction = loadDataMP(datasetpath, 'estimateMP', _, 1)
 --local gps = loadDataMP(datasetpath, 'gpsMP', _, 1)

@@ -23,7 +23,7 @@ function split(str)
   return value
 end
 
-function iterateGPS(data, xmlroot)
+function iterateGPS(data, xmlroot, labeloffset)
   local gps = {}
   local gpscounter = 0
   for i = 0, data.FileNum - 1 do
@@ -56,10 +56,10 @@ function iterateGPS(data, xmlroot)
   return gps
 end
 
-function parseGPS()
+function parseGPS(labeloffset)
   local data = loadRawData(dataPath, dataStamp, 'gps')
 
-  gpsset = iterateGPS(data)
+  gpsset = iterateGPS(data, _, labeloffset)
 
   return gpsset
 end

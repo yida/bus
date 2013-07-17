@@ -9,13 +9,13 @@ INCLUDES=-I/usr/local/include -I/usr/include
 LIB_DIR=-L/usr/local/lib -L/usr/lib
 
 # Find both Lua and LuaJit
-ifeq ($(shell pkg-config --exists luajit && echo 0),0)
-  LUAJIT_INC=`pkg-config luajit --cflags`
-  LUAJIT_LIB=`pkg-config luajit --libs`
-endif
+#ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+#  LUAJIT_INC=`pkg-config luajit --cflags`
+#  LUAJIT_LIB=`pkg-config luajit --libs`
+#endif
 ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
-  LUA_INC=`pkg-config lua5.1 --cflags`
-  LUA_LIB=`pkg-config lua5.1 --libs`
+	LUA_INC=`pkg-config lua5.1 --cflags`
+	LUA_LIB=`pkg-config lua5.1 --libs`
 else
   LUA_INC=`pkg-config lua --cflags`
   LUA_LIB=`pkg-config lua --libs`

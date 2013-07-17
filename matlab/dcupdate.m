@@ -1,6 +1,6 @@
 function txt = dcupdate(obj, event_obj, event_imu, event_gps, gps, imu)
     ps = get(event_obj, 'Position');
-    dataIdx = get(event_obj,'DataIndex');
+    dataIdx = get(event_obj,'DataIndex')
     xdata = get(get(event_obj,'Target'),'XData');
     ydata = get(get(event_obj,'Target'),'YData');
     zdata = get(get(event_obj,'Target'),'ZData');
@@ -29,7 +29,7 @@ function txt = dcupdate(obj, event_obj, event_imu, event_gps, gps, imu)
       gps_position = [gps(gps_front_ts(1), 1), gps(gps_front_ts(1), 2), 1];
       set(event_gps.CurrentDataCursor, 'Position', gps_position);
     else
-      fprintf(1, 'update');
+      fprintf(1, 'update\n');
     end
 
 

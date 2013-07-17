@@ -53,13 +53,13 @@ local datasetpath = '../data/150213185940.20/'
 --local datasetpath = '../data/211212164337/'
 --local datasetpath = '../data/211212165622/'
 --local datasetpath = '../data/010213180247/'
-imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+imu = loadDataMP(datasetpath, 'gau2MP', _, 1)
 mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
-gps = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+gps = loadDataMP(datasetpath, 'gpsLocalCleanMP', _, 1)
 label = loadData(datasetpath, 'labelMP')
 data = syncData(_, imu, gps)
-data = syncData(_, data, mag)
-saveDataMP(data, 'measurementMP', datasetpath)
+--data = syncData(_, data, mag)
+saveDataMP(data, 'syncCowGPS2MP', datasetpath)
 
 --state = loadData(datasetpath, 'state150213185940', _, 1)
 --label = loadData(datasetpath, 'label', _, 1)

@@ -1,10 +1,16 @@
-function readMagLine(str, len)
+function readMagLine(str, len, labeloffset)
   local carray = require 'carray'
   local cutil = require 'cutil'
   local mag = {}
+  if labeloffset > 0 then
+    label = {}
+    label.type = 'label'
+    label.timstamp = tonumber(string.sub(str, 1, 16))
+    label.value = str:sub(17,18)
+  end
   mag.type = 'mag'
   mag.timstamp = tonumber(string.sub(str, 1, 16))
-  ls = 16
+  ls = 16 + labeloffset
 
   mag.id = str:byte(ls + 1)
   mag.tuc = cutil.bit_or(str:byte(ls + 2), 
@@ -18,7 +24,7 @@ function readMagLine(str, len)
   mag.y = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 17), 8), str:byte(ls +  16))})[1]
   mag.z = carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 19), 8), str:byte(ls + 18))})[1]
 --  print(mag.x, mag.y, mag.z)
-  return mag;
+  return mag, label
 end
 
 function checkData(mag)
@@ -29,9 +35,11 @@ function checkData(mag)
   return true
 end
 
-
-function iterateMAG(data, xmlroot)
+local pattern = '%d%d%d%d%d%d%d%d%d%.%d%d%d%d%d%d'
+function iterateMAG(data, xmlroot, labeloffset)
+  local labeloffset = labeloffset or 0
   local magset = {}
+  local labelset = {}
   local magcounter = 0
 --  for i = 0, 0 do -- data.FileNum - 1 do
   for i = 0, data.FileNum - 1 do
@@ -39,37 +47,39 @@ function iterateMAG(data, xmlroot)
     print(fileName)
     local file = assert(io.open(fileName, 'r+'))
     local line = file:read("*a");
-    local lastlfpos = string.find(line, '9466', 1)
-    local lfpos = string.find(line, '9466', lastlfpos + 1)
+    local lastlfpos = string.find(line, pattern, 1)
+    local lfpos = string.find(line, pattern, lastlfpos + 1)
     while lfpos ~= nil do
       local len = lfpos - lastlfpos - 1
       local substr = string.sub(line, lastlfpos, lfpos-1)
       --print(string.byte(substr, 1, lfpos - lastlfpos)) 
-      local lencheck = checkLen(36, #substr)
+      local lencheck = checkLen(36 + labeloffset, #substr)
       if lencheck then
-        mag = readMagLine(substr, len)
+        mag, label = readMagLine(substr, len, labeloffset)
 --        local datacheck = checkData(mag)
 --        local tdata = os.date('*t', mag.timestamp)
 --        print(mag.timstamp, mag.tuc, mag.press, mag.temp, mag.x, mag.y, mag.z)
 ----        print(mag.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         magcounter = magcounter + 1
-        magset[magcounter] = mag
+        magset[#magset + 1] = mag
+        if label then
+          labelset[#labelset + 1] = label
+        end
       else
         print('lencheck fail '..len)
-        print(line:byte(1, 20))
       end
       lastlfpos = lfpos
-      lfpos = string.find(line, '9466', lastlfpos + 1)
+      lfpos = string.find(line, pattern, lastlfpos + 1)
     end
     file:close();
   end
-  return magset
+  return magset, labelset
 end
 
-function parseMAG()
+function parseMAG(labeloffset)
   local data = loadRawData(dataPath, dataStamp, 'mag')
-  magset = iterateMAG(data)
+  magset, labelset = iterateMAG(data, _, labeloffset)
 
-  return magset
+  return magset, labelset
 end
 
