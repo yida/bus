@@ -20,8 +20,8 @@ dataPath = '../data/rawdata/20121221route42/'
 dataStamp = '12311904'
 --dataStamp = '12311901'
 
---[[
-imuset = parseIMU(2)
+----[[
+imuset, labelset = parseIMU(2)
 if #imuset > 0 then
   saveDataMP(imuset, 'imuMP', './')
   print 'prune imu'
@@ -35,9 +35,12 @@ if #imuset > 0 then
 else
   print("imu set empty!")
 end
+if labelset then
+  saveDataMP(labelset, 'labelimuMP', './')
+end
 --]]
 
---[[
+----[[
 gpsset = parseGPS(2)
 if #gpsset > 0 then
   saveDataMP(gpsset, 'gpsMP', './')
@@ -53,7 +56,7 @@ magsetPruned = pruneTUC(magset)
 saveDataMP(magsetPruned, 'magPrunedMP', './')
 print(#magset)
 if labelset then
-  saveDataMP(labelset, 'labelMP', './')
+  saveDataMP(labelset, 'labelmagMP', './')
 end
 --]]
 

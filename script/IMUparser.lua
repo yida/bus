@@ -2,6 +2,12 @@ function readImuLine(str, len, labeloffset)
   local cutil = require 'cutil'
   local carray = require 'carray'
   local imu = {}
+  if labeloffset > 0 then
+    label = {}
+    label.type = 'label'
+    label.timestamp = tonumber(str:sub(1, 16))
+    label.value = str:sub(17,18)
+  end
   imu.type = 'imu'
   imu.timestamp = tonumber(string.sub(str, 1, 16))
   ls = 16 + labeloffset
@@ -32,7 +38,7 @@ function readImuLine(str, len, labeloffset)
   imu.az =  carray.short({cutil.bit_or(cutil.bit_lshift(str:byte(ls + 24), 8), str:byte(ls + 23))})[1] / accGain
 --  print(imu.ax, imu.ay, imu.az)
 --  error()
-  return imu;
+  return imu, label
 end
 
 function checkData(imu)
@@ -46,6 +52,7 @@ end
 local pattern = '%d%d%d%d%d%d%d%d%d%.%d%d%d%d%d%d'
 function iterateIMU(data, xmlroot, labeloffset)
   local imuset = {}
+  local labelset = {}
   local labeloffset = labeloffset or 0
   local imucounter = 0
 --  for i = 0, 0 do -- data.FileNum - 1 do
@@ -63,7 +70,7 @@ function iterateIMU(data, xmlroot, labeloffset)
 --      print(len, labeloffset)
       if len == (40 + labeloffset) then
 --        print(#substr, substr)
-        imu = readImuLine(substr, len, labeloffset)
+        imu, label = readImuLine(substr, len, labeloffset)
         local datacheck = checkData(imu)
         local tdata = os.date('*t', imu.timestamp)
 --        print(substr:byte(1, #substr))
@@ -71,19 +78,22 @@ function iterateIMU(data, xmlroot, labeloffset)
 --        print(imu.timstamp, tdata.year, tdata.month, tdata.day, tdata.hour, tdata.min, tdata.sec)
         imucounter = imucounter + 1
         imuset[imucounter] = imu
+        if label then
+          labelset[#labelset + 1] = label
+        end
       end 
       lastlfpos = lfpos
       lfpos = string.find(line, pattern, lastlfpos + 1)
     end
     file:close();
   end
-  return imuset
+  return imuset, labelset
 end
 
 function parseIMU(labeloffset)
   local data = loadRawData(dataPath, dataStamp, 'imu')
-  imuset = iterateIMU(data, _, labeloffset)
+  imuset, labelset = iterateIMU(data, _, labeloffset)
 
-  return imuset
+  return imuset, labelset
 end
 
