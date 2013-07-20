@@ -1,5 +1,5 @@
 
-label_ts = cells2array(label, 'timestamp');
+label_ts = cells2array(label, 'timstamp');
 label_value_str = cells2array(label, 'value');
 label_value = zeros(size(label_value_str, 1));
 for i = 1 : size(label_value_str, 2)
@@ -30,12 +30,13 @@ fprintf(1, 'label time : %10.6f %10.6f\n', label_ts_start, label_ts_end);
 
 gps_start_idx = 1;
 gps_end_idx = size(gps_ts, 2);
-[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
+%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946686071.97, 946688069.350000);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
+[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685157.5703, 946685549.9723);
 
 % binary search
 tic;
@@ -70,28 +71,42 @@ imu_ts = cells2array(imu, 'timestamp');
 
 imu_start_idx = 1;
 imu_end_idx = size(imu_ts, 2);
+%[imu_start_idx, imu_end_idx] = ...
+%      range2index(imu_ts, 946684970.550000, 946685185.550000);
+%[imu_start_idx, imu_end_idx] = ...
+%      range2index(imu_ts, 946686071.97, 946688069.350000);
 [imu_start_idx, imu_end_idx] = ...
-      range2index(imu_ts, 946684970.550000, 946685185.550000);
+      range2index(imu_ts, 946685157.5703, 946685549.9723);
 
 fig_gps = figure; 
-plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx), '.');
+gps_line = plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx), '.');
 hold on;
-plot(gps_x(gps_label), gps_y(gps_label), 'r*');
+gps_label_line = plot(gps_x(gps_label), gps_y(gps_label), 'r*');
 hold off;
 
 grid on;
 axis equal;
 
-dcm_obj = datacursormode(fig_gps);
-set(dcm_obj, 'UpdateFcn', {@gps_dc_update, gps_x, gps_y, gps_ts, gps_lat, gps_lon});
-
-
 fig_imu = figure;
 hold on;
 %plot(imu_ts(imu_start_idx:imu_end_idx), imu_wr(imu_start_idx:imu_end_idx),...
 %      imu_ts(imu_start_idx:imu_end_idx), imu_wp(imu_start_idx:imu_end_idx),...
-plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy(imu_start_idx:imu_end_idx));
+imu_wy_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy(imu_start_idx:imu_end_idx));
 hold off;
 grid on;
 
+dcm_gps_obj = datacursormode(fig_gps);
+dcm_imu_obj = datacursormode(fig_imu);
+set(dcm_gps_obj, 'UpdateFcn', {@dc_gps_imu_update, dcm_gps_obj, dcm_imu_obj,...
+                                gps_x, gps_y, gps_ts, gps_lat, gps_lon,...
+                                imu_ts, imu_wy});
+set(dcm_imu_obj, 'UpdateFcn', {@dc_gps_imu_update, dcm_gps_obj, dcm_imu_obj,...
+                                gps_x, gps_y, gps_ts, gps_lat, gps_lon,...
+                                imu_ts, imu_wy});
+
+hTarget_wy = handle(imu_wy_line);
+hTarget_gps = handle(gps_line);
+
+hDatatip_wy = dcm_imu_obj.createDatatip(hTarget_wy);
+hDatatip_gps = dcm_gps_obj.createDatatip(hTarget_gps);
 

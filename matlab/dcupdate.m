@@ -32,7 +32,5 @@ function txt = dcupdate(obj, event_obj, event_imu, event_gps, gps, imu)
       fprintf(1, 'update\n');
     end
 
-
-
     txt = {['x: ',num2str(ps(1))], ['y: ',num2str(ps(2))]};
 end
