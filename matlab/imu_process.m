@@ -36,14 +36,16 @@ gps_start_idx = 1;
 gps_end_idx = size(gps_ts, 2);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
-[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
+%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946686071.97, 946688069.350000);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
+[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687176.115478, 946687349.114410);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685157.5703, 946685549.9723);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685875.6149, 946686779.085);
+%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
 
 % binary search
+fprintf(1, 'binary matching label with gps');
 if exist('label', 'var') > 0
   tic;
   gps_label = zeros(size(label_ts));
@@ -82,8 +84,110 @@ imu_end_idx = size(imu_ts, 2);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946686071.97, 946688069.350000);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685157.5703, 946685549.9723);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685875.6149, 946686779.085);
-[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687935.332183, 946689658.536865);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687123.115478, 946687349.114410);
+%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687935.332183, 946689658.536865);
+[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687176.115478, 946687349.114410);
+%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684970.550000, 946685185.550000);
+%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946686071.97, 946688069.350000);
+
+fprintf(1, 'binary matching label with imu');
+if exist('label', 'var') > 0
+  tic;
+  imu_label = zeros(size(label_ts));
+  for i = 1 : size(label_ts, 2)
+    ts = label_ts(i);
+    start_idx = imu_start_idx;
+    end_idx = imu_end_idx;
+    mid_idx = floor((start_idx + end_idx) / 2);
+    while abs(imu_ts(mid_idx) - ts) > 0.000001 & (end_idx - start_idx) > 1
+      if ts > imu_ts(mid_idx) 
+        start_idx = mid_idx;
+      else
+        end_idx = mid_idx;
+      end
+      mid_idx = floor((start_idx + end_idx) / 2);
+    end
+    imu_label(i) = mid_idx;
+  end
+  toc;
+end
+
+imu_label = unique(imu_label);
+
+idx_offset = 40;
+imu_cells = {};
+imu_cells_counter = 1; 
+%
+imu_label_mask = zeros(size(imu_ts));
+imu_label_mask(imu_label) = 1;
+
+%
+imu_label_mask(imu_label(1)  - idx_offset : imu_label(17) + idx_offset) = 1;
+imu_cells{imu_cells_counter} = imu_cell(1, 17, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+imu_cells_counter = imu_cells_counter + 1;
+%
+imu_label_mask(imu_label(18) - idx_offset : imu_label(26) + idx_offset) = 1;
+imu_cells{imu_cells_counter} = imu_cell(18, 26, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+imu_cells_counter = imu_cells_counter + 1;
+%
+imu_label_mask(imu_label(27)  - idx_offset : imu_label() + idx_offset) = 0;
+
+%imu_label_mask(imu_label(14) - idx_offset : imu_label(20) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(14, 20, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(21) - idx_offset : imu_label(30) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(21, 30, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(31) - idx_offset : imu_label(37) + idx_offset) = 0;
+%imu_cells{imu_cells_counter} = imu_cell(31, 37, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(38) - idx_offset : imu_label(47) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(38, 47, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(48) - idx_offset : imu_label(53) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(48, 53, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(54) - idx_offset : imu_label(61) + idx_offset) = 0;
+%imu_cells{imu_cells_counter} = imu_cell(54, 61, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(62) - idx_offset : imu_label(65) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(62, 65, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%%
+%imu_label_mask(imu_label(66) - idx_offset : imu_label(72) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(66, 72, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%%
+%imu_label_mask(imu_label(73) - idx_offset : imu_label(79) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(73, 79, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%%
+%imu_label_mask(imu_label(80) - idx_offset : imu_label(87) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(80, 87, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(88) - idx_offset : imu_label(96) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(88, 96, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(97) - idx_offset : imu_label(104) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(97, 104, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(105) - idx_offset : imu_label(111) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(105, 111, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_label_mask(imu_label(112) - idx_offset : imu_label(121) + idx_offset) = 1;
+%imu_cells{imu_cells_counter} = imu_cell(112, 121, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%imu_cells_counter = imu_cells_counter + 1;
+%
+%imu_wy = imu_wy .* imu_label_mask;
 
 fig_gps = figure; 
 gps_line = plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx), '.');
@@ -97,10 +201,12 @@ grid on;
 axis equal;
 
 fig_imu = figure;
-hold on;
 %plot(imu_ts(imu_start_idx:imu_end_idx), imu_wr(imu_start_idx:imu_end_idx),...
 %      imu_ts(imu_start_idx:imu_end_idx), imu_wp(imu_start_idx:imu_end_idx),...
 imu_wy_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy(imu_start_idx:imu_end_idx));
+hold on;
+imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx),...
+                       imu_label_mask(imu_start_idx:imu_end_idx), 'r');
 hold off;
 grid on;
 
