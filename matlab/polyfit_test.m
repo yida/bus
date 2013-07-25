@@ -74,60 +74,60 @@
 %    end
 %  end
 %end
-%
+
 
 [imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
-%
-%Q_right = zeros(size(imu_wy));
-%imu_ts_filter = imu_ts(imu_start_idx : imu_end_idx);
-%imu_sample_num = numel(imu_ts_filter);
-%imu_idx = 1;
-%offset_idx = 1;
-%while imu_idx < imu_sample_num & offset_idx < imu_sample_num
-%  offset_idx = imu_idx + 1;
-%  while (abs(imu_ts_filter(offset_idx) - imu_ts_filter(imu_idx)) < span_right_ts) & (offset_idx < imu_sample_num) 
-%    offset_idx = offset_idx + 1;
-%  end
-%%  fprintf(1, '%d %d %d\n', imu_idx, offset_idx, offset_idx - imu_idx);
-%  mid_idx = floor((imu_idx + offset_idx)/2);
-%  centralized_ts = zeros(1, offset_idx - imu_idx + 1);
-%  section_num = numel(centralized_ts);
-%  for i = 1 : section_num
-%    centralized_ts(i) = imu_ts_filter(mid_idx) - imu_ts_filter(imu_idx + i - 1);
-%  end
-%  Y_right = polyval(right_p, centralized_ts);
-%  size(Y_right);
-%  size(imu_wy(imu_idx:offset_idx));
-%  Q_right(imu_idx) = sum((imu_wy(imu_idx:offset_idx) - Y_right).^2);
-%  imu_idx = imu_idx + 1;
-%end
-%
-%Q_left = zeros(size(imu_wy));
-%imu_ts_filter = imu_ts(imu_start_idx : imu_end_idx);
-%imu_sample_num = numel(imu_ts_filter);
-%imu_idx = 1;
-%offset_idx = 1;
-%while imu_idx < imu_sample_num & offset_idx < imu_sample_num
-%  offset_idx = imu_idx + 1;
-%  while (abs(imu_ts_filter(offset_idx) - imu_ts_filter(imu_idx)) < span_right_ts) & (offset_idx < imu_sample_num) 
-%    offset_idx = offset_idx + 1;
-%  end
-%%  fprintf(1, '%d %d %d\n', imu_idx, offset_idx, offset_idx - imu_idx);
-%  mid_idx = floor((imu_idx + offset_idx)/2);
-%  centralized_ts = zeros(1, offset_idx - imu_idx + 1);
-%  section_num = numel(centralized_ts);
-%  for i = 1 : section_num
-%    centralized_ts(i) = imu_ts_filter(mid_idx) - imu_ts_filter(imu_idx + i - 1);
-%  end
-%  Y_right = polyval(right_p, centralized_ts);
-%  size(Y_right);
-%  size(imu_wy(imu_idx:offset_idx));
-%  Q_left(imu_idx) = sum((imu_wy(imu_idx:offset_idx) - Y_right).^2);
-%  imu_idx = imu_idx + 1;
-%end
+
+Q_right = ones(size(imu_wy));
+imu_ts_filter = imu_ts(imu_start_idx : imu_end_idx);
+imu_sample_num = numel(imu_ts_filter);
+imu_idx = 1;
+offset_idx = 1;
+while imu_idx < imu_sample_num & offset_idx < imu_sample_num
+  offset_idx = imu_idx + 1;
+  while (abs(imu_ts_filter(offset_idx) - imu_ts_filter(imu_idx)) < span_right_ts) & (offset_idx < imu_sample_num) 
+    offset_idx = offset_idx + 1;
+  end
+%  fprintf(1, '%d %d %d\n', imu_idx, offset_idx, offset_idx - imu_idx);
+  mid_idx = floor((imu_idx + offset_idx)/2);
+  centralized_ts = zeros(1, offset_idx - imu_idx + 1);
+  section_num = numel(centralized_ts);
+  for i = 1 : section_num
+    centralized_ts(i) = imu_ts_filter(mid_idx) - imu_ts_filter(imu_idx + i - 1);
+  end
+  Y_right = polyval(right_p, centralized_ts);
+  size(Y_right);
+  size(imu_wy(imu_idx:offset_idx));
+  Q_right(imu_idx) = sum((imu_wy(imu_idx:offset_idx) - Y_right).^2);
+  imu_idx = imu_idx + 1;
+end
+
+Q_left = ones(size(imu_wy));
+imu_ts_filter = imu_ts(imu_start_idx : imu_end_idx);
+imu_sample_num = numel(imu_ts_filter);
+imu_idx = 1;
+offset_idx = 1;
+while imu_idx < imu_sample_num & offset_idx < imu_sample_num
+  offset_idx = imu_idx + 1;
+  while (abs(imu_ts_filter(offset_idx) - imu_ts_filter(imu_idx)) < span_right_ts) & (offset_idx < imu_sample_num) 
+    offset_idx = offset_idx + 1;
+  end
+%  fprintf(1, '%d %d %d\n', imu_idx, offset_idx, offset_idx - imu_idx);
+  mid_idx = floor((imu_idx + offset_idx)/2);
+  centralized_ts = zeros(1, offset_idx - imu_idx + 1);
+  section_num = numel(centralized_ts);
+  for i = 1 : section_num
+    centralized_ts(i) = imu_ts_filter(mid_idx) - imu_ts_filter(imu_idx + i - 1);
+  end
+  Y_right = polyval(right_p, centralized_ts);
+  size(Y_right);
+  size(imu_wy(imu_idx:offset_idx));
+  Q_left(imu_idx) = sum((imu_wy(imu_idx:offset_idx) - Y_right).^2);
+  imu_idx = imu_idx + 1;
+end
 
 Q = bsxfun(@min, Q_left, Q_right);
-%Q = Q_left;
+Q = Q_right;
 
 % match gps with fitting quality
 fprintf(1, 'imu stamp %10.6f %10.6f\n', imu_ts(imu_start_idx), imu_ts(imu_end_idx));
@@ -135,17 +135,27 @@ fprintf(1, 'gps stamp %10.6f %10.6f\n', gps_ts(gps_start_idx), gps_ts(gps_end_id
 
 gps_Q_idx = binary_matching(imu_ts, gps_ts);
 gps_Q = Q(gps_Q_idx);
+gps_Q_max = max(gps_Q);
+gps_Q = gps_Q./gps_Q_max;
+min_gps_Q = min(gps_Q);
+gps_Q(gps_Q == min_gps_Q) = 0.5;
+%gps_Q(gps_Q > 0.2) = 0.2;
 
 %fprintf(1, 'binary matching label with gps');
 %if exist('label', 'var') > 0
 %end
 
 fig_gps = figure; 
-gps_line = plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx), '.');
+gps_line = plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx),...
+                      '.', 'LineWidth', 1, 'Color', [1, 1, 0.80]);
 hold on;
-if exist('label', 'var') > 0
-  gps_label_line = plot(gps_x(gps_label), gps_y(gps_label), 'r*');
+for i = gps_start_idx : gps_end_idx
+  if gps_Q(i) <= 0.08
+    plot(gps_x(i), gps_y(i), 'r*');
+  end
 end
+%  gps_label_line = plot(gps_x(gps_label), gps_y(gps_label), 'r*');
+
 hold off;
 grid on;
 axis equal;
