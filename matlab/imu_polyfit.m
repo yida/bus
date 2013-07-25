@@ -1,4 +1,4 @@
-function [x, y] = imu_polyfit(sample_x, sample_y)
+function [x, y, p] = imu_polyfit(sample_x, sample_y)
 %  [C, I] = max(sample_y);
 %  centralized_x = zeros(size(sample_x));
 %  for i = 1 : numel(sample_x)
