@@ -1,5 +1,6 @@
 function centralized = centralize(x, y)
-    [C, I] = max(y);
+    I = floor(numel(x) / 2);
+
     centralized = zeros(size(y));
     for j = 1 : numel(x)
       centralized(j) = x(j) - x(I);
