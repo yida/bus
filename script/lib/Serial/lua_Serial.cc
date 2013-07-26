@@ -70,6 +70,7 @@ static int lua_Serial_read(lua_State *L) {
 		if (numRead >= 0){
 //			std::cout << "serialDeviceAPI: Read "<<numRead<<" chars"<< std::endl;
       lua_pushlightuserdata(L, &charBuf[0]);
+//      lua_pushlstring(L, (const char*)&charBuf[0], numRead);
       lua_pushstring(L, "uint8_t");
       lua_pushinteger(L, numRead);
       return 3;

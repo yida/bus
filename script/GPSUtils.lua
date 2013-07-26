@@ -61,7 +61,8 @@ end
 function readGPSLine(str, len, startptr)
   local gps = {}
   gps.type = 'gps'
-  gps.timestamp = tonumber(string.sub(str, 1, 16))
+  local ts_len = len or 16;
+  gps.timestamp = tonumber(string.sub(str, 1, ts_len))
   local first_dollar = str:find('%$')
   local startpt = first_dollar
   local line = string.sub(str, startpt)

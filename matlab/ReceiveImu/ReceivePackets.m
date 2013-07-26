@@ -3,7 +3,7 @@ clear all;
 close all;
 
 addpath ../../api
-dev  = '/dev/ttyUSB0';
+dev  = '/dev/tty.usbserial-A1017G1T';
 baud = 230400;
 SerialDeviceMexAPI('connect',dev,baud);
 
@@ -38,7 +38,7 @@ while(1)
         pmag.temp  = double(typecast(packet(15:16),'int16')) / 100; %deg celcius
         pmag.mag   = double(typecast(packet(19:24),'int16'));
        pmag;
-       atan2(pmag.mag(2), pmag.mag(1))
+       atan2(pmag.mag(2), pmag.mag(1));
     end
   end
   

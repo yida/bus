@@ -1,6 +1,6 @@
 #!/usr/local/bin/luajit -
 
-local home = '/home/yida/UPennTHOR/Player'
+local home = '/Users/Yida/'
 
 package.path = home..'/Util/?.lua;'..package.path
 package.cpath = home..'/Lib/?.so;'..package.cpath
@@ -8,11 +8,17 @@ package.cpath = home..'/Lib/?.so;'..package.cpath
 require 'include'
 require 'poseUtils'
 require 'torch'
+require 'unix'
+require 'cutil'
+require 'carray'
 require 'magUtils'
 require 'common'
+require 'imuParser'
+require 'MAGparser'
+require 'getch'
 
+getch.enableblock(1);
 
-local ffi = require 'ffi'
 local serialization = require('serialization');
 local util = require('util');
 local Serial = require('Serial');
@@ -24,10 +30,8 @@ function gpioOpen(port)
   gpioExport:close()
 end
 
-
-
 baud = 230400;
-dev = '/dev/ttyUSB0';
+dev = '/dev/tty.usbserial-A1017G1T';
 s1 = Serial.connect(dev, baud);
 
 packetID = -1;
@@ -36,7 +40,7 @@ function ReceivePacket()
     packetID = kBPacket.create();
   end
   
-  buf, buftype, bufsize = Serial.read(1000, 2000);
+  buf, buftype, bufsize = Serial.read(100, 200);
 
 --  return buf, bufsize
   packet, packetType, packetSize, buf2, buf2type, buf2Size = kBPacket.processBuffer(packetID, buf, bufsize);
@@ -44,203 +48,140 @@ function ReceivePacket()
   return packet, packetSize;
 end
 
-function cdata2gpsstring(cdata, len)
-  str = '';
-  for i = 5, len - 1 - 8 do
-    str = str..string.format('%c', cdata[i])
-  end
-  return str
-end
-
-function cdata2string(cdata, len)
-  str = '';
-  for i = 0, len - 1 do
-    str = str..string.format('%c', cdata[i])
-  end
-  return str
-end
-
-function extractImu(imustr, len)
-  local imu = {}
-  imu.type = 'imu'
-
---  imustr = ffi.new("uint8_t[?]", #imustrs, imustrs)
-  imu.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(imustr[8], 24),
-                      bit.lshift(imustr[7], 16), bit.lshift(imustr[6], 8), imustr[5])))
-  imu.id = tonumber(ffi.new("double", imustr[9]))
-  imu.cntr = tonumber(ffi.new("double", imustr[10]))
-  rpyGain = 5000
-  imu.r =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[12], 8), imustr[11]))) / rpyGain
-  imu.p =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[14], 8), imustr[13]))) / rpyGain
-  imu.y =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(imustr[16], 8), imustr[15]))) / rpyGain
-  wrpyGain = 500
-  imu.wr = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[18], 8), imustr[17]))) / wrpyGain
-  imu.wp = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[20], 8), imustr[19]))) / wrpyGain
-  imu.wy = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[22], 8), imustr[21]))) / wrpyGain
-  accGain = 5000
-  imu.ax = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[24], 8), imustr[23]))) / accGain
-  imu.ay = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[26], 8), imustr[25]))) / accGain
-  imu.az = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(imustr[28], 8), imustr[27]))) / accGain
-  return imu;
-end
-
-function extractMag(magstr, len)
-  local mag = {}
-  mag.type = 'mag'
-
-  mag.id = tonumber(ffi.new("double", magstr[5]))
-  mag.tuc = tonumber(ffi.new("uint32_t", bit.bor(bit.lshift(magstr[9], 24),
-                    bit.lshift(magstr[8], 16), bit.lshift(magstr[7], 8), magstr[6])))
-  mag.press = tonumber(ffi.new('int16_t', bit.bor(bit.lshift(magstr[11], 8), magstr[10]))) + 100000
-  mag.temp =  tonumber(ffi.new('int16_t', bit.bor(bit.lshift(magstr[15], 8), magstr[14]))) / 100
-  mag.x = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[19], 8), magstr[18])))
-  mag.y = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[21], 8), magstr[20])))
-  mag.z = tonumber(ffi.new("int16_t", bit.bor(bit.lshift(magstr[23], 8), magstr[22])))
-  return mag;
-end
-
-function extractGPS(gpsstr, len)
-  local gps = {}
-  gps.type = 'gps'
-  gps.line = str
-  return gps
-end
-
-
-function pcdata(cdata, size)
-  str = ''
-  for i = 0, size - 1 do
-    str = str..' '..cdata[i]
-  end
-  print(str)
-end
-
 -- Flag to enable and disable certain type of data
 imuFlag = true
 magFlag = true 
-gpsFlag = false
-labelFlag = false 
-fileSaveFlag = false
+gpsFlag = true 
+labelFlag = true 
+fileSaveFlag = true
 
 -- Create files
 if fileSaveFlag then
-  filecnt = 0;
-  filetime = utime();
-  filepath = home
-  filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
-  
-  file = io.open(filename, "w");
+  if imuFlag then
+    imu_filecnt = 0;
+    imu_filetime = os.date('%m%d%Y%H%M')
+    imu_filepath = home
+    imu_filename = string.format(imu_filepath.."/log-imu-%s-%d", imu_filetime, imu_filecnt);
+    imu_file = io.open(imu_filename, "w");
+    imu_linecount = 0;
+  end
+  if magFlag then
+    mag_filecnt = 0;
+    mag_filetime = os.date('%m%d%Y%H%M')
+    mag_filepath = home
+    mag_filename = string.format(mag_filepath.."/log-mag-%s-%d", mag_filetime, mag_filecnt);
+    mag_file = io.open(mag_filename, "w");
+    mag_linecount = 0;
+  end
+  if gpsFlag then
+    gps_filecnt = 0;
+    gps_filetime = os.date('%m%d%Y%H%M')
+    gps_filepath = home
+    gps_filename = string.format(gps_filepath.."/log-gps-%s-%d", gps_filetime, gps_filecnt);
+    gps_file = io.open(gps_filename, "w");
+    gps_linecount = 0;
+  end
+  if labelFlag then
+    label_filecnt = 0;
+    label_filetime = os.date('%m%d%Y%H%M')
+    label_filepath = home
+    label_filename = string.format(label_filepath.."/log-label-%s-%d", label_filetime, label_filecnt);
+    label_file = io.open(label_filename, "w");
+    label_linecount = 0;
+  end
 end
-linecount = 0;
-maxlinecount = 500;
+maxlinecount = 5000;
 
--- open button
-if labelFlag then
-  gpioOpen(147)
-  gpioOpen(146)
-  gpioOpen(175)
-  gpioOpen(114)
-end
-
-gyro = torch.DoubleTensor(3, 1):fill(0)
-acc = torch.DoubleTensor(3, 1):fill(0)
-
+t0 = unix.time()
 while (1) do
 
-  local timestamp = utime()
-  if labelFlag then
-    gpio147 = io.open('/sys/class/gpio/gpio147/value', 'r')
-    b1 = gpio147:read('*number')
-    gpio147:close()
-
-    gpio146 = io.open('/sys/class/gpio/gpio146/value', 'r')
-    b2 = gpio146:read('*number')
-    gpio146:close()
-
-    gpio175 = io.open('/sys/class/gpio/gpio175/value', 'r+')
-    b3 = gpio175:read('*number')
-    gpio175:close()
-
-    gpio114 = io.open('/sys/class/gpio/gpio114/value', 'r+')
-    b4 = gpio114:read('*number')
-    gpio114:close()
-
-    if fileSaveFlag then
-      butstr = b1..b2..b3..b4
-      if butstr ~= '0000' then
-        local data = {}
-        data.type = 'label'
-        data.timestamp = timestamp
-        data.value = butstr
-        savedata = serialization.serialize(data)
-        file:write(savedata)
-        file:write('\n')
-        print(linecount, savedata)
-        linecount = linecount + 1
-      end
-      if linecount >= maxlinecount then
-        linecount = 0;
-        file:close();
-        filecnt = filecnt + 1;
-        filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
-        file = io.open(filename, "w");
-      end
-    end
-  end
+  local timestamp = unix.time()
 
   packet, size = ReceivePacket();
+
   if (type(packet) == 'userdata') then
-    local rawdata = ffi.cast('uint8_t*', packet)
-    local data = nil
-    if rawdata[2] == 0 then
-      if rawdata[4] == 31 and gpsFlag then
-        str = cdata2gpsstring(rawdata, size)
-        data = extractGPS(str, #str)
-        data.timestamp = timestamp
-      elseif rawdata[4] == 34 and imuFlag then
-        data = extractImu(rawdata, size)
-        data.timestamp = timestamp
-        print(data.timestamp, data.tuc)
-        gyro[1] = data.r
-        gyro[2] = data.p
-        gyro[3] = -data.y
-
-        acc[1] = data.ax
-        acc[2] = data.ay
-        acc[3] = -data.az
-      elseif rawdata[4] == 35 and magFlag then
-        data = extractMag(rawdata, size)
-
---        magv = torch.DoubleTensor({data.y, data.x, -data.z})
---        magval = magCalibrated(magv)
---        print(magv)
---        print(magval)
---        magvalue = magTiltCompensate(magv, acc)
---        print(magvalue)
-----        local heading = Mag2Heading(magvalue)
---        local heading = Mag2Heading(magval)
---        local heading1 = Mag2Heading(magvalue)
---        print('w/o tilt compensation '..heading * 180 / math.pi)
---        print('w tilt compensation '..heading1 * 180 / math.pi)
---        data.timestamp = timestamp
+    packet_array = carray.byte(packet, size);
+    packet_str = tostring(packet_array);
+    -- check data valid
+    if packet_str:byte(3) == 0 then
+      if packet_str:byte(5) == 31 and gpsFlag then
+--        print('gps :', size, packet_str:sub(6, #packet_str - 8))
+          gps_str = string.format('%10.6f', timestamp)..packet_str:sub(6, #packet_str - 8)
+          gps_file:write(gps_str)
+          print(gps_str)
+          gps_linecount = gps_linecount + 1
+      elseif packet_str:byte(5) == 34 and imuFlag then
+          imu, label = readImuLine(string.format('%10.5f', timestamp)..packet_str:sub(6, 29), 40, 0);  
+          imu_str = string.format('%10.6f', timestamp)..packet_str:sub(6, 29)
+          imu_file:write(imu_str)
+          imu_linecount = imu_linecount + 1
+--          print(imu.tuc, imu.r, imu.p, imu.y, imu.wr, imu.wp, imu.wy, imu.ax, imu.ay, imu.az)
+--        print('imu :', size, packet_str:byte(6, 29))
+      elseif packet_str:byte(5) == 35 and magFlag then
+          mag_str = string.format('%10.6f', timestamp)..packet_str:sub(6, 24)
+          mag_file:write(mag_str)
+          mag, label = readMagLine(string.format('%10.5f', timestamp)..packet_str:sub(6, 24), 40, 0);
+          mag_linecount = mag_linecount + 1
+--        print('mag :', size, packet_str:byte(6, 24))
       end
---      if data and fileSaveFlag then
---        savedata = serialization.serialize(data)
---        file:write(savedata)
---        file:write('\n')
---        print(linecount, savedata)
---        linecount = linecount + 1
---      end
     end
   end
---  if linecount >= maxlinecount and fileSaveFlag then
---    linecount = 0;
---    file:close();
---    filecnt = filecnt + 1;
---    filename = string.format(filepath.."/log-%s-%d", filetime, filecnt);
---    file = io.open(filename, "w");
---  end
 
+  if labelFlag then
+    local str = getch.get();
+    if #str > 0 then
+      local byte = string.byte(str, 1)
+      if byte == string.byte("1") then
+        print('left start')
+        label_str = string.format('%10.6f', timestamp)..'1000'
+        label_file:write(label_str)
+        label_linecount = label_linecount + 1
+      elseif byte == string.byte("2") then
+        print('left end')
+        label_str = string.format('%10.6f', timestamp)..'0100'
+        label_file:write(label_str)
+        label_linecount = label_linecount + 1
+      elseif byte == string.byte("3") then
+        print('right start')
+        label_str = string.format('%10.6f', timestamp)..'0010'
+        label_file:write(label_str)
+        label_linecount = label_linecount + 1
+      elseif byte == string.byte("4") then
+        print('right end')
+        label_str = string.format('%10.6f', timestamp)..'0001'
+        label_file:write(label_str)
+        label_linecount = label_linecount + 1
+      end
+    end
+  end
+  
+  if imu_linecount >= maxlinecount and fileSaveFlag then
+    imu_linecount = 0;
+    imu_file:close();
+    imu_filecnt = imu_filecnt + 1;
+    imu_filename = string.format(imu_filepath.."/log-imu-%s-%d", imu_filetime, imu_filecnt);
+    imu_file = io.open(imu_filename, "w");
+  end
+  if gps_linecount >= maxlinecount and fileSaveFlag then
+    gps_linecount = 0;
+    gps_file:close();
+    gps_filecnt = gps_filecnt + 1;
+    gps_filename = string.format(gps_filepath.."/log-gps-%s-%d", gps_filetime, gps_filecnt);
+    gps_file = io.open(gps_filename, "w");
+  end
+  if mag_linecount >= maxlinecount and fileSaveFlag then
+    mag_linecount = 0;
+    mag_file:close();
+    mag_filecnt = mag_filecnt + 1;
+    mag_filename = string.format(mag_filepath.."/log-mag-%s-%d", mag_filetime, mag_filecnt);
+    mag_file = io.open(mag_filename, "w");
+  end
+  if label_linecount >= maxlinecount and fileSaveFlag then
+    label_linecount = 0;
+    label_file:close();
+    label_filecnt = label_filecnt + 1;
+    label_filename = string.format(label_filepath.."/log-label-%s-%d", label_filetime, label_filecnt);
+    label_file = io.open(label_filename, "w");
+  end
 end
 
-if fileSaveFlag then file:close(); end

@@ -1,16 +1,17 @@
-function readMagLine(str, len, labeloffset)
+function readMAGLine(str, len, labeloffset)
   local carray = require 'carray'
   local cutil = require 'cutil'
   local mag = {}
+  local ts_len = len or 16
   if labeloffset > 0 then
     label = {}
     label.type = 'label'
-    label.timstamp = tonumber(string.sub(str, 1, 16))
-    label.value = str:sub(17,18)
+    label.timstamp = tonumber(string.sub(str, 1, ts_len))
+    label.value = str:sub(ts_len + 1, ts_len + 1)
   end
   mag.type = 'mag'
-  mag.timstamp = tonumber(string.sub(str, 1, 16))
-  ls = 16 + labeloffset
+  mag.timstamp = tonumber(string.sub(str, 1, ts_len))
+  ls = ts_len + labeloffset
 
   mag.id = str:byte(ls + 1)
   mag.tuc = cutil.bit_or(str:byte(ls + 2), 
@@ -55,7 +56,7 @@ function iterateMAG(data, xmlroot, labeloffset)
       --print(string.byte(substr, 1, lfpos - lastlfpos)) 
       local lencheck = checkLen(36 + labeloffset, #substr)
       if lencheck then
-        mag, label = readMagLine(substr, len, labeloffset)
+        mag, label = readMAGLine(substr, len, labeloffset)
 --        local datacheck = checkData(mag)
 --        local tdata = os.date('*t', mag.timestamp)
 --        print(mag.timstamp, mag.tuc, mag.press, mag.temp, mag.x, mag.y, mag.z)

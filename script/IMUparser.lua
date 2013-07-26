@@ -1,16 +1,17 @@
-function readImuLine(str, len, labeloffset)
+function readIMULine(str, len, labeloffset)
   local cutil = require 'cutil'
   local carray = require 'carray'
+  local ts_len = len or 16;
   local imu = {}
   if labeloffset > 0 then
     label = {}
     label.type = 'label'
-    label.timestamp = tonumber(str:sub(1, 16))
-    label.value = str:sub(17,18)
+    label.timestamp = tonumber(str:sub(1, ts_len))
+    label.value = str:sub(ts_len + 1, ts_len + 2)
   end
   imu.type = 'imu'
-  imu.timestamp = tonumber(string.sub(str, 1, 16))
-  ls = 16 + labeloffset
+  imu.timestamp = tonumber(string.sub(str, 1, ts_len))
+  ls = ts_len + labeloffset
 
   imu.tuc = cutil.bit_or(str:byte(ls + 1), 
                         cutil.bit_lshift(str:byte(ls + 2), 8), 
@@ -70,7 +71,7 @@ function iterateIMU(data, xmlroot, labeloffset)
 --      print(len, labeloffset)
       if len == (40 + labeloffset) then
 --        print(#substr, substr)
-        imu, label = readImuLine(substr, len, labeloffset)
+        imu, label = readIMULine(substr, len, labeloffset)
         local datacheck = checkData(imu)
         local tdata = os.date('*t', imu.timestamp)
 --        print(substr:byte(1, #substr))
