@@ -119,15 +119,29 @@ gps_Q_idx = binary_matching(imu_ts, gps_ts);
 gps_Q_left = Q_left(gps_Q_idx);
 gps_Q_right = Q_right(gps_Q_idx);
 
+%% match scale
+x_offset = 0;
+y_offset = 0;
+%scale = 1.77;  
+%x_offset = 1325;
+%y_offset = 1210;
+%roadmap = imread([datapath, 'roadmap.jpeg']);
+%img = imresize(roadmap, scale);
+%
 fig_gps = figure; 
-gps_line = plot(gps_x(gps_start_idx:gps_end_idx), gps_y(gps_start_idx:gps_end_idx),...
-                      'LineWidth', 1, 'Color', [0.5, 0.5, 0.50]);
+
+%h_img = image(img);
+%set(h_img, 'AlphaData', 0.5);
+
+hold on;
+gps_line = plot(gps_x(gps_start_idx:gps_end_idx) + x_offset, +gps_y(gps_start_idx:gps_end_idx) + y_offset,...
+                      'LineWidth', 2, 'Color', [0.5, 0.5, 0.50]);
 hold on;
 for i = gps_start_idx : gps_end_idx
   if gps_Q_left(i) <= 3
-    plot(gps_x(i), gps_y(i), 'r*');
+    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'r*');
   elseif gps_Q_right(i) <= 3
-    plot(gps_x(i), gps_y(i), 'r^');
+    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'r^');
   end
 end
 %  gps_label_line = plot(gps_x(gps_label), gps_y(gps_label), 'r*');
