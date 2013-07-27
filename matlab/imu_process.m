@@ -38,12 +38,12 @@ gps_end_idx = size(gps_ts, 2);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946686071.97, 946688069.350000);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687176.115478, 946687349.114410);
+%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687176.115478, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685157.5703, 946685549.9723);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685875.6149, 946686779.085);
 %[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684969.05, 946688106.02);
+[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684969.05, 946688106.02);
 
 % binary search
 fprintf(1, 'binary matching label with gps');
@@ -86,10 +86,10 @@ imu_end_idx = size(imu_ts, 2);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685157.5703, 946685549.9723);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685875.6149, 946686779.085);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687935.332183, 946689658.536865);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687176.115478, 946687349.114410);
+%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687176.115478, 946689658.536865);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684970.550000, 946685185.550000);
 %[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946686071.97, 946688069.350000);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
+[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
 
 fprintf(1, 'binary matching label with imu');
 if exist('label', 'var') > 0
@@ -122,11 +122,11 @@ imu_cells_counter = 1;
 imu_label_mask = zeros(size(imu_ts));
 imu_label_mask(imu_label) = 1;
 %
-for i = 1 : 2 : numel(imu_label)
-  imu_label_mask(imu_label(i)  - idx_offset : imu_label(i + 1) + idx_offset) = 1;
-  imu_cells{imu_cells_counter} = imu_cell(i, i + 1, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
-  imu_cells_counter = imu_cells_counter + 1;
-end
+%for i = 1 : 2 : numel(imu_label)
+%  imu_label_mask(imu_label(i)  - idx_offset : imu_label(i + 1) + idx_offset) = 1;
+%  imu_cells{imu_cells_counter} = imu_cell(i, i + 1, idx_offset, imu_ts, imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy, imu_ax, imu_ay, imu_az, imu_label);
+%  imu_cells_counter = imu_cells_counter + 1;
+%end
 %
 %
 %imu_wy = imu_wy .* imu_label_mask;
