@@ -41,13 +41,13 @@ function clean_data(data, start_time, end_time, section_time)
 end
 
 --local datasetpath = '../data/010213192135.40/'
-local datasetpath = '../data/philadelphia/010213180304.00/'
+local datasetpath = '../data/philadelphia/260713145217.80/'
 --local datasetpath = './'
 package.path = datasetpath..'?.lua;'..package.path
 --local prediction = loadDataMP(datasetpath, 'estimateMP', _, 1)
 --local gps = loadDataMP(datasetpath, 'gpsMP', _, 1)
---local label = loadDataMP(datasetpath, 'labelMP', _, 1)
-local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+local label = loadDataMP(datasetpath, 'labelPrunedMP', _, 1)
+--local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
 --local mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
 
 --print(findDateFromGPS(gps))
@@ -61,6 +61,12 @@ local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
 --print(#gps, #label, #prediction)
 --saveCSV(gps, 'gps-csv', './')
 
-for i = 1, 23850 do
-    print(imu[i].timestamp, imu[i].r)
+print(#label)
+local label_pruned = {}
+for i = 1, #label do
+  if i ~= 29 and i ~= 30 and i ~= 33 then
+    label_pruned[#label_pruned + 1] = label[i]
+  end
 end
+print(#label_pruned)
+saveDataMP(label_pruned, 'labelPrunedMP', './')

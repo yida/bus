@@ -55,8 +55,9 @@ for i = 1 : 2
   end
 end
 
-
-[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
+imu_start_idx = 1;
+imu_end_idx = numel(imu_ts);
+%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
 
 Q_right = ones(size(imu_wy)) * 20;
 imu_ts_filter = imu_ts(imu_start_idx : imu_end_idx);
@@ -138,10 +139,10 @@ gps_line = plot(gps_x(gps_start_idx:gps_end_idx) + x_offset, +gps_y(gps_start_id
                       'LineWidth', 2, 'Color', [0.5, 0.5, 0.50]);
 hold on;
 for i = gps_start_idx : gps_end_idx
-  if gps_Q_left(i) <= 3
-    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'r*');
-  elseif gps_Q_right(i) <= 3
-    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'r^');
+  if gps_Q_left(i) <= 3.5
+    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'b*');
+  elseif gps_Q_right(i) <= 3.5
+    plot(gps_x(i) + x_offset, +gps_y(i) + y_offset, 'b^');
   end
 end
 %  gps_label_line = plot(gps_x(gps_label), gps_y(gps_label), 'r*');
