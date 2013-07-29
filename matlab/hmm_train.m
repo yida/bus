@@ -117,7 +117,8 @@ axis equal;
 fig_imu = figure;
 imu_wy_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
-imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) - 2.5, 'r');
+imu_wy_acc_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_acc_filter(imu_start_idx:imu_end_idx) + 0.5, 'k');
+imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) - 2, 'r');
 hold off;
 grid on;
 
@@ -140,65 +141,52 @@ hDatatip_gps = dcm_gps_obj.createDatatip(hTarget_gps);
 state_set = {'left_turn', 'right_turn', 'straight'};
 
 
+hmm = {};
+
+% Generate init prob
+init_prob = zeros(1, numel(state_set));
+for i = 1 : numel(imu_label)
+  init_prob(imu_label(i)) = init_prob(imu_label(i)) + 1;
+end
+init_prob = init_prob ./ numel(imu_label);
+
+% Generate Transit prob
+transit_prob = zeros(numel(state_set), numel(state_set));
+for i = 1 : numel(imu_label)
+  cur_label = imu_label(i);
+  pre_label = imu_prelabel(i);
+  if pre_label ~= -1
+    transit_prob(cur_label, pre_label) = transit_prob(cur_label, pre_label) + 1;
+  end
+end
+transit_prob_sum = sum(transit_prob, 2);
+transit_prob = bsxfun(@rdivide, transit_prob, transit_prob_sum);
+
+% Generate obs prob
+obs_prob_mu = zeros(2, numel(state_set));
+obs_prob_sigma = zeros(2, 2, numel(state_set));
+obs_prob_counter = zeros(1, numel(state_set));
+
+for i = imu_start_idx : imu_end_idx
+  obs_prob_counter(imu_label(i)) = obs_prob_counter(imu_label(i)) + 1;
+  obs_prob_mu(:, imu_label(i)) = obs_prob_mu(:, imu_label(i)) + [imu_wy_filter(i); imu_wy_acc_filter(i)];      
+end
+obs_prob_mu = bsxfun(@rdivide, obs_prob_mu, obs_prob_counter);
+
+obs_prob_counter = zeros(1, numel(state_set));
+for i = imu_start_idx : imu_end_idx
+  obs_prob_counter(imu_label(i)) = obs_prob_counter(imu_label(i)) + 1;
+  obs_prob_sigma(:, :, imu_label(i)) = obs_prob_sigma(:, :, imu_label(i)) +...
+      ([imu_wy_filter(i); imu_wy_acc_filter(i)] - obs_prob_mu(:, imu_label(i))) *...
+      ([imu_wy_filter(i); imu_wy_acc_filter(i)] - obs_prob_mu(:, imu_label(i)))';
+end
+for i =  1 : size(obs_prob_sigma, 3)
+  obs_prob_sigma(:, :, i) = obs_prob_sigma(:, :, i) ./ obs_prob_counter(i);
+end
+
+hmm.init_prob = init_prob;
+hmm.transit_prob = transit_prob;
+hmm.obs_prob_mu = obs_prob_mu;
+hmm.obs_prob_sigma = obs_prob_sigma;
 
 
-%hmm = {}
-%
-%% Generate init prob
-%init_prob = zeros(1, numel(state_set));
-%for i = 1 : numel(imu_label)
-%  init_prob(imu_label(i)) = init_prob(imu_label(i)) + 1;
-%end
-%init_prob = init_prob ./ numel(imu_label);
-%
-%% Generate Transit prob
-%transit_prob = zeros(numel(state_set), numel(state_set));
-%for i = 1 : numel(imu_label)
-%  cur_label = imu_label(i);
-%  pre_label = imu_prelabel(i);
-%  if pre_label ~= -1
-%    transit_prob(cur_label, pre_label) = transit_prob(cur_label, pre_label) + 1;
-%  end
-%end
-%transit_prob_sum = sum(transit_prob, 2);
-%transit_prob = bsxfun(@rdivide, transit_prob, transit_prob_sum);
-%
-%% Generate obs prob
-%obs_prob_mu = zeros(1, numel(state_set));
-%obs_prob_sigma = zeros(1, numel(state_set));
-%obs_prob_counter = zeros(1, numel(state_set));
-%
-%for i = imu_start_idx : imu_end_idx
-%  obs_prob_counter(imu_label(i)) = obs_prob_counter(imu_label(i)) + 1;
-%  obs_prob_mu(imu_label(i)) = obs_prob_mu(imu_label(i)) + imu_wy_filter(i);      
-%end
-%obs_prob_mu = obs_prob_mu ./ obs_prob_counter;
-%
-%obs_prob_counter = zeros(1, numel(state_set));
-%for i = imu_start_idx : imu_end_idx
-%  obs_prob_counter(imu_label(i)) = obs_prob_counter(imu_label(i)) + 1;
-%  obs_prob_sigma(imu_label(i)) = obs_prob_sigma(imu_label(i)) +...
-%      (imu_wy_filter(i) - obs_prob_mu(imu_label(i))) * (imu_wy_filter(i) - obs_prob_mu(imu_label(i)));
-%end
-%obs_prob_sigma = obs_prob_sigma ./ obs_prob_counter;
-%
-%hmm.init_prob = init_prob;
-%hmm.transit_prob = transit_prob;
-%hmm.obs_prob_mu = obs_prob_mu;
-%hmm.obs_prob_sigma = obs_prob_sigma;
-%
-%%ts = centralize(imu_cells{1}.ts, imu_cells{1}.wy);
-%%wy = imu_cells{1}.wy;
-%%[sigma_fit, mu_fit] = gaussfit(ts, wy);
-%%
-%%plot(ts, wy, '*');
-%%hold on;
-%%mu = mean(wy);
-%%sigma = (wy - mu) * (wy - mu)';
-%%
-%%Y = 1/(sqrt(2 * pi * sigma)) * gaussmf(ts, [sigma, mu]);
-%%Y_fit = 1/(sqrt(2 * pi * sigma_fit)) * gaussmf(ts, [sigma_fit, mu_fit]);
-%%plot(ts, Y, 'r');
-%%plot(ts, Y_fit, 'k');
-%%hold off;
-%%grid on;

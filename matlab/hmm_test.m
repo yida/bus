@@ -55,6 +55,8 @@ imu_wp = cells2array(imu, 'wp');
 imu_wy = cells2array(imu, 'wy');
 imu_ts = cells2array(imu, 'timestamp');
 
+kalman_filter;
+
 imu_start_idx = 1;
 imu_end_idx = size(imu_ts, 2);
 [imu_start_idx, imu_end_idx] = range2index(imu_ts, section_time);
@@ -90,7 +92,7 @@ for i = 2 : numel(imu_label_idx)
         imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 2;
       end
       imu_cells{numel(imu_cells) + 1} = imu_cell(last_label_idx, i, idx_offset, imu_ts,...
-                                              imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy,...
+                                              imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy_filter,...
                                               imu_ax, imu_ay, imu_az, imu_label_idx);
     end
     label_idx = label_idx + 1;
@@ -113,8 +115,9 @@ grid on;
 axis equal;
 
 fig_imu = figure;
-imu_wy_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy(imu_start_idx:imu_end_idx));
+imu_wy_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
+imu_wy_acc_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_acc_filter(imu_start_idx:imu_end_idx) + 0.5, 'k');
 imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_label_mask(imu_start_idx:imu_end_idx), 'r');
 hold off;
 grid on;
@@ -123,11 +126,11 @@ dcm_gps_obj = datacursormode(fig_gps);
 %dcm_gps_label_obj = datacursormode(fig_gps);
 dcm_imu_obj = datacursormode(fig_imu);
 set(dcm_gps_obj, 'UpdateFcn', {@dc_gps_imu_update, dcm_gps_obj, dcm_imu_obj,...
-                                gps_x, gps_y, gps_ts, gps_lat, gps_lon, imu_ts, imu_wy});
+                                gps_x, gps_y, gps_ts, gps_lat, gps_lon, imu_ts, imu_wy_filter});
 set(dcm_imu_obj, 'UpdateFcn', {@dc_gps_imu_update, dcm_gps_obj, dcm_imu_obj,...
-                                gps_x, gps_y, gps_ts, gps_lat, gps_lon, imu_ts, imu_wy});
+                                gps_x, gps_y, gps_ts, gps_lat, gps_lon, imu_ts, imu_wy_filter});
 
-hTarget_wy = handle(imu_wy_line);
+hTarget_wy = handle(imu_wy_filter_line);
 hTarget_gps = handle(gps_line);
 %hTarget_gps_label = handle(gps_label_line);
 
@@ -152,7 +155,7 @@ state_set = {'left_turn', 'right_turn', 'straight'};
 %
 %  for s = 1 : numel(state_set)
 %    obs_prob(s) = -1/(sqrt(2 * pi * hmm.obs_prob_sigma(s))) *...
-%         gaussmf(imu_wy(i), [hmm.obs_prob_sigma(s), hmm.obs_prob_mu(s)]);
+%         gaussmf(imu_wy_filter(i), [hmm.obs_prob_sigma(s), hmm.obs_prob_mu(s)]);
 %    if i == imu_start_idx 
 %      delta(s) = hmm.init_prob(s) * obs_prob(s);
 %    else
@@ -175,8 +178,10 @@ alpha_set = zeros(numel(imu_ts), numel(state_set));
 for i = imu_start_idx : imu_end_idx
 %for i = imu_start_idx : imu_start_idx + 2
   for s = 1 : numel(state_set)
-    obs_prob(s) = -1/(sqrt(2 * pi * hmm.obs_prob_sigma(s))) *...
-         gaussmf(imu_wy(i), [hmm.obs_prob_sigma(s), hmm.obs_prob_mu(s)]);
+    x = [imu_wy_filter(i); imu_wy_acc_filter(i)];
+    SIGMA = hmm.obs_prob_sigma(:,:,s);
+    diff = x - hmm.obs_prob_mu(:, s);
+    obs_prob(s) = (2*pi)^(-1) * (det(SIGMA))^(-1/2) * exp(-0.5 * diff' * inv(SIGMA) * diff);
   end
   obs_prob = obs_prob ./ sum(obs_prob);
   for s = 1 : numel(state_set)
@@ -197,9 +202,9 @@ end
 [alpha_max, alpha_max_idx] = max(alpha_set, [], 2);
 
 fig_alpha = figure;
-plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy(imu_start_idx:imu_end_idx));
+plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_label_mask(imu_start_idx:imu_end_idx), 'r');
-plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx(imu_start_idx:imu_end_idx));
+plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx(imu_start_idx:imu_end_idx), '.');
 hold off;
 grid on;
