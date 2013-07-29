@@ -95,7 +95,6 @@ function trainHMM(trainSet, stateSet)
     local prevLabel = trainSet[i].prelabel
     pobsMean:narrow(2, label, 1):add(obs)
     pobsMeanCount[1][label] = pobsMeanCount[1][label] + 1
-  
   end
   
   for i = 1, stateNum do
@@ -108,7 +107,8 @@ function trainHMM(trainSet, stateSet)
     obs:resize(obs:size(1), 1)
     local label = trainSet[i].label
     local prevLabel = trainSet[i].prelabel 
-    local obsCov = (obs - pobsMean:narrow(2, label, 1)) * (obs - pobsMean:narrow(2, label, 1)):t()
+    local obsCov = (obs - pobsMean:narrow(2, label, 1)) *...
+                   (obs - pobsMean:narrow(2, label, 1)):t()
     pobsCov:narrow(1, label, 1):add(obsCov)
     pobsCovCount[1][label] = pobsCovCount[1][label] + 1
   end

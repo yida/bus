@@ -1,7 +1,10 @@
-function [start_out_idx, end_out_idx] = range2index(array, start_value, end_value)
+function [start_out_idx, end_out_idx] = range2index(array, value)
   % Assume input array are sorted numbers
   % Given start value and end value
   % return start idx and end idx
+
+  start_value = value(1);
+  end_value = value(2);
 
   % binary search
     ts = start_value;

@@ -26,7 +26,6 @@ saveDataMP(testSet, 'estimateCleanMP', './')
 --saveDataMP(trainSet, 'estimationMP', './')
 --saveCsvMP(trainSet, 'estimate-csv', './')
 
-
 --[[
 hmm = trainDiscreteHMM(trainSet, stateSet)
 alpha = ForwardBackwardDiscrete(hmm, trainSet, stateSet)

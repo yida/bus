@@ -1,3 +1,14 @@
+section_time = [0, Inf];
+%section_time = [946684970.550000, 946685185.550000];
+%section_time = [946687123.115478, 946687349.114410];
+%section_time = [946687935.332183, 946689658.536865];
+%section_time = [946686071.97, 946688069.350000];
+%section_time = [946687176.115478, 946689658.536865];
+%section_time = [946687935.332183, 946689658.536865];
+%section_time = [946685157.5703, 946685549.9723];
+%section_time = [946685875.6149, 946686779.085];
+%section_time = [946684970.550000, 946685185.550000];
+%section_time = [946686071.97, 946688069.350000];
 
 if exist('label', 'var') > 0 
   label_ts = cells2array(label, 'timestamp');
@@ -26,46 +37,23 @@ gps_ts_start = gps_ts(1);
 gps_ts_end = gps_ts(size(gps_ts, 2));
 fprintf(1, 'GPS time : %10.6f %10.6f\n', gps_ts_start, gps_ts_end);
 
+gps_start_idx = 1;
+gps_end_idx = size(gps_ts, 2);
+
+[gps_start_idx, gps_end_idx] = range2index(gps_ts, section_time);
+
+[label_start_idx, label_end_idx] = range2index(label_ts, [section_time]);
 if exist('label', 'var') > 0
   label_ts_start = label_ts(1);
   label_ts_end = label_ts(size(label_ts, 2));
   fprintf(1, 'label time : %10.6f %10.6f\n', label_ts_start, label_ts_end);
 end
 
-gps_start_idx = 1;
-gps_end_idx = size(gps_ts, 2);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687123.115478, 946687349.114410);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946686071.97, 946688069.350000);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687176.115478, 946689658.536865);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946687935.332183, 946689658.536865);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685157.5703, 946685549.9723);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946685875.6149, 946686779.085);
-%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
-[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684969.05, 946688106.02);
-
 % binary search
 fprintf(1, 'binary matching label with gps');
+
 if exist('label', 'var') > 0
-  tic;
-  gps_label = zeros(size(label_ts));
-  for i = 1 : size(label_ts, 2)
-    ts = label_ts(i);
-    start_idx = gps_start_idx;
-    end_idx = gps_end_idx;
-    mid_idx = floor((start_idx + end_idx) / 2);
-    while abs(gps_ts(mid_idx) - ts) > 0.000001 & (end_idx - start_idx) > 1
-      if ts > gps_ts(mid_idx) 
-        start_idx = mid_idx;
-      else
-        end_idx = mid_idx;
-      end
-      mid_idx = floor((start_idx + end_idx) / 2);
-    end
-    gps_label(i) = mid_idx;
-  end
-  toc;
+  gps_label = binary_matching(gps_ts, label_ts(label_start_idx : label_end_idx));
 end
 
 imu_ax = cells2array(imu, 'ax');
@@ -81,36 +69,12 @@ imu_ts = cells2array(imu, 'timestamp');
 
 imu_start_idx = 1;
 imu_end_idx = size(imu_ts, 2);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684970.550000, 946685185.550000);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946686071.97, 946688069.350000);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685157.5703, 946685549.9723);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946685875.6149, 946686779.085);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687935.332183, 946689658.536865);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946687176.115478, 946689658.536865);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684970.550000, 946685185.550000);
-%[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946686071.97, 946688069.350000);
-[imu_start_idx, imu_end_idx] = range2index(imu_ts, 946684969.05, 946688106.02);
+[imu_start_idx, imu_end_idx] = range2index(imu_ts, section_time);
 
 fprintf(1, 'binary matching label with imu');
+
 if exist('label', 'var') > 0
-  tic;
-  imu_label = zeros(size(label_ts));
-  for i = 1 : size(label_ts, 2)
-    ts = label_ts(i);
-    start_idx = imu_start_idx;
-    end_idx = imu_end_idx;
-    mid_idx = floor((start_idx + end_idx) / 2);
-    while abs(imu_ts(mid_idx) - ts) > 0.000001 & (end_idx - start_idx) > 1
-      if ts > imu_ts(mid_idx) 
-        start_idx = mid_idx;
-      else
-        end_idx = mid_idx;
-      end
-      mid_idx = floor((start_idx + end_idx) / 2);
-    end
-    imu_label(i) = mid_idx;
-  end
-  toc;
+  imu_label = binary_matching(imu_ts, label_ts(label_start_idx : label_end_idx));
 end
 
 imu_label = unique(imu_label);
