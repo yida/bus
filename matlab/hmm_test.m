@@ -216,10 +216,64 @@ end
 
 [alpha_max, alpha_max_idx] = max(alpha_set, [], 2);
 
+alpha_max_idx_filter = ones(size(alpha_max_idx));
+
+start_turn = 0;
+current_state = -1;
+current_states = 0;
+start_turn_idx = 1;
+
+last_state = alpha_max_idx(1);
+for i = 2 : numel(alpha_max_idx)
+  if alpha_max_idx(i) ~= last_state
+%    fprintf(1, 'state change : prev %d curr %d\n', last_state, alpha_max_idx(i));
+    if alpha_max_idx(i) == 1 | alpha_max_idx(i) == 5
+      if start_turn == 1
+        if current_states == 3
+          fprintf(1, 'end turning with full turning %d %d\n', last_state, alpha_max_idx(i));
+          if last_state > 4
+            alpha_max_idx_filter(start_turn_idx : i - 1) = 2;
+          else
+            alpha_max_idx_filter(start_turn_idx : i - 1) = 1.5;
+          end
+        else
+%          fprintf(1, 'end turning with not full turning %d %d %d %d\n', last_state, alpha_max_idx(i), start_turn_idx, i);
+        end
+        start_turn = 0;
+        current_states = 0;
+      end
+%      fprintf(1, 'start turning %d\n', alpha_max_idx(i));
+      start_turn_idx = i;
+      start_turn = 1;
+      current_states = 1;
+    elseif alpha_max_idx(i) == last_state + 1
+%      fprintf(1, 'start turning increase %d %d\n', last_state, alpha_max_idx(i));
+      current_states = current_states + 1;
+    else
+      if current_states == 3
+        fprintf(1, 'end turning with full turning %d %d\n', last_state, alpha_max_idx(i));
+        if last_state > 4
+          alpha_max_idx_filter(start_turn_idx : i - 1) = 2;
+        else
+          alpha_max_idx_filter(start_turn_idx : i - 1) = 1.5;
+        end
+      else
+%        fprintf(1, 'end turning with not full turning %d %d %d %d\n', last_state, alpha_max_idx(i), start_turn_idx, i);
+      end
+      start_turn = 0;
+      current_states = 0;
+    end
+  end 
+  last_state = alpha_max_idx(i);
+end
+
+% since turning separated, merge or filter the result
+
+
 fig_alpha = figure;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_label_mask(imu_start_idx:imu_end_idx), 'r');
-plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx(imu_start_idx:imu_end_idx));
+plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx_filter(imu_start_idx:imu_end_idx));
 hold off;
 grid on;
