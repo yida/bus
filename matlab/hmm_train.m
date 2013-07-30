@@ -14,14 +14,14 @@ label_ts = cells2array(label, 'timestamp');
 label_value_str = cells2array(label, 'value');
 label_value = zeros(size(label_value_str, 1));
 for i = 1 : size(label_value_str, 2)
-  if strcmp(label_value_str{i}, '0001') > 0 |...
-      strcmp(label_value_str{i}, '0010') > 0 |...
-      strcmp(label_value_str{i}, '01') > 0
+  if strcmp(label_value_str{i}, '0001') > 0
+    label_value(i) = -2;
+  elseif strcmp(label_value_str{i}, '0010') > 0
     label_value(i) = -1;
-  elseif strcmp(label_value_str{i}, '10') > 0 |...
-      strcmp(label_value_str{i}, '1000') > 0 |...
-      strcmp(label_value_str{i}, '0100') > 0
+  elseif strcmp(label_value_str{i}, '1000') > 0
     label_value(i) = 1;
+  elseif strcmp(label_value_str{i}, '0100') > 0
+    label_value(i) = 2;
   end
 end
 
@@ -73,28 +73,43 @@ imu_label_mask = zeros(size(imu_ts));
 imu_label_mask(imu_label_idx) = 1;
 
 % label array for hmm training
-imu_label = ones(size(imu_ts)) * 3;
+imu_label = ones(size(imu_ts)) * 4;
 
-% process label array
+%% process label array
 separate_offset = 10;
-idx_offset = 20;
-imu_cells = {};
+idx_offset = 60;
 label_idx = 1;
+in_middle = 0;
+in_middle_idx = 0;
 for i = 2 : numel(imu_label_idx)
   if (imu_label_idx(i) - imu_label_idx(last_label_idx)) > separate_offset
-    if mod(label_idx, 2) == 1
-      fprintf(1, '%s %02d %05d %05d %f %f\n', 'separate', label_idx, imu_label_idx(last_label_idx), imu_label_idx(i),...
-              imu_ts(imu_label_idx(last_label_idx)), imu_ts(imu_label_idx(i)));
-      imu_label_mask(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
-      if imu_label_value(last_label_idx) == 1;
-        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
-      elseif imu_label_value(last_label_idx) == -1;
-        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 2;
+      fprintf(1, '%s %02d %05d %05d %f %f %d\n', 'separate',...
+               label_idx, imu_label_idx(last_label_idx), imu_label_idx(i),...
+               imu_ts(imu_label_idx(last_label_idx)), imu_ts(imu_label_idx(i)),...
+               imu_label_value(last_label_idx));
+
+%      imu_label_mask(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
+      if imu_label_value(last_label_idx) == 1
+        in_middle = 1;
+        in_middle_idx = last_label_idx;
+%        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(last_label_idx) + idx_offset) = 1;
+      elseif imu_label_value(last_label_idx) == 2
+        offset = floor((imu_label_idx(last_label_idx) - imu_label_idx(in_middle_idx)) / 3);
+        imu_label(imu_label_idx(in_middle_idx) + offset : imu_label_idx(last_label_idx) - offset) = 2;
+        in_middle = 2;
+        imu_label(imu_label_idx(in_middle_idx) - offset : imu_label_idx(in_middle_idx) + offset) = 1;
+        imu_label(imu_label_idx(last_label_idx) - offset : imu_label_idx(last_label_idx) + offset) = 3;
+      elseif imu_label_value(last_label_idx) == -1
+        in_middle = 1;
+        in_middle_idx = last_label_idx;
+%        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(last_label_idx) + idx_offset) = 5;
+      elseif imu_label_value(last_label_idx) == -2
+        offset = floor((imu_label_idx(last_label_idx) - imu_label_idx(in_middle_idx)) / 3);
+        imu_label(imu_label_idx(in_middle_idx) + offset : imu_label_idx(last_label_idx) - offset) = 6;
+        in_middle = 2;
+        imu_label(imu_label_idx(in_middle_idx) - offset : imu_label_idx(in_middle_idx) + offset) = 5;
+        imu_label(imu_label_idx(last_label_idx) - offset : imu_label_idx(last_label_idx) + offset) = 7;
       end
-      imu_cells{numel(imu_cells) + 1} = imu_cell(last_label_idx, i, idx_offset, imu_ts,...
-                                              imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy_filter,...
-                                              imu_ax, imu_ay, imu_az, imu_label_idx);
-    end
     label_idx = label_idx + 1;
   end
   last_label_idx = i;
@@ -118,7 +133,7 @@ fig_imu = figure;
 imu_wy_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
 imu_wy_acc_filter_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_acc_filter(imu_start_idx:imu_end_idx) + 0.5, 'k');
-imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) - 2, 'r');
+imu_label_line = plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) * .25 - 1, 'r');
 hold off;
 grid on;
 
@@ -138,8 +153,7 @@ hDatatip_wy = dcm_imu_obj.createDatatip(hTarget_wy);
 hDatatip_gps = dcm_gps_obj.createDatatip(hTarget_gps);
 %hDatatip_gps_label = dcm_gps_label_obj.createDatatip(hTarget_gps_label);
 
-state_set = {'left_turn', 'right_turn', 'straight'};
-
+state_set = {'left_start', 'left_in', 'left_end', 'unchanged', 'right_start', 'right_in', 'right_end'};
 
 hmm = {};
 

@@ -3,9 +3,10 @@ function plot_gaussian(MU, SIGMA)
   figure;
   hold on;
   for i = 1 : num_gau
+%    figure;
     mu = MU(:, i)';
     Sigma = SIGMA(:, :, i);
-    
+
     x1 = -0.5:.02:0.5;
     x2 = -.1:.005:.1;
     [X1,X2] = meshgrid(x1,x2);
