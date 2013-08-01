@@ -273,7 +273,7 @@ end
 fig_alpha = figure;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
-plot(imu_ts(imu_start_idx:imu_end_idx), imu_label_mask(imu_start_idx:imu_end_idx), 'r');
+plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) * .10, 'r');
 plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx_filter(imu_start_idx:imu_end_idx));
 hold off;
 grid on;
