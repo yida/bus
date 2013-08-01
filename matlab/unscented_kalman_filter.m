@@ -38,7 +38,7 @@ wt_m(1) = gamma / (dim + gamma);
 wt_c(1) = gamma / (dim + gamma) + (1 - alpha^2 + beta);
 
 %R = diag([50^2, 50^2, 0.01^2, 1^2, 0.01^2]);
-R = diag([0.01^2; 0.1^2; 0.05^2]);
+R = diag([0.01^2; 0.1^2; 0.01^2]);
 %Q = diag([0.5^2, 0.5^2, 1^2]);
 Q = 1^2;
 
@@ -46,9 +46,10 @@ Chi = zeros(dim, 2 * dim + 1);
 Chi_est = zeros(dim, 2 * dim + 1);
 
 %num_obs = 10000;
-result = zeros(dim, num_obs);
+result = zeros(dim + 1, num_obs);
 result_counter = 1;
-result(:, result_counter) = mu;
+result(1, result_counter) = obs{1}.ts;
+result(2:end, result_counter) = mu;
 
 tic;
 for cnt = 2 : num_obs
@@ -108,8 +109,9 @@ for cnt = 2 : num_obs
   mu = mu_est + K * (z_obs - z_est);
   Cov = Cov_est - K * S_est * K';
 
-  result(:, result_counter) = mu;
   result_counter = result_counter + 1;
+  result(1, result_counter) = obs{cnt}.ts;
+  result(2:end, result_counter) = mu;
 end
 toc
 
@@ -124,8 +126,8 @@ toc
 %axis equal;
 
 figure;
-plot(1 : size(result, 2), result(2, :));
+plot(result(1, :), result(3, :));
 hold on;
-plot(1 : size(result, 2), result(1, :), 'm');
-plot(1 : size(result, 2), result(3, :) + 0.3, 'k');
+plot(result(1, :), result(2, :), 'm');
+%plot(result(1, :), result(4, :) + 0.3, 'k');
 grid on;
