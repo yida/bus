@@ -181,17 +181,4 @@ plot(result(1, :), result(2, :), 'r');
 %plot(result(1, :), result(4, :) + 0.3, 'k');
 grid on;
 
-% match scale
-scale = 1.80;  
-x_offset = 1910;
-y_offset = 790;
 
-roadmap = imread([datapath, 'roadmap.jpeg']);
-img = imresize(roadmap, scale);
-
-fig1 = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
-h_img = image(img);
-hold on;
-plot(result(5, :) + x_offset, -result(6, :) + y_offset, '.');
-plot(gps_x + x_offset, -gps_y + y_offset, 'r.');
-grid on;

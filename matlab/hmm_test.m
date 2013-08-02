@@ -269,11 +269,37 @@ end
 
 % since turning separated, merge or filter the result
 
-
 fig_alpha = figure;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) * .10, 'r');
 plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx_filter(imu_start_idx:imu_end_idx));
 hold off;
+grid on;
+
+unscented_kalman_filter;
+%fig_gps_res = figure;
+% match scale
+scale = 1.80;  
+x_offset = 1910;
+y_offset = 790;
+
+roadmap = imread([datapath, 'roadmap.jpeg']);
+img = imresize(roadmap, scale);
+
+%gps_label = binary_matching(gps_ts, label_ts);
+filter_idx = binary_matching(result(1, :), imu_ts);
+
+fig1 = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
+h_img = image(img);
+hold on;
+plot(result(5, :) + x_offset, -result(6, :) + y_offset, '.');
+%plot(gps_x + x_offset, -gps_y + y_offset, 'r.');
+for i = 1 : numel(filter_idx)
+  if alpha_max_idx_filter(i) == 1.5
+    plot(result(5, filter_idx(i)) + x_offset, -result(6, filter_idx(i)) + y_offset, '*k');
+  elseif alpha_max_idx_filter(i) == 2
+    plot(result(5, filter_idx(i)) + x_offset, -result(6, filter_idx(i)) + y_offset, '*r');
+  end
+end
 grid on;
