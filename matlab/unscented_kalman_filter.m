@@ -1,4 +1,18 @@
-close all;
+%close all;
+
+gps_ts  = cells2array(gps, 'timestamp');
+gps_x = cells2array(gps, 'x');
+gps_y = cells2array(gps, 'y');
+gps_pdop = cells2array(gps, 'PDOP');
+gps_hdop = cells2array(gps, 'HDOP');
+
+gps_pdop = gps_pdop.^4;
+
+%gps_hdop(gps_hdop < 1.0) = 1.0;
+gps_hdop = gps_hdop.^4;
+%gps_hdop = gps_hdop * 0.20;
+
+%gps_hdop = ones(size(gps_hdop));
 
 % sync imu and gps
 obs = sync_data(imu_ts, gps_ts);
@@ -11,6 +25,7 @@ x0 = 0;
 y0 = 0;
 vx0 = 0;
 vy0 = 0;
+v0 = 0;
 
 %mu = [x0; y0; theta0; v0; omega0]; 
 %mu = [theta0; omega0; omega_acc0]; 
@@ -36,9 +51,9 @@ wt_c = ones(1, 2 * dim + 1) * 1 / (2 * (dim + gamma));
 wt_m(1) = gamma / (dim + gamma);
 wt_c(1) = gamma / (dim + gamma) + (1 - alpha^2 + beta);
 
-R = diag([0.1^2; 0.12^2; 0.01^2; .15^2; .15^2; 0.01^2]);
-Q_imu = 1^2;
-Q_gps = diag([32^2; 32^2]);
+R = diag([2.5^2; 0.25^2; 0.05^2; .20^2; .20^2; 0.01^2]);
+Q_imu = 2.5^2;
+Q_gps = diag([1.5^2; 1.5^2]);
 
 Chi = zeros(dim, 2 * dim + 1);
 Chi_est = zeros(dim, 2 * dim + 1);
@@ -127,7 +142,7 @@ for cnt = 2 : num_obs
     for z_idx = 1 : 2 * dim + 1
       S_est = S_est + wt_c(z_idx) * (Z_est(:, z_idx) - z_est) * (Z_est(:, z_idx) - z_est)';
     end
-    S_est = S_est + Q_gps;
+    S_est = S_est + Q_gps * gps_hdop(obs{cnt}.gps_idx);
 
     % Cross covariance
     Cross_est = zeros(numel(mu_est), numel(z_est));
@@ -150,7 +165,14 @@ for cnt = 2 : num_obs
 end
 toc
 
-figure;
+scrz = get(0, 'screensize');
+
+fig = figure;
+fig_size = get(fig, 'Position');
+fig_width = fig_size(3);
+fig_height = fig_size(4);
+set(fig, 'Position', [0 0 fig_width fig_height]);
+
 plot(result(1, :), result(3, :));
 hold on;
 plot(result(1, :), result(2, :), 'r');
@@ -158,6 +180,18 @@ plot(result(1, :), result(2, :), 'r');
 %plot(result(1, :), sin(result(2, :)), 'm');
 %plot(result(1, :), result(4, :) + 0.3, 'k');
 grid on;
-figure;
-plot(result(5, :), result(6, :), '*');
+
+% match scale
+scale = 1.80;  
+x_offset = 1910;
+y_offset = 790;
+
+roadmap = imread([datapath, 'roadmap.jpeg']);
+img = imresize(roadmap, scale);
+
+fig1 = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
+h_img = image(img);
+hold on;
+plot(result(5, :) + x_offset, -result(6, :) + y_offset, '.');
+plot(gps_x + x_offset, -gps_y + y_offset, 'r.');
 grid on;
