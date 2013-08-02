@@ -7,10 +7,10 @@ function plot_gaussian(MU, SIGMA)
     mu = MU(:, i)';
     Sigma = SIGMA(:, :, i);
 
-    x1 = -0.5:.02:0.5;
-    x2 = -.1:.005:.1;
+    x1 = -5:.2:5;
+    x2 = -5:.2:5;
     [X1,X2] = meshgrid(x1,x2);
-    F = mvnpdf([X1(:) X2(:)],mu,Sigma);
+    F = -mvnpdf([X1(:) X2(:)],mu,Sigma);
     F = reshape(F,length(x2),length(x1));
     surf(x1,x2,F);
     caxis([min(F(:))-.5*range(F(:)),max(F(:))]);
