@@ -290,16 +290,33 @@ img = imresize(roadmap, scale);
 %gps_label = binary_matching(gps_ts, label_ts);
 filter_idx = binary_matching(result(1, :), imu_ts);
 
+gps_filter_x = result(5, filter_idx);
+gps_filter_y = result(6, filter_idx);
+
+gps_filter_qui_x = result(5, filter_idx(1:3000:end));
+gps_filter_qui_x_off = result(5, filter_idx(1:3000:end) + 100);
+
+gps_filter_qui_y = result(6, filter_idx(1:3000:end));
+gps_filter_qui_y_off = result(6, filter_idx(1:3000:end) + 100);
+
+gps_filter_qui_u = gps_filter_qui_x_off - gps_filter_qui_x;
+gps_filter_qui_v = gps_filter_qui_y_off - gps_filter_qui_y;
+gps_filter_qui_norm = sqrt(gps_filter_qui_u.^2 + gps_filter_qui_v.^2);
+gps_filter_qui_u = gps_filter_qui_u ./ gps_filter_qui_norm;
+gps_filter_qui_v = gps_filter_qui_v ./ gps_filter_qui_norm;
+
 fig1 = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
 h_img = image(img);
 hold on;
-plot(result(5, :) + x_offset, -result(6, :) + y_offset, '.');
+plot(gps_filter_x + x_offset, -gps_filter_y + y_offset, 'b.');
 %plot(gps_x + x_offset, -gps_y + y_offset, 'r.');
+quiver(gps_filter_qui_x + x_offset, -gps_filter_qui_y + y_offset, gps_filter_qui_u, -gps_filter_qui_v, 0.25, 'LineWidth', 2, 'Color', 'r');
 for i = 1 : numel(filter_idx)
   if alpha_max_idx_filter(i) == 1.5
-    plot(result(5, filter_idx(i)) + x_offset, -result(6, filter_idx(i)) + y_offset, '*k');
+    plot(gps_filter_x(i) + x_offset, -gps_filter_y(i) + y_offset, '*k');
   elseif alpha_max_idx_filter(i) == 2
-    plot(result(5, filter_idx(i)) + x_offset, -result(6, filter_idx(i)) + y_offset, '*r');
+    plot(gps_filter_x(i) + x_offset, -gps_filter_y(i) + y_offset, '*m');
   end
 end
 grid on;
+
