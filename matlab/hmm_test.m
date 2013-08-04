@@ -272,13 +272,12 @@ end
 fig_alpha = figure;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
 hold on;
-plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) * .10, 'r');
-plot(imu_ts(imu_start_idx:imu_end_idx), alpha_max_idx_filter(imu_start_idx:imu_end_idx));
+plot(imu_ts(imu_start_idx:imu_end_idx), imu_label(imu_start_idx:imu_end_idx) *.10, 'r');
+plot(imu_ts(imu_start_idx:imu_end_idx), 0.2 * alpha_max_idx_filter(imu_start_idx:imu_end_idx));
 hold off;
 grid on;
 
 unscented_kalman_filter;
-%fig_gps_res = figure;
 % match scale
 scale = 1.80;  
 x_offset = 1910;
@@ -305,18 +304,97 @@ gps_filter_qui_norm = sqrt(gps_filter_qui_u.^2 + gps_filter_qui_v.^2);
 gps_filter_qui_u = gps_filter_qui_u ./ gps_filter_qui_norm;
 gps_filter_qui_v = gps_filter_qui_v ./ gps_filter_qui_norm;
 
-fig1 = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
+fig_gps = figure('Position', [0 fig_size(2) fig_width* 1.5 fig_height * 1.5]);
 h_img = image(img);
 hold on;
 plot(gps_filter_x + x_offset, -gps_filter_y + y_offset, 'b.');
-%plot(gps_x + x_offset, -gps_y + y_offset, 'r.');
-quiver(gps_filter_qui_x + x_offset, -gps_filter_qui_y + y_offset, gps_filter_qui_u, -gps_filter_qui_v, 0.25, 'LineWidth', 2, 'Color', 'r');
-for i = 1 : numel(filter_idx)
-  if alpha_max_idx_filter(i) == 1.5
-    plot(gps_filter_x(i) + x_offset, -gps_filter_y(i) + y_offset, '*k');
-  elseif alpha_max_idx_filter(i) == 2
-    plot(gps_filter_x(i) + x_offset, -gps_filter_y(i) + y_offset, '*m');
-  end
-end
-grid on;
+h_quiver = quiver(gps_filter_qui_x + x_offset, -gps_filter_qui_y + y_offset, gps_filter_qui_u, -gps_filter_qui_v, 0.25, 'LineWidth', 2, 'Color', 'r');
+gps_filter_x_left = gps_filter_x(alpha_max_idx_filter == 1.5);
+gps_filter_y_left = gps_filter_y(alpha_max_idx_filter == 1.5);
+gps_filter_x_right = gps_filter_x(alpha_max_idx_filter == 2);
+gps_filter_y_right = gps_filter_y(alpha_max_idx_filter == 2);
 
+h_left_turn = plot(gps_filter_x_left + x_offset, -gps_filter_y_left + y_offset, '*k');
+h_right_turn = plot(gps_filter_x_right + x_offset, -gps_filter_y_right + y_offset, '*m');
+
+grid on;
+legend('Bus Route', 'Direction', 'Detected Left Turn', 'Detected Right Turn');
+
+
+% Confusion Matrix and ROC curve
+TPR_set = [];
+FPR_set = [];
+P_set = [];
+R_set = [];
+
+con_imu_ts = imu_ts;
+con_imu_label = imu_label;
+con_imu_label(con_imu_label < 4) = 1.5;
+con_imu_label(con_imu_label > 4) = 2;
+con_imu_label(con_imu_label == 4) = 1;
+
+con_imu_predict = alpha_max_idx_filter';
+
+% left 
+TP = sum(con_imu_label == 1.5 & con_imu_predict == 1.5);
+FP = sum(con_imu_label == 1 & con_imu_predict == 1.5);
+TN = sum(con_imu_label == 1 & con_imu_predict == 1);
+FN = sum(con_imu_label == 1.5 & con_imu_predict == 1);
+
+% TPR
+TPR_set = [TPR_set, true_positive_rate(TP, FP, FN, TN)];
+% FPR
+FPR_set = [FPR_set, false_positive_rate(TP, FP, FN, TN)];
+% Precision 
+P_set = [P_set, precision(TP, FP, FN, TN)];
+% recall
+R_set = [R_set, recall(TP, FP, FN, TN)];
+
+% right 
+TP = sum(con_imu_label == 2 & con_imu_predict == 2);
+FP = sum(con_imu_label == 1 & con_imu_predict == 2);
+TN = sum(con_imu_label == 1 & con_imu_predict == 1);
+FN = sum(con_imu_label == 2 & con_imu_predict == 1);
+
+% TPR
+TPR_set = [TPR_set, true_positive_rate(TP, FP, FN, TN)];
+% FPR
+FPR_set = [FPR_set, false_positive_rate(TP, FP, FN, TN)];
+% Precision 
+P_set = [P_set, precision(TP, FP, FN, TN)];
+% recall
+R_set = [R_set, recall(TP, FP, FN, TN)];
+
+con_imu_label(con_imu_label == 2) = 1.5;
+con_imu_predict(con_imu_predict == 2) = 1.5;
+
+%con_imu_mix = (con_imu_label == con_imu_predict);
+
+% left and right
+TP = sum(con_imu_label == 1.5 & con_imu_predict == 1.5);
+FP = sum(con_imu_label == 1 & con_imu_predict == 1.5);
+TN = sum(con_imu_label == 1 & con_imu_predict == 1);
+FN = sum(con_imu_label == 1.5 & con_imu_predict == 1);
+
+% TPR
+TPR_set = [TPR_set, true_positive_rate(TP, FP, FN, TN)];
+% FPR
+FPR_set = [FPR_set, false_positive_rate(TP, FP, FN, TN)];
+% Precision 
+P_set = [P_set, precision(TP, FP, FN, TN)];
+% recall
+R_set = [R_set, recall(TP, FP, FN, TN)];
+
+%confusion_matrix = [TP, FP; FN, TN];
+
+%fig_confusion = figure;
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), con_imu_label(imu_start_idx:imu_end_idx));
+%hold on;
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), 0.5 * con_imu_predict(imu_start_idx:imu_end_idx), 'r');
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), 0.4 * con_TP(imu_start_idx:imu_end_idx), 'g');
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), 0.3 * con_FP(imu_start_idx:imu_end_idx), 'k');
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), 0.2 * con_TN(imu_start_idx:imu_end_idx), 'm');
+%plot(con_imu_ts(imu_start_idx:imu_end_idx), 0.1 * con_FN(imu_start_idx:imu_end_idx), 'y');
+
+roc_curve(TPR_set, FPR_set);
+pr_curve(P_set, R_set);
