@@ -278,10 +278,6 @@ hold off;
 grid on;
 
 unscented_kalman_filter;
-% match scale
-scale = 1.80;  
-x_offset = 1910;
-y_offset = 790;
 
 roadmap = imread([datapath, 'roadmap.jpeg']);
 img = imresize(roadmap, scale);

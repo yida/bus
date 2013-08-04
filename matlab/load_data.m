@@ -8,13 +8,14 @@ close all;
 %datapath = '../data/philadelphia/150213185940.20/';
 %datapath = '../data/philadelphia/010213180304.00/';
 %datapath = '../data/philadelphia/260713142751.40/';
-datapath = '../data/philadelphia/260713145217.80/';
-%datapath = '../data/philadelphia/260713153413.60/';
+%datapath = '../data/philadelphia/260713145217.80/';
+datapath = '../data/philadelphia/260713153413.60/';
 
 gps = load_data_msgpack([datapath, 'gpsLocalMP']);
 label = load_data_msgpack([datapath, 'labelPrunedMP']);
 imu = load_data_msgpack([datapath, 'imuPrunedMP']);
 %mag = load_data_msgpack([datapath, 'magPrunedMP']);
 
+load([datapath, 'map_shift.mat']);
 
 
