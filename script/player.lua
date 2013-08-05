@@ -40,15 +40,51 @@ function clean_data(data, start_time, end_time, section_time)
     return data_clean
 end
 
---local datasetpath = '../data/010213192135.40/'
-local datasetpath = '../data/philadelphia/260713145217.80/'
+--local datasetpath = '../data/philadelphia/010213180304.00/'
+local datasetpath = '../data/philadelphia/150213185940.20/'
+--local datasetpath = '../data/philadelphia/260713145217.80/'
 --local datasetpath = './'
 package.path = datasetpath..'?.lua;'..package.path
 --local prediction = loadDataMP(datasetpath, 'estimateMP', _, 1)
 --local gps = loadDataMP(datasetpath, 'gpsMP', _, 1)
-local label = loadDataMP(datasetpath, 'labelPrunedMP', _, 1)
---local imu = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
---local mag = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
+--local gpsLocal = loadDataMP(datasetpath, 'gpsLocalMP', _, 1)
+--local label = loadDataMP(datasetpath, 'labelMP', _, 1)
+local labelPruned = loadDataMP(datasetpath, 'labelPrunedMP', _, 1)
+--local imu = loadDataMP(datasetpath, 'imuMP', _, 1)
+--local imuPruned = loadDataMP(datasetpath, 'imuPrunedMP', _, 1)
+--local mag = loadDataMP(datasetpath, 'magMP', _, 1)
+--local magPruned = loadDataMP(datasetpath, 'magPrunedMP', _, 1)
+
+time = {946684970.550000, 946685185.550000}
+
+function clean_time_data(data, time, str, debug)
+  print(str..' '..#data)
+  local data_clean = {}
+
+  for i = 1, #data do 
+    if data[i].timestamp == nil then
+      data[i].timestamp = data[i].timstamp
+      data[i].timstamp = nil
+    end
+
+    if debug then
+      util.ptable(data[i])
+    end
+    if data[i].timestamp <= time[2] and data[i].timestamp >= time[1] then
+      data_clean[#data_clean + 1] = data[i]
+    end
+  end
+  return data_clean
+end
+
+--saveDataMP(clean_time_data(gps, time, 'gps'), 'gpsMP', './')
+--saveDataMP(clean_time_data(gpsLocal, time, 'gpsLocal'), 'gpsLocalMP', './')
+--saveDataMP(clean_time_data(label, time, 'label'), 'labelMP', './')
+saveDataMP(clean_time_data(labelPruned, time, 'labelPruned'), 'labelPrunedMP', './')
+----saveDataMP(clean_time_data(imu, time, 'imu'), 'imuMP', './')
+--saveDataMP(clean_time_data(imuPruned, time, 'imuPruned'), 'imuPrunedMP', './')
+----saveDataMP(clean_time_data(mag, time, 'mag'), 'magMP', './')
+--saveDataMP(clean_time_data(magPruned, time, 'magPruned'), 'magPrunedMP', './')
 
 --print(findDateFromGPS(gps))
 
@@ -60,13 +96,5 @@ local label = loadDataMP(datasetpath, 'labelPrunedMP', _, 1)
 --saveDataMP(clean_data(mag, start_time, end_time, section_time), 'magPrunedCleanMP', './')
 --print(#gps, #label, #prediction)
 --saveCSV(gps, 'gps-csv', './')
+--saveDataMP(label_pruned, 'labelPrunedMP', './')
 
-print(#label)
-local label_pruned = {}
-for i = 1, #label do
-  if i ~= 29 and i ~= 30 and i ~= 33 then
-    label_pruned[#label_pruned + 1] = label[i]
-  end
-end
-print(#label_pruned)
-saveDataMP(label_pruned, 'labelPrunedMP', './')
