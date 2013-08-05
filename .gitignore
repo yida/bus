@@ -49,3 +49,7 @@ project3
 data_old
 test
 test_loop
+
+.DS_Store
+
+*.jpg
