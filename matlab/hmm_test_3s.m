@@ -14,14 +14,14 @@ label_ts = cells2array(label, 'timestamp');
 label_value_str = cells2array(label, 'value');
 label_value = zeros(size(label_value_str, 1));
 for i = 1 : size(label_value_str, 2)
-  if strcmp(label_value_str{i}, '0001') > 0
-    label_value(i) = -2;
-  elseif strcmp(label_value_str{i}, '0010') > 0
+  if strcmp(label_value_str{i}, '0001') > 0 |...
+      strcmp(label_value_str{i}, '0010') > 0 |...
+      strcmp(label_value_str{i}, '01') > 0
     label_value(i) = -1;
-  elseif strcmp(label_value_str{i}, '1000') > 0
+  elseif strcmp(label_value_str{i}, '10') > 0 |...
+      strcmp(label_value_str{i}, '1000') > 0 |...
+      strcmp(label_value_str{i}, '0100') > 0
     label_value(i) = 1;
-  elseif strcmp(label_value_str{i}, '0100') > 0
-    label_value(i) = 2;
   end
 end
 
@@ -73,43 +73,28 @@ imu_label_mask = zeros(size(imu_ts));
 imu_label_mask(imu_label_idx) = 1;
 
 % label array for hmm training
-imu_label = ones(size(imu_ts)) * 4;
+imu_label = ones(size(imu_ts)) * 3;
 
 %% process label array
 separate_offset = 10;
-idx_offset = 60;
+idx_offset = 20;
+imu_cells = {};
 label_idx = 1;
-in_middle = 0;
-in_middle_idx = 0;
 for i = 2 : numel(imu_label_idx)
   if (imu_label_idx(i) - imu_label_idx(last_label_idx)) > separate_offset
-      fprintf(1, '%s %02d %05d %05d %f %f %d\n', 'separate',...
-               label_idx, imu_label_idx(last_label_idx), imu_label_idx(i),...
-               imu_ts(imu_label_idx(last_label_idx)), imu_ts(imu_label_idx(i)),...
-               imu_label_value(last_label_idx));
-
-%      imu_label_mask(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
-      if imu_label_value(last_label_idx) == 1
-        in_middle = 1;
-        in_middle_idx = last_label_idx;
-%        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(last_label_idx) + idx_offset) = 1;
-      elseif imu_label_value(last_label_idx) == 2
-        offset = floor((imu_label_idx(last_label_idx) - imu_label_idx(in_middle_idx)) / 3);
-        imu_label(imu_label_idx(in_middle_idx) + offset : imu_label_idx(last_label_idx) - offset) = 2;
-        in_middle = 2;
-        imu_label(imu_label_idx(in_middle_idx) - offset : imu_label_idx(in_middle_idx) + offset) = 1;
-        imu_label(imu_label_idx(last_label_idx) - offset : imu_label_idx(last_label_idx) + offset) = 3;
-      elseif imu_label_value(last_label_idx) == -1
-        in_middle = 1;
-        in_middle_idx = last_label_idx;
-%        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(last_label_idx) + idx_offset) = 5;
-      elseif imu_label_value(last_label_idx) == -2
-        offset = floor((imu_label_idx(last_label_idx) - imu_label_idx(in_middle_idx)) / 3);
-        imu_label(imu_label_idx(in_middle_idx) + offset : imu_label_idx(last_label_idx) - offset) = 6;
-        in_middle = 2;
-        imu_label(imu_label_idx(in_middle_idx) - offset : imu_label_idx(in_middle_idx) + offset) = 5;
-        imu_label(imu_label_idx(last_label_idx) - offset : imu_label_idx(last_label_idx) + offset) = 7;
+    if mod(label_idx, 2) == 1
+      fprintf(1, '%s %02d %05d %05d %f %f\n', 'separate', label_idx, imu_label_idx(last_label_idx), imu_label_idx(i),...
+              imu_ts(imu_label_idx(last_label_idx)), imu_ts(imu_label_idx(i)));
+      imu_label_mask(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
+      if imu_label_value(last_label_idx) == 1;
+        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 1;
+      elseif imu_label_value(last_label_idx) == -1;
+        imu_label(imu_label_idx(last_label_idx) - idx_offset : imu_label_idx(i) + idx_offset) = 2;
       end
+      imu_cells{numel(imu_cells) + 1} = imu_cell(last_label_idx, i, idx_offset, imu_ts,...
+                                              imu_r, imu_p, imu_y, imu_wr, imu_wp, imu_wy_filter,...
+                                              imu_ax, imu_ay, imu_az, imu_label_idx);
+    end
     label_idx = label_idx + 1;
   end
   last_label_idx = i;
@@ -153,7 +138,7 @@ hDatatip_wy = dcm_imu_obj.createDatatip(hTarget_wy);
 hDatatip_gps = dcm_gps_obj.createDatatip(hTarget_gps);
 %hDatatip_gps_label = dcm_gps_label_obj.createDatatip(hTarget_gps_label);
 
-state_set = {'left_start', 'left_in', 'left_end', 'unchanged', 'right_start', 'right_in', 'right_end'};
+state_set = {'left_turn', 'right_turn', 'straight'};
 
 %hmm
 %hmm.init_prob
@@ -216,58 +201,7 @@ end
 
 [alpha_max, alpha_max_idx] = max(alpha_set, [], 2);
 
-alpha_max_idx_filter = ones(size(alpha_max_idx));
-
-start_turn = 0;
-current_state = -1;
-current_states = 0;
-start_turn_idx = 1;
-
-last_state = alpha_max_idx(1);
-for i = 2 : numel(alpha_max_idx)
-  if alpha_max_idx(i) ~= last_state
-%    fprintf(1, 'state change : prev %d curr %d\n', last_state, alpha_max_idx(i));
-    if alpha_max_idx(i) == 1 | alpha_max_idx(i) == 5
-      if start_turn == 1
-        if current_states == 3
-          fprintf(1, 'end turning with full turning %d %d\n', last_state, alpha_max_idx(i));
-          if last_state > 4
-            alpha_max_idx_filter(start_turn_idx : i - 1) = 2;
-          else
-            alpha_max_idx_filter(start_turn_idx : i - 1) = 1.5;
-          end
-        else
-%          fprintf(1, 'end turning with not full turning %d %d %d %d\n', last_state, alpha_max_idx(i), start_turn_idx, i);
-        end
-        start_turn = 0;
-        current_states = 0;
-      end
-%      fprintf(1, 'start turning %d\n', alpha_max_idx(i));
-      start_turn_idx = i;
-      start_turn = 1;
-      current_states = 1;
-    elseif alpha_max_idx(i) == last_state + 1
-%      fprintf(1, 'start turning increase %d %d\n', last_state, alpha_max_idx(i));
-      current_states = current_states + 1;
-    else
-      if current_states == 3
-        fprintf(1, 'end turning with full turning %d %d\n', last_state, alpha_max_idx(i));
-        if last_state > 4
-          alpha_max_idx_filter(start_turn_idx : i - 1) = 2;
-        else
-          alpha_max_idx_filter(start_turn_idx : i - 1) = 1.5;
-        end
-      else
-%        fprintf(1, 'end turning with not full turning %d %d %d %d\n', last_state, alpha_max_idx(i), start_turn_idx, i);
-      end
-      start_turn = 0;
-      current_states = 0;
-    end
-  end 
-  last_state = alpha_max_idx(i);
-end
-
-% since turning separated, merge or filter the result
+alpha_max_idx_filter = alpha_max_idx';
 
 fig_alpha = figure;
 plot(imu_ts(imu_start_idx:imu_end_idx), imu_wy_filter(imu_start_idx:imu_end_idx));
@@ -305,8 +239,8 @@ h_img = image(img);
 hold on;
 plot(gps_filter_x + x_offset, -gps_filter_y + y_offset, 'b.');
 h_quiver = quiver(gps_filter_qui_x + x_offset, -gps_filter_qui_y + y_offset, gps_filter_qui_u, -gps_filter_qui_v, 0.25, 'LineWidth', 2, 'Color', 'r');
-gps_filter_x_left = gps_filter_x(alpha_max_idx_filter == 1.5);
-gps_filter_y_left = gps_filter_y(alpha_max_idx_filter == 1.5);
+gps_filter_x_left = gps_filter_x(alpha_max_idx_filter == 1);
+gps_filter_y_left = gps_filter_y(alpha_max_idx_filter == 1);
 gps_filter_x_right = gps_filter_x(alpha_max_idx_filter == 2);
 gps_filter_y_right = gps_filter_y(alpha_max_idx_filter == 2);
 
@@ -325,18 +259,18 @@ R_set = [];
 
 con_imu_ts = imu_ts;
 con_imu_label = imu_label;
-con_imu_label(con_imu_label < 4) = 1.5;
-con_imu_label(con_imu_label > 4) = 2;
-con_imu_label(con_imu_label == 4) = 1;
+%con_imu_label(con_imu_label < 4) = 1.5;
+%con_imu_label(con_imu_label > 4) = 2;
+%con_imu_label(con_imu_label == 4) = 1;
 
-con_imu_predict = alpha_max_idx_filter';
+con_imu_predict = alpha_max_idx_filter;
 
 %% left 
 %TP = sum(con_imu_label == 1.5 & con_imu_predict == 1.5);
 %FP = sum(con_imu_label == 1 & con_imu_predict == 1.5);
 %TN = sum(con_imu_label == 1 & con_imu_predict == 1);
 %FN = sum(con_imu_label == 1.5 & con_imu_predict == 1);
-%
+
 %% TPR
 %TPR_set = [TPR_set, true_positive_rate(TP, FP, FN, TN)];
 %% FPR
@@ -361,16 +295,16 @@ con_imu_predict = alpha_max_idx_filter';
 %% recall
 %R_set = [R_set, recall(TP, FP, FN, TN)];
 
-con_imu_label(con_imu_label == 2) = 1.5;
-con_imu_predict(con_imu_predict == 2) = 1.5;
+con_imu_label(con_imu_label == 2) = 1;
+con_imu_predict(con_imu_predict == 2) = 1;
 
 %con_imu_mix = (con_imu_label == con_imu_predict);
 
 % left and right
-TP = sum(con_imu_label == 1.5 & con_imu_predict == 1.5);
-FP = sum(con_imu_label == 1 & con_imu_predict == 1.5);
-TN = sum(con_imu_label == 1 & con_imu_predict == 1);
-FN = sum(con_imu_label == 1.5 & con_imu_predict == 1);
+TP = sum(con_imu_label == 1 & con_imu_predict == 1);
+FP = sum(con_imu_label == 3 & con_imu_predict == 1);
+TN = sum(con_imu_label == 3 & con_imu_predict == 3);
+FN = sum(con_imu_label == 1 & con_imu_predict == 3);
 
 % TPR
 TPR_set = [TPR_set, true_positive_rate(TP, FP, FN, TN)];
