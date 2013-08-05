@@ -11,8 +11,8 @@ close all;
 %datapath = '../data/philadelphia/010213180304.00-1/';
 %datapath = '../data/philadelphia/010213180304.00-2/';
 %datapath = '../data/philadelphia/260713142751.40/';
-%datapath = '../data/philadelphia/260713145217.80/';
-datapath = '../data/philadelphia/260713153413.60/';
+datapath = '../data/philadelphia/260713145217.80/';
+%datapath = '../data/philadelphia/260713153413.60/';
 
 gps = load_data_msgpack([datapath, 'gpsLocalMP']);
 label = load_data_msgpack([datapath, 'labelPrunedMP']);
