@@ -282,7 +282,6 @@ unscented_kalman_filter;
 roadmap = imread([datapath, 'roadmap.jpeg']);
 img = imresize(roadmap, scale);
 
-%gps_label = binary_matching(gps_ts, label_ts);
 filter_idx = binary_matching(result(1, :), imu_ts);
 
 gps_filter_x = result(5, filter_idx);

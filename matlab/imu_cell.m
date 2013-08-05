@@ -13,4 +13,5 @@ function imu_struct = imu_cell(label_start, label_end, idx_offset,...
   imu_struct.ax = imu_ax(imu_label(label_start)  - idx_offset : imu_label(label_end) + idx_offset);
   imu_struct.ay = imu_ay(imu_label(label_start)  - idx_offset : imu_label(label_end) + idx_offset);
   imu_struct.az = imu_az(imu_label(label_start)  - idx_offset : imu_label(label_end) + idx_offset);
+
 end
