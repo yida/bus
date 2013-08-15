@@ -53,3 +53,8 @@ test_loop
 .DS_Store
 
 *.jpg
+
+*.log
+*.dvi
+*.aux
+*.out
