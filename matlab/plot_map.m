@@ -10,13 +10,13 @@ gps_end_idx = size(gps_ts, 2);
 fig_gps = figure; 
 
 % match scale
-scale = 0.93;  
-x_offset = 360;
-y_offset = 970;
+% scale = 0.93;  
+% x_offset = 360;
+% y_offset = 970;
 
-[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
+%[gps_start_idx, gps_end_idx] = range2index(gps_ts, 946684970.550000, 946685185.550000);
 
-roadmap = imread([datapath, 'first_roadmap.jpeg']);
+roadmap = imread([datapath, 'roadmap.jpeg']);
 plot_map_gps(roadmap, gps_x(gps_start_idx:gps_end_idx),...
                       gps_y(gps_start_idx:gps_end_idx), x_offset, y_offset, scale);
 
