@@ -1,7 +1,13 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 
 \usepackage{hyperref}
 \usepackage{cite}
+\usepackage{subfig}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{amsmath, amsthm, amssymb, latexsym}
 
 \begin{document}
 
@@ -13,6 +19,48 @@
 % name route data labelnumber
 
 % 7 images
+\begin{figure}[!htp]
+\begin{center}
+\begin{tabular}{cccc}
+\subfloat{
+  \label{010213180304.00-1}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/010213180304-00-1-gps.jpg}
+} &
+\subfloat{
+  \label{010213180304.00-2}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/010213180304-00-2-gps.jpg}
+} &
+\subfloat{
+  \label{150213185940-20-1}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/150213185940-20-1-gps.jpg}
+} &
+\subfloat{
+  \label{150213185940-20-1}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/150213185940-20-2-gps.jpg}
+} \\
+\end{tabular}
+\end{center}
+\begin{center}
+\begin{tabular}{ccc}
+\subfloat{
+  \label{010213180304.00-2}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/010213180304-00-2-gps.jpg}
+} &
+\subfloat{
+  \label{150213185940-20-1}
+  \includegraphics[trim = 100 90 100 90, width = 0.2\textwidth]{figure/150213185940-20-1-gps.jpg}
+} &
+\subfloat{
+  \label{150213185940-20-1}
+  \includegraphics[trim = 100 70 100 70, width = 0.2\textwidth]{figure/150213185940-20-2-gps.jpg}
+}
+\end{tabular}
+\end{center}
+
+
+\caption{7 Data Sets GPS Map}
+\label{data_set_gps_map}
+\end{figure}
 \section{Preprocess Data}
 \subsection{Kalman Filter for IMU}
 
@@ -23,13 +71,149 @@
 \subsection{K-Mean}
 
 \subsubsection{Polynomial Fitting}
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{poly_left_turn_model}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/poly_left_turn_model.jpg}
+} &
+\subfloat{
+  \label{poly_right_turn_model}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/poly_right_turn_model.jpg}
+} 
+\end{tabular}
+\caption{left and right turn model with Polynomial Fittting}
+\label{poly_turning_model}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[trim = 0 0 0 0, width = \textwidth]{figure/poly_gps.jpg}
+\caption{K-Mean with Polynomial Model Result}
+\label{poly_gps}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{poly_roc}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/poly_roc.jpg}
+} &
+\subfloat{
+  \label{poly_pr}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/poly_pr.jpg}
+} 
+\end{tabular}
+\caption{ROC and PR of K-Mean with Polynomial Model}
+\label{poly_roc_pr}
+\end{figure}
 
 \subsubsection{Gaussian Fitting}
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{gau_left_turn_model}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/gau_left_turn_model.jpg}
+} &
+\subfloat{
+  \label{gau_right_turn_model}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/gau_right_turn_model.jpg}
+} 
+\end{tabular}
+\caption{left and right turn model with Gaussian Fittting}
+\label{gau_turning_model}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[trim = 0 0 0 0, width = \textwidth]{figure/gau_gps.jpg}
+\caption{K-Mean with Gaussian Model Result}
+\label{gau_gps}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{gau_roc}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/gau_roc.jpg}
+} &
+\subfloat{
+  \label{gau_pr}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/gau_pr.jpg}
+} 
+\end{tabular}
+\caption{ROC and PR of K-Mean with Gaussian Model}
+\label{gau_roc_pr}
+\end{figure}
+
 
 \subsection{Hidden Markov Model}
 
 \begin{equation}
+S = \{S_1, S_2, S_3\} = \{\text{"left turn"}, \text{"right turn", "unchange"}\}
+\end{equation}
+
+\begin{equation}
+\begin{split}
+S = \{&S_1, S_2, S_3, S_4, S_5, S_6, S_7\} \\
+  = \{&\text{"left start"}, \text{"left in"}, \text{"left end"}, \text{"unchange"}, \\
+      &\text{"right start"}, \text{"right in"}, \text{"right end"}\}
+\end{split}
+\end{equation}
+
+\begin{equation}
 B = \{ b_j(\textbf{O})\} = \mathcal{N} (\mu, \Sigma)
 \end{equation}
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[trim = 0 0 0 0, width = \textwidth]{figure/hmm_3s_gps.jpg}
+\caption{3 states HMM model testing result}
+\label{hmm_3s_gps}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{hmm_3s_roc}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/hmm_3s_roc.jpg}
+} &
+\subfloat{
+  \label{hmm_3s_pr}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/hmm_3s_pr.jpg}
+} 
+\end{tabular}
+\caption{ROC and PR of 3 states HMM learning}
+\label{hmm_3s_roc_pr}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[trim = 0 0 0 0, width = \textwidth]{figure/hmm_7s_gps.jpg}
+\caption{7 states HMM model testing result}
+\label{hmm_7s_gps}
+\end{figure}
+
+\begin{figure}[!htp]
+\centering
+\begin{tabular}{cc}
+\subfloat{
+  \label{hmm_7s_roc}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/hmm_7s_roc.jpg}
+} &
+\subfloat{
+  \label{hmm_7s_pr}
+  \includegraphics[trim = 0 0 0 0, width = 0.4\textwidth]{figure/hmm_7s_pr.jpg}
+} 
+\end{tabular}
+\caption{ROC and PR of 7 states HMM learning}
+\label{hmm_7s_roc_pr}
+\end{figure}
+
 \end{document}
 

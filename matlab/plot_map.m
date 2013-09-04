@@ -8,6 +8,9 @@ gps_start_idx = 1;
 gps_end_idx = size(gps_ts, 2);
 
 fig_gps = figure; 
+pos_fig = get(fig_gps, 'Position');
+
+set(fig_gps, 'Position', [pos_fig(1), pos_fig(2), 800, 600]);
 
 % match scale
 % scale = 0.93;  
